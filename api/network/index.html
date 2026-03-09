@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Network - Zap.cr</title>
+  <meta property="og:title" content="Network">
+<meta property="og:type" content="article">
+<meta property="og:url" content="/api/network/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Network">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  
+</head>
+<body data-section="api">
+<header class="docs-header">
+  <a href="/" class="logo">Zap.cr <span>Documentation</span></a>
+  <nav>
+    <a href="/getting-started/">Getting Started</a>
+    <a href="/guide/">Guide</a>
+    <a href="/api/">API Reference</a>
+  </nav>
+  <div class="header-right">
+    <button class="search-trigger" onclick="openSearch()" title="Search (⌘K)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Search</span>
+      <kbd>⌘K</kbd>
+    </button>
+    <a href="https://github.com/hahwul/zap.cr">GitHub</a>
+  </div>
+</header>
+<div class="search-overlay" id="searchOverlay" onclick="if(event.target===this)closeSearch()">
+  <div class="search-modal">
+    <div class="search-input-wrap">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search documentation..." autocomplete="off">
+      <kbd onclick="closeSearch()">ESC</kbd>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+<div class="docs-container">
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="/getting-started/">Overview</a></li>
+        <li><a href="/getting-started/installation/">Installation</a></li>
+        <li><a href="/getting-started/quick-start/">Quick Start</a></li>
+        <li><a href="/getting-started/configuration/">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Guide</div>
+      <ul class="sidebar-links">
+        <li><a href="/guide/">Overview</a></li>
+        <li><a href="/guide/scanning/">Scanning</a></li>
+        <li><a href="/guide/spidering/">Spidering</a></li>
+        <li><a href="/guide/authentication/">Authentication</a></li>
+        <li><a href="/guide/context/">Context Management</a></li>
+        <li><a href="/guide/alerts/">Alerts</a></li>
+        <li><a href="/guide/reporting/">Reporting</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">API Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="/api/">Overview</a></li>
+        <li><a href="/api/client/">Client</a></li>
+        <li><a href="/api/core/">Core</a></li>
+        <li><a href="/api/spider/">Spider</a></li>
+        <li><a href="/api/ajax-spider/">Ajax Spider</a></li>
+        <li><a href="/api/ascan/">Active Scan</a></li>
+        <li><a href="/api/pscan/">Passive Scan</a></li>
+        <li><a href="/api/alert/">Alert</a></li>
+        <li><a href="/api/context/">Context</a></li>
+        <li><a href="/api/search/">Search</a></li>
+        <li><a href="/api/network/">Network</a></li>
+        <li><a href="/api/scripts/">Script</a></li>
+        <li><a href="/api/others/">Others</a></li>
+      </ul>
+    </div>
+  </aside>
+  <main class="docs-main">
+    <h1>Network</h1>
+    <p>Network configuration: proxy, DNS, certificates, rate limiting.</p>
+<p><strong>Accessor:</strong> <code>client.network</code></p>
+<h2 id="views">Views</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>aliases</code></td>
+<td>Server aliases</td>
+</tr>
+<tr>
+<td><code>local_servers</code></td>
+<td>Local proxy servers</td>
+</tr>
+<tr>
+<td><code>rate_limit_rules</code></td>
+<td>Rate limit rules</td>
+</tr>
+<tr>
+<td><code>connection_timeout</code></td>
+<td>Connection timeout</td>
+</tr>
+<tr>
+<td><code>default_user_agent</code></td>
+<td>Default User-Agent</td>
+</tr>
+<tr>
+<td><code>dns_ttl_successful_queries</code></td>
+<td>DNS TTL</td>
+</tr>
+<tr>
+<td><code>http_proxy</code></td>
+<td>HTTP proxy config</td>
+</tr>
+<tr>
+<td><code>http_proxy_exclusions</code></td>
+<td>Proxy exclusions</td>
+</tr>
+<tr>
+<td><code>pass_throughs</code></td>
+<td>Pass-through hosts</td>
+</tr>
+<tr>
+<td><code>socks_proxy</code></td>
+<td>SOCKS proxy config</td>
+</tr>
+</tbody>
+</table>
+<h2 id="actions">Actions</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>add_alias(name, enabled)</code></td>
+<td>Add server alias</td>
+</tr>
+<tr>
+<td><code>remove_alias(name)</code></td>
+<td>Remove alias</td>
+</tr>
+<tr>
+<td><code>set_alias_enabled(name, enabled)</code></td>
+<td>Toggle alias</td>
+</tr>
+<tr>
+<td><code>add_local_server(address, port, ...)</code></td>
+<td>Add local server</td>
+</tr>
+<tr>
+<td><code>remove_local_server(address, port)</code></td>
+<td>Remove local server</td>
+</tr>
+<tr>
+<td><code>set_connection_timeout(timeout)</code></td>
+<td>Set connection timeout</td>
+</tr>
+<tr>
+<td><code>set_default_user_agent(ua)</code></td>
+<td>Set User-Agent</td>
+</tr>
+<tr>
+<td><code>set_dns_ttl_successful_queries(ttl)</code></td>
+<td>Set DNS TTL</td>
+</tr>
+<tr>
+<td><code>set_http_proxy(host, port, ...)</code></td>
+<td>Configure HTTP proxy</td>
+</tr>
+<tr>
+<td><code>set_http_proxy_enabled(enabled)</code></td>
+<td>Toggle HTTP proxy</td>
+</tr>
+<tr>
+<td><code>set_http_proxy_auth_enabled(enabled)</code></td>
+<td>Toggle proxy auth</td>
+</tr>
+<tr>
+<td><code>add_http_proxy_exclusion(host, enabled)</code></td>
+<td>Add proxy exclusion</td>
+</tr>
+<tr>
+<td><code>remove_http_proxy_exclusion(host)</code></td>
+<td>Remove exclusion</td>
+</tr>
+<tr>
+<td><code>set_socks_proxy(host, port, ...)</code></td>
+<td>Configure SOCKS proxy</td>
+</tr>
+<tr>
+<td><code>set_socks_proxy_enabled(enabled)</code></td>
+<td>Toggle SOCKS proxy</td>
+</tr>
+<tr>
+<td><code>add_pass_through(authority, enabled)</code></td>
+<td>Add pass-through</td>
+</tr>
+<tr>
+<td><code>remove_pass_through(authority)</code></td>
+<td>Remove pass-through</td>
+</tr>
+<tr>
+<td><code>generate_root_ca_cert</code></td>
+<td>Generate root CA</td>
+</tr>
+<tr>
+<td><code>import_root_ca_cert(file_path)</code></td>
+<td>Import root CA</td>
+</tr>
+<tr>
+<td><code>set_root_ca_cert_validity(days)</code></td>
+<td>Set CA validity</td>
+</tr>
+<tr>
+<td><code>set_server_cert_validity(days)</code></td>
+<td>Set server cert validity</td>
+</tr>
+</tbody>
+</table>
+<h2 id="example">Example</h2>
+<pre><code class="language-crystal hljs"># Route through upstream proxy
+client.network.set_http_proxy(&quot;proxy.corp.com&quot;, 8080)
+client.network.set_http_proxy_enabled(true)
+
+# Set SOCKS proxy
+client.network.set_socks_proxy(&quot;tor.local&quot;, 9050, version: 5)
+</code></pre>
+
+    <div class="docs-footer">
+      <p>Zap.cr - Crystal client library for ZAP API</p>
+    </div>
+  </main>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<script src="/js/search.js"></script>
+</body>
+</html>

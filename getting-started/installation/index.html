@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Installation - Zap.cr</title>
+  <meta property="og:title" content="Installation">
+<meta property="og:type" content="article">
+<meta property="og:url" content="/getting-started/installation/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Installation">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  
+</head>
+<body data-section="getting-started">
+<header class="docs-header">
+  <a href="/" class="logo">Zap.cr <span>Documentation</span></a>
+  <nav>
+    <a href="/getting-started/">Getting Started</a>
+    <a href="/guide/">Guide</a>
+    <a href="/api/">API Reference</a>
+  </nav>
+  <div class="header-right">
+    <button class="search-trigger" onclick="openSearch()" title="Search (⌘K)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Search</span>
+      <kbd>⌘K</kbd>
+    </button>
+    <a href="https://github.com/hahwul/zap.cr">GitHub</a>
+  </div>
+</header>
+<div class="search-overlay" id="searchOverlay" onclick="if(event.target===this)closeSearch()">
+  <div class="search-modal">
+    <div class="search-input-wrap">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search documentation..." autocomplete="off">
+      <kbd onclick="closeSearch()">ESC</kbd>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+<div class="docs-container">
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="/getting-started/">Overview</a></li>
+        <li><a href="/getting-started/installation/">Installation</a></li>
+        <li><a href="/getting-started/quick-start/">Quick Start</a></li>
+        <li><a href="/getting-started/configuration/">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Guide</div>
+      <ul class="sidebar-links">
+        <li><a href="/guide/">Overview</a></li>
+        <li><a href="/guide/scanning/">Scanning</a></li>
+        <li><a href="/guide/spidering/">Spidering</a></li>
+        <li><a href="/guide/authentication/">Authentication</a></li>
+        <li><a href="/guide/context/">Context Management</a></li>
+        <li><a href="/guide/alerts/">Alerts</a></li>
+        <li><a href="/guide/reporting/">Reporting</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">API Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="/api/">Overview</a></li>
+        <li><a href="/api/client/">Client</a></li>
+        <li><a href="/api/core/">Core</a></li>
+        <li><a href="/api/spider/">Spider</a></li>
+        <li><a href="/api/ajax-spider/">Ajax Spider</a></li>
+        <li><a href="/api/ascan/">Active Scan</a></li>
+        <li><a href="/api/pscan/">Passive Scan</a></li>
+        <li><a href="/api/alert/">Alert</a></li>
+        <li><a href="/api/context/">Context</a></li>
+        <li><a href="/api/search/">Search</a></li>
+        <li><a href="/api/network/">Network</a></li>
+        <li><a href="/api/scripts/">Script</a></li>
+        <li><a href="/api/others/">Others</a></li>
+      </ul>
+    </div>
+  </aside>
+  <main class="docs-main">
+    <h1>Installation</h1>
+    <h2 id="add-to-shardyml">Add to shard.yml</h2>
+<p>Add <code>zap</code> as a dependency in your <code>shard.yml</code>:</p>
+<pre><code class="language-yaml hljs">dependencies:
+  zap:
+    github: hahwul/zap.cr
+</code></pre>
+<p>Then run:</p>
+<pre><code class="language-bash hljs">shards install
+</code></pre>
+<h2 id="require-in-your-code">Require in Your Code</h2>
+<pre><code class="language-crystal hljs">require &quot;zap&quot;
+</code></pre>
+<h2 id="zap-setup">ZAP Setup</h2>
+<p>zap.cr connects to a running ZAP instance via its REST API. You can start ZAP in several ways:</p>
+<h3 id="docker-recommended">Docker (Recommended)</h3>
+<pre><code class="language-bash hljs">docker run -u zap -p 8080:8080 \
+  ghcr.io/zaproxy/zaproxy:stable \
+  zap.sh -daemon -host 0.0.0.0 -port 8080 \
+  -config api.key=your-api-key \
+  -config api.addrs.addr.name=.* \
+  -config api.addrs.addr.regex=true
+</code></pre>
+<h3 id="desktop">Desktop</h3>
+<ol>
+<li>Download ZAP from <a href="https://zaproxy.org/download/">zaproxy.org</a></li>
+<li>Launch ZAP</li>
+<li>Go to Tools &gt; Options &gt; API</li>
+<li>Note the API key</li>
+</ol>
+<h3 id="headless">Headless</h3>
+<pre><code class="language-bash hljs">zap.sh -daemon -port 8080 -config api.key=your-api-key
+</code></pre>
+<h2 id="next-steps">Next Steps</h2>
+<p>Proceed to the <a href="/getting-started/quick-start/">Quick Start</a> guide.</p>
+
+    <div class="docs-footer">
+      <p>Zap.cr - Crystal client library for ZAP API</p>
+    </div>
+  </main>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<script src="/js/search.js"></script>
+</body>
+</html>
