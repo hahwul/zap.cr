@@ -1,0 +1,37 @@
+module Zap
+  module Api
+    class Exim
+      def initialize(@client : Zap::Client)
+      end
+
+      def import_har(file_path : String) : JSON::Any
+        @client.request("/JSON/exim/action/importHar/", {"filePath" => file_path})
+      end
+
+      def import_mod_security_log(file_path : String) : JSON::Any
+        @client.request("/JSON/exim/action/importModsec2Logs/", {"filePath" => file_path})
+      end
+
+      def import_urls(file_path : String) : JSON::Any
+        @client.request("/JSON/exim/action/importUrls/", {"filePath" => file_path})
+      end
+
+      def import_zap_logs(file_path : String) : JSON::Any
+        @client.request("/JSON/exim/action/importZapLogs/", {"filePath" => file_path})
+      end
+
+      def export_har(base_url : String = "", start : Int32 = -1, count : Int32 = -1) : JSON::Any
+        params = {} of String => String
+        params["baseurl"] = base_url unless base_url.empty?
+        params["start"] = start.to_s if start >= 0
+        params["count"] = count.to_s if count >= 0
+        @client.request("/JSON/exim/action/exportHar/", params)
+      end
+
+      def export_site_messages_har(url : String, api_key : String = "") : String
+        params = {"url" => url}
+        @client.request_other("/OTHER/exim/other/exportHar/", params)
+      end
+    end
+  end
+end

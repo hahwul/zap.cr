@@ -1,0 +1,86 @@
+module Zap
+  module Api
+    class Context
+      def initialize(@client : Zap::Client)
+      end
+
+      # Views
+      def context(name : String) : JSON::Any
+        @client.request("/JSON/context/view/context/", {"contextName" => name})
+      end
+
+      def context_list : JSON::Any
+        @client.request("/JSON/context/view/contextList/")
+      end
+
+      def excluded_regexs(name : String) : JSON::Any
+        @client.request("/JSON/context/view/excludeRegexs/", {"contextName" => name})
+      end
+
+      def included_regexs(name : String) : JSON::Any
+        @client.request("/JSON/context/view/includeRegexs/", {"contextName" => name})
+      end
+
+      def urls(name : String) : JSON::Any
+        @client.request("/JSON/context/view/urls/", {"contextName" => name})
+      end
+
+      def technology_list : JSON::Any
+        @client.request("/JSON/context/view/technologyList/")
+      end
+
+      def included_technology_list(name : String) : JSON::Any
+        @client.request("/JSON/context/view/includedTechnologyList/", {"contextName" => name})
+      end
+
+      def excluded_technology_list(name : String) : JSON::Any
+        @client.request("/JSON/context/view/excludedTechnologyList/", {"contextName" => name})
+      end
+
+      # Actions
+      def new_context(name : String) : JSON::Any
+        @client.request("/JSON/context/action/newContext/", {"contextName" => name})
+      end
+
+      def remove_context(name : String) : JSON::Any
+        @client.request("/JSON/context/action/removeContext/", {"contextName" => name})
+      end
+
+      def export_context(name : String, file_path : String) : JSON::Any
+        @client.request("/JSON/context/action/exportContext/", {"contextName" => name, "contextFile" => file_path})
+      end
+
+      def import_context(file_path : String) : JSON::Any
+        @client.request("/JSON/context/action/importContext/", {"contextFile" => file_path})
+      end
+
+      def include_in_context(name : String, regex : String) : JSON::Any
+        @client.request("/JSON/context/action/includeInContext/", {"contextName" => name, "regex" => regex})
+      end
+
+      def exclude_from_context(name : String, regex : String) : JSON::Any
+        @client.request("/JSON/context/action/excludeFromContext/", {"contextName" => name, "regex" => regex})
+      end
+
+      def include_all_contexts_technologies : JSON::Any
+        @client.request("/JSON/context/action/includeAllContextTechnologies/")
+      end
+
+      def exclude_all_contexts_technologies : JSON::Any
+        @client.request("/JSON/context/action/excludeAllContextTechnologies/")
+      end
+
+      def include_context_technologies(name : String, tech : String) : JSON::Any
+        @client.request("/JSON/context/action/includeContextTechnologies/", {"contextName" => name, "technologyNames" => tech})
+      end
+
+      def exclude_context_technologies(name : String, tech : String) : JSON::Any
+        @client.request("/JSON/context/action/excludeContextTechnologies/", {"contextName" => name, "technologyNames" => tech})
+      end
+
+      def set_context_in_scope(name : String, in_scope : Bool) : JSON::Any
+        @client.request("/JSON/context/action/setContextInScope/", {"contextName" => name, "booleanInScope" => in_scope.to_s})
+      end
+    end
+  end
+end

@@ -1,0 +1,10 @@
+name: zap
+version: 0.1.0
+description: Crystal client library for ZAP API
+
+authors:
+  - hahwul <hahwul@gmail.com>
+
+crystal: '>= 1.19.1'
+
+license: MIT
