@@ -38,9 +38,11 @@ end
 
 def with_mock_zap(&)
   mock = MockZapServer.new
+  client = mock.client
   begin
-    yield mock, mock.client
+    yield mock, client
   ensure
+    client.close
     mock.stop
   end
 end

@@ -61,6 +61,62 @@ describe Zap::Client do
     end
   end
 
+  describe "#initialize with timeouts" do
+    it "uses default timeouts" do
+      client = Zap::Client.new
+      client.connect_timeout.should eq(30.seconds)
+      client.read_timeout.should eq(300.seconds)
+    end
+
+    it "accepts custom timeouts" do
+      client = Zap::Client.new(connect_timeout: 10.seconds, read_timeout: 60.seconds)
+      client.connect_timeout.should eq(10.seconds)
+      client.read_timeout.should eq(60.seconds)
+    end
+  end
+
+  describe "error handling" do
+    it "raises HttpError on non-200 responses" do
+      srv = HTTP::Server.new do |ctx|
+        ctx.response.status_code = 500
+        ctx.response.print "Internal Server Error"
+      end
+      address = srv.bind_tcp("127.0.0.1", 0)
+      spawn { srv.listen }
+      Fiber.yield
+
+      client = Zap::Client.new("http://127.0.0.1:#{address.port}")
+      begin
+        expect_raises(Zap::HttpError) do
+          client.core.version
+        end
+      ensure
+        client.close
+        srv.close
+      end
+    end
+
+    it "raises Error on invalid JSON responses" do
+      srv = HTTP::Server.new do |ctx|
+        ctx.response.status_code = 200
+        ctx.response.print "not json"
+      end
+      address = srv.bind_tcp("127.0.0.1", 0)
+      spawn { srv.listen }
+      Fiber.yield
+
+      client = Zap::Client.new("http://127.0.0.1:#{address.port}")
+      begin
+        expect_raises(Zap::Error) do
+          client.core.version
+        end
+      ensure
+        client.close
+        srv.close
+      end
+    end
+  end
+
   describe "convenience scanning" do
     it "returns Scan instance" do
       client = Zap::Client.new

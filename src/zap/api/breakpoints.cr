@@ -4,10 +4,6 @@ module Zap
       def initialize(@client : Zap::Client)
       end
 
-      def breakpoints : JSON::Any
-        @client.request("/JSON/break/view/isBreakAll/")
-      end
-
       def is_break_all : JSON::Any
         @client.request("/JSON/break/view/isBreakAll/")
       end

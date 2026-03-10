@@ -1,9 +1,28 @@
 module Zap
+  class Error < Exception; end
+
+  class HttpError < Error
+    getter status_code : Int32
+
+    def initialize(@status_code : Int32, message : String)
+      super("HTTP #{@status_code}: #{message}")
+    end
+  end
+
   class Client
     property base_url : String
     property api_key : String
+    property connect_timeout : Time::Span
+    property read_timeout : Time::Span
 
-    def initialize(@base_url : String = "http://localhost:8080", @api_key : String = "")
+    @http : HTTP::Client?
+
+    def initialize(
+      @base_url : String = "http://localhost:8080",
+      @api_key : String = "",
+      @connect_timeout : Time::Span = 30.seconds,
+      @read_timeout : Time::Span = 300.seconds,
+    )
     end
 
     # API components
@@ -144,35 +163,50 @@ module Zap
       Scan.new(self)
     end
 
+    # Close the underlying HTTP connection and release resources.
+    def close
+      @http.try(&.close)
+      @http = nil
+    end
+
     # Low-level request methods
     def request(path : String, params : Hash(String, String) = {} of String => String) : JSON::Any
-      params["apikey"] = @api_key unless @api_key.empty?
-
-      uri = URI.parse(@base_url)
-      query = URI::Params.encode(params)
-      full_path = query.empty? ? path : "#{path}?#{query}"
-
-      http = HTTP::Client.new(uri)
-      http.connect_timeout = 30.seconds
-      http.read_timeout = 300.seconds
-
-      response = http.get(full_path)
-      JSON.parse(response.body)
+      response = perform_request(path, params)
+      begin
+        JSON.parse(response.body)
+      rescue ex : JSON::ParseException
+        raise Zap::Error.new("Invalid JSON response from #{path}: #{ex.message}")
+      end
     end
 
     def request_other(path : String, params : Hash(String, String) = {} of String => String) : String
+      response = perform_request(path, params)
+      response.body
+    end
+
+    private def perform_request(path : String, params : Hash(String, String)) : HTTP::Client::Response
       params["apikey"] = @api_key unless @api_key.empty?
 
-      uri = URI.parse(@base_url)
       query = URI::Params.encode(params)
       full_path = query.empty? ? path : "#{path}?#{query}"
 
-      http = HTTP::Client.new(uri)
-      http.connect_timeout = 30.seconds
-      http.read_timeout = 300.seconds
+      response = http_client.get(full_path)
 
-      response = http.get(full_path)
-      response.body
+      unless response.success?
+        raise Zap::HttpError.new(response.status_code, response.body)
+      end
+
+      response
+    end
+
+    private def http_client : HTTP::Client
+      @http ||= begin
+        uri = URI.parse(@base_url)
+        client = HTTP::Client.new(uri)
+        client.connect_timeout = @connect_timeout
+        client.read_timeout = @read_timeout
+        client
+      end
     end
   end
 end

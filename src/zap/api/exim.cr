@@ -28,9 +28,8 @@ module Zap
         @client.request("/JSON/exim/action/exportHar/", params)
       end
 
-      def export_site_messages_har(url : String, api_key : String = "") : String
-        params = {"url" => url}
-        @client.request_other("/OTHER/exim/other/exportHar/", params)
+      def export_site_messages_har(url : String) : String
+        @client.request_other("/OTHER/exim/other/exportHar/", {"url" => url})
       end
     end
   end
