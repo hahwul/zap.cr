@@ -158,6 +158,58 @@ module Zap
       Api::Exim.new(self)
     end
 
+    def client : Api::Client
+      Api::Client.new(self)
+    end
+
+    def client_spider : Api::ClientSpider
+      Api::ClientSpider.new(self)
+    end
+
+    def custom_payloads : Api::CustomPayloads
+      Api::CustomPayloads.new(self)
+    end
+
+    def hud : Api::Hud
+      Api::Hud.new(self)
+    end
+
+    def local_proxies : Api::LocalProxies
+      Api::LocalProxies.new(self)
+    end
+
+    def oast : Api::Oast
+      Api::Oast.new(self)
+    end
+
+    def param_digger : Api::ParamDigger
+      Api::ParamDigger.new(self)
+    end
+
+    def pnh : Api::Pnh
+      Api::Pnh.new(self)
+    end
+
+    def postman : Api::Postman
+      Api::Postman.new(self)
+    end
+
+    def retest : Api::Retest
+      Api::Retest.new(self)
+    end
+
+    def revisit : Api::Revisit
+      Api::Revisit.new(self)
+    end
+
+    def rule_config : Api::RuleConfig
+      Api::RuleConfig.new(self)
+    end
+
+    def wappalyzer : Api::Wappalyzer
+      Api::Wappalyzer.new(self)
+    end
+
     # Convenience scanning
     def scan : Scan
       Scan.new(self)
