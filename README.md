@@ -1,6 +1,6 @@
 # zap.cr
 
-Crystal client library for [OWASP ZAP](https://www.zaproxy.org/) API.
+Crystal client library for [ZAP](https://www.zaproxy.org/) API.
 
 ## Installation
 
