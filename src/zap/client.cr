@@ -210,6 +210,18 @@ module Zap
       Api::Wappalyzer.new(self)
     end
 
+    def dev : Api::Dev
+      Api::Dev.new(self)
+    end
+
+    def keyboard : Api::Keyboard
+      Api::Keyboard.new(self)
+    end
+
+    def quickstartlaunch : Api::Quickstartlaunch
+      Api::Quickstartlaunch.new(self)
+    end
+
     # Convenience scanning
     def scan : Scan
       Scan.new(self)

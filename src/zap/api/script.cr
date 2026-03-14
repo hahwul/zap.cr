@@ -79,6 +79,42 @@ module Zap
       def clear_script_vars(script_name : String) : JSON::Any
         @client.request("/JSON/script/action/clearScriptVars/", {"scriptName" => script_name})
       end
+
+      def clear_global_custom_var(var_key : String) : JSON::Any
+        params = {} of String => String
+        params["varKey"] = var_key
+        @client.request("/JSON/script/action/clearGlobalCustomVar/", params)
+      end
+
+      def clear_script_custom_var(script_name : String, var_key : String) : JSON::Any
+        params = {} of String => String
+        params["scriptName"] = script_name
+        params["varKey"] = var_key
+        @client.request("/JSON/script/action/clearScriptCustomVar/", params)
+      end
+
+      def global_custom_var(var_key : String) : JSON::Any
+        params = {} of String => String
+        params["varKey"] = var_key
+        @client.request("/JSON/script/view/globalCustomVar/", params)
+      end
+
+      def global_custom_vars : JSON::Any
+        @client.request("/JSON/script/view/globalCustomVars/")
+      end
+
+      def script_custom_var(script_name : String, var_key : String) : JSON::Any
+        params = {} of String => String
+        params["scriptName"] = script_name
+        params["varKey"] = var_key
+        @client.request("/JSON/script/view/scriptCustomVar/", params)
+      end
+
+      def script_custom_vars(script_name : String) : JSON::Any
+        params = {} of String => String
+        params["scriptName"] = script_name
+        @client.request("/JSON/script/view/scriptCustomVars/", params)
+      end
     end
   end
 end

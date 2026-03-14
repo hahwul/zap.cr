@@ -47,6 +47,26 @@ module Zap
       def set_option_statsd_enabled(enabled : Bool) : JSON::Any
         @client.request("/JSON/stats/action/setOptionStatsdEnabled/", {"Boolean" => enabled.to_s})
       end
+
+      def option_in_memory_enabled : JSON::Any
+        @client.request("/JSON/stats/view/optionInMemoryEnabled/")
+      end
+
+      def option_statsd_enabled : JSON::Any
+        @client.request("/JSON/stats/view/optionStatsdEnabled/")
+      end
+
+      def option_statsd_host : JSON::Any
+        @client.request("/JSON/stats/view/optionStatsdHost/")
+      end
+
+      def option_statsd_port : JSON::Any
+        @client.request("/JSON/stats/view/optionStatsdPort/")
+      end
+
+      def option_statsd_prefix : JSON::Any
+        @client.request("/JSON/stats/view/optionStatsdPrefix/")
+      end
     end
   end
 end

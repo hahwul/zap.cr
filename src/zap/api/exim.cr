@@ -31,6 +31,31 @@ module Zap
       def export_site_messages_har(url : String) : String
         @client.request_other("/OTHER/exim/other/exportHar/", {"url" => url})
       end
+
+      def export_sites_tree(file_path : String) : JSON::Any
+        params = {} of String => String
+        params["filePath"] = file_path
+        @client.request("/JSON/exim/action/exportSitesTree/", params)
+      end
+
+      def prune_sites_tree(file_path : String) : JSON::Any
+        params = {} of String => String
+        params["filePath"] = file_path
+        @client.request("/JSON/exim/action/pruneSitesTree/", params)
+      end
+
+      def export_har_by_id(ids : String) : String
+        params = {} of String => String
+        params["ids"] = ids
+        @client.request_other("/OTHER/exim/other/exportHarById/", params)
+      end
+
+      def send_har_request(request : String, follow_redirects : String = "") : String
+        params = {} of String => String
+        params["request"] = request
+        params["followRedirects"] = follow_redirects unless follow_redirects.empty?
+        @client.request_other("/OTHER/exim/other/sendHarRequest/", params)
+      end
     end
   end
 end

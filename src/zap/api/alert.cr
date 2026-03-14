@@ -83,6 +83,24 @@ module Zap
       def update_alerts_risk(ids : String, risk_id : Int32) : JSON::Any
         @client.request("/JSON/alert/action/updateAlertsRisk/", {"ids" => ids, "riskId" => risk_id.to_s})
       end
+
+      def add_alert(message_id : String, name : String, risk_id : String, confidence_id : String, description : String, param : String = "", attack : String = "", other_info : String = "", solution : String = "", references : String = "", evidence : String = "", cwe_id : String = "", wasc_id : String = "") : JSON::Any
+        params = {} of String => String
+        params["messageId"] = message_id
+        params["name"] = name
+        params["riskId"] = risk_id
+        params["confidenceId"] = confidence_id
+        params["description"] = description
+        params["param"] = param unless param.empty?
+        params["attack"] = attack unless attack.empty?
+        params["otherInfo"] = other_info unless other_info.empty?
+        params["solution"] = solution unless solution.empty?
+        params["references"] = references unless references.empty?
+        params["evidence"] = evidence unless evidence.empty?
+        params["cweId"] = cwe_id unless cwe_id.empty?
+        params["wascId"] = wasc_id unless wasc_id.empty?
+        @client.request("/JSON/alert/action/addAlert/", params)
+      end
     end
   end
 end

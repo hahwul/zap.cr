@@ -156,6 +156,217 @@ module Zap
       def option_user_agent : JSON::Any
         @client.request("/JSON/spider/view/optionUserAgent/")
       end
+
+      def add_domain_always_in_scope(value : String, is_regex : String = "", is_enabled : String = "") : JSON::Any
+        params = {} of String => String
+        params["value"] = value
+        params["isRegex"] = is_regex unless is_regex.empty?
+        params["isEnabled"] = is_enabled unless is_enabled.empty?
+        @client.request("/JSON/spider/action/addDomainAlwaysInScope/", params)
+      end
+
+      def disable_all_domains_always_in_scope : JSON::Any
+        @client.request("/JSON/spider/action/disableAllDomainsAlwaysInScope/")
+      end
+
+      def enable_all_domains_always_in_scope : JSON::Any
+        @client.request("/JSON/spider/action/enableAllDomainsAlwaysInScope/")
+      end
+
+      def modify_domain_always_in_scope(idx : String, value : String = "", is_regex : String = "", is_enabled : String = "") : JSON::Any
+        params = {} of String => String
+        params["idx"] = idx
+        params["value"] = value unless value.empty?
+        params["isRegex"] = is_regex unless is_regex.empty?
+        params["isEnabled"] = is_enabled unless is_enabled.empty?
+        @client.request("/JSON/spider/action/modifyDomainAlwaysInScope/", params)
+      end
+
+      def remove_all_scans : JSON::Any
+        @client.request("/JSON/spider/action/removeAllScans/")
+      end
+
+      def remove_domain_always_in_scope(idx : String) : JSON::Any
+        params = {} of String => String
+        params["idx"] = idx
+        @client.request("/JSON/spider/action/removeDomainAlwaysInScope/", params)
+      end
+
+      def remove_scan(scan_id : String) : JSON::Any
+        params = {} of String => String
+        params["scanId"] = scan_id
+        @client.request("/JSON/spider/action/removeScan/", params)
+      end
+
+      def set_option_accept_cookies(boolean : String) : JSON::Any
+        params = {} of String => String
+        params["Boolean"] = boolean
+        @client.request("/JSON/spider/action/setOptionAcceptCookies/", params)
+      end
+
+      def set_option_handle_o_data_parameters_visited(boolean : String) : JSON::Any
+        params = {} of String => String
+        params["Boolean"] = boolean
+        @client.request("/JSON/spider/action/setOptionHandleODataParametersVisited/", params)
+      end
+
+      def set_option_handle_parameters(string : String) : JSON::Any
+        params = {} of String => String
+        params["String"] = string
+        @client.request("/JSON/spider/action/setOptionHandleParameters/", params)
+      end
+
+      def set_option_logout_avoidance(boolean : String) : JSON::Any
+        params = {} of String => String
+        params["Boolean"] = boolean
+        @client.request("/JSON/spider/action/setOptionLogoutAvoidance/", params)
+      end
+
+      def set_option_max_scans_in_ui(integer : String) : JSON::Any
+        params = {} of String => String
+        params["Integer"] = integer
+        @client.request("/JSON/spider/action/setOptionMaxScansInUI/", params)
+      end
+
+      def set_option_parse_ds_store(boolean : String) : JSON::Any
+        params = {} of String => String
+        params["Boolean"] = boolean
+        @client.request("/JSON/spider/action/setOptionParseDsStore/", params)
+      end
+
+      def set_option_parse_git(boolean : String) : JSON::Any
+        params = {} of String => String
+        params["Boolean"] = boolean
+        @client.request("/JSON/spider/action/setOptionParseGit/", params)
+      end
+
+      def set_option_parse_svn_entries(boolean : String) : JSON::Any
+        params = {} of String => String
+        params["Boolean"] = boolean
+        @client.request("/JSON/spider/action/setOptionParseSVNEntries/", params)
+      end
+
+      def set_option_parse_sitemap_xml(boolean : String) : JSON::Any
+        params = {} of String => String
+        params["Boolean"] = boolean
+        @client.request("/JSON/spider/action/setOptionParseSitemapXml/", params)
+      end
+
+      def set_option_show_advanced_dialog(boolean : String) : JSON::Any
+        params = {} of String => String
+        params["Boolean"] = boolean
+        @client.request("/JSON/spider/action/setOptionShowAdvancedDialog/", params)
+      end
+
+      def set_option_skip_url_string(string : String) : JSON::Any
+        params = {} of String => String
+        params["String"] = string
+        @client.request("/JSON/spider/action/setOptionSkipURLString/", params)
+      end
+
+      def set_option_thread_count(integer : String) : JSON::Any
+        params = {} of String => String
+        params["Integer"] = integer
+        @client.request("/JSON/spider/action/setOptionThreadCount/", params)
+      end
+
+      def added_nodes(scan_id : String = "") : JSON::Any
+        params = {} of String => String
+        params["scanId"] = scan_id unless scan_id.empty?
+        @client.request("/JSON/spider/view/addedNodes/", params)
+      end
+
+      def all_urls : JSON::Any
+        @client.request("/JSON/spider/view/allUrls/")
+      end
+
+      def domains_always_in_scope : JSON::Any
+        @client.request("/JSON/spider/view/domainsAlwaysInScope/")
+      end
+
+      def option_accept_cookies : JSON::Any
+        @client.request("/JSON/spider/view/optionAcceptCookies/")
+      end
+
+      def option_domains_always_in_scope : JSON::Any
+        @client.request("/JSON/spider/view/optionDomainsAlwaysInScope/")
+      end
+
+      def option_domains_always_in_scope_enabled : JSON::Any
+        @client.request("/JSON/spider/view/optionDomainsAlwaysInScopeEnabled/")
+      end
+
+      def option_handle_o_data_parameters_visited : JSON::Any
+        @client.request("/JSON/spider/view/optionHandleODataParametersVisited/")
+      end
+
+      def option_handle_parameters : JSON::Any
+        @client.request("/JSON/spider/view/optionHandleParameters/")
+      end
+
+      def option_logout_avoidance : JSON::Any
+        @client.request("/JSON/spider/view/optionLogoutAvoidance/")
+      end
+
+      def option_max_parse_size_bytes : JSON::Any
+        @client.request("/JSON/spider/view/optionMaxParseSizeBytes/")
+      end
+
+      def option_max_scans_in_ui : JSON::Any
+        @client.request("/JSON/spider/view/optionMaxScansInUI/")
+      end
+
+      def option_parse_comments : JSON::Any
+        @client.request("/JSON/spider/view/optionParseComments/")
+      end
+
+      def option_parse_ds_store : JSON::Any
+        @client.request("/JSON/spider/view/optionParseDsStore/")
+      end
+
+      def option_parse_git : JSON::Any
+        @client.request("/JSON/spider/view/optionParseGit/")
+      end
+
+      def option_parse_robots_txt : JSON::Any
+        @client.request("/JSON/spider/view/optionParseRobotsTxt/")
+      end
+
+      def option_parse_svn_entries : JSON::Any
+        @client.request("/JSON/spider/view/optionParseSVNEntries/")
+      end
+
+      def option_parse_sitemap_xml : JSON::Any
+        @client.request("/JSON/spider/view/optionParseSitemapXml/")
+      end
+
+      def option_post_form : JSON::Any
+        @client.request("/JSON/spider/view/optionPostForm/")
+      end
+
+      def option_process_form : JSON::Any
+        @client.request("/JSON/spider/view/optionProcessForm/")
+      end
+
+      def option_send_referer_header : JSON::Any
+        @client.request("/JSON/spider/view/optionSendRefererHeader/")
+      end
+
+      def option_show_advanced_dialog : JSON::Any
+        @client.request("/JSON/spider/view/optionShowAdvancedDialog/")
+      end
+
+      def option_skip_url_string : JSON::Any
+        @client.request("/JSON/spider/view/optionSkipURLString/")
+      end
+
+      def option_thread_count : JSON::Any
+        @client.request("/JSON/spider/view/optionThreadCount/")
+      end
+
+      def scans : JSON::Any
+        @client.request("/JSON/spider/view/scans/")
+      end
     end
   end
 end

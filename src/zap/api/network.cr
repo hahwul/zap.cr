@@ -140,6 +140,102 @@ module Zap
       def set_server_cert_validity(validity : Int32) : JSON::Any
         @client.request("/JSON/network/action/setServerCertValidity/", {"validity" => validity.to_s})
       end
+
+      def add_pkcs12_client_certificate(file_path : String, password : String, index : String = "") : JSON::Any
+        params = {} of String => String
+        params["filePath"] = file_path
+        params["password"] = password
+        params["index"] = index unless index.empty?
+        @client.request("/JSON/network/action/addPkcs12ClientCertificate/", params)
+      end
+
+      def add_rate_limit_rule(description : String, enabled : String, match_regex : String, match_string : String, requests_per_second : String, group_by : String) : JSON::Any
+        params = {} of String => String
+        params["description"] = description
+        params["enabled"] = enabled
+        params["matchRegex"] = match_regex
+        params["matchString"] = match_string
+        params["requestsPerSecond"] = requests_per_second
+        params["groupBy"] = group_by
+        @client.request("/JSON/network/action/addRateLimitRule/", params)
+      end
+
+      def remove_rate_limit_rule(description : String) : JSON::Any
+        params = {} of String => String
+        params["description"] = description
+        @client.request("/JSON/network/action/removeRateLimitRule/", params)
+      end
+
+      def set_http_proxy_exclusion_enabled(host : String, enabled : String) : JSON::Any
+        params = {} of String => String
+        params["host"] = host
+        params["enabled"] = enabled
+        @client.request("/JSON/network/action/setHttpProxyExclusionEnabled/", params)
+      end
+
+      def set_pass_through_enabled(authority : String, enabled : String) : JSON::Any
+        params = {} of String => String
+        params["authority"] = authority
+        params["enabled"] = enabled
+        @client.request("/JSON/network/action/setPassThroughEnabled/", params)
+      end
+
+      def set_rate_limit_rule_enabled(description : String, enabled : String) : JSON::Any
+        params = {} of String => String
+        params["description"] = description
+        params["enabled"] = enabled
+        @client.request("/JSON/network/action/setRateLimitRuleEnabled/", params)
+      end
+
+      def set_use_client_certificate(use : String) : JSON::Any
+        params = {} of String => String
+        params["use"] = use
+        @client.request("/JSON/network/action/setUseClientCertificate/", params)
+      end
+
+      def set_use_global_http_state(use : String) : JSON::Any
+        params = {} of String => String
+        params["use"] = use
+        @client.request("/JSON/network/action/setUseGlobalHttpState/", params)
+      end
+
+      def proxy_pac : String
+        @client.request_other("/OTHER/network/other/proxy.pac/")
+      end
+
+      def root_ca_cert : String
+        @client.request_other("/OTHER/network/other/rootCaCert/")
+      end
+
+      def set_proxy(proxy : String) : String
+        params = {} of String => String
+        params["proxy"] = proxy
+        @client.request_other("/OTHER/network/other/setProxy/", params)
+      end
+
+      def get_root_ca_cert_validity : JSON::Any
+        @client.request("/JSON/network/view/getRootCaCertValidity/")
+      end
+
+      def get_server_cert_validity : JSON::Any
+        @client.request("/JSON/network/view/getServerCertValidity/")
+      end
+
+      def is_http_proxy_auth_enabled : JSON::Any
+        @client.request("/JSON/network/view/isHttpProxyAuthEnabled/")
+      end
+
+      def is_http_proxy_enabled : JSON::Any
+        @client.request("/JSON/network/view/isHttpProxyEnabled/")
+      end
+
+      def is_socks_proxy_enabled : JSON::Any
+        @client.request("/JSON/network/view/isSocksProxyEnabled/")
+      end
+
+      def is_use_global_http_state : JSON::Any
+        @client.request("/JSON/network/view/isUseGlobalHttpState/")
+      end
     end
   end
 end
