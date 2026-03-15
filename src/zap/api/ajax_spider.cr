@@ -132,6 +132,76 @@ module Zap
       def option_number_of_browsers : JSON::Any
         @client.request("/JSON/ajaxSpider/view/optionNumberOfBrowsers/")
       end
+
+      def modify_excluded_element(context_name : String, description : String, element : String, description_new : String = "", xpath : String = "", text : String = "", attribute_name : String = "", attribute_value : String = "", enabled : String = "") : JSON::Any
+        params = {} of String => String
+        params["contextName"] = context_name
+        params["description"] = description
+        params["element"] = element
+        params["descriptionNew"] = description_new unless description_new.empty?
+        params["xpath"] = xpath unless xpath.empty?
+        params["text"] = text unless text.empty?
+        params["attributeName"] = attribute_name unless attribute_name.empty?
+        params["attributeValue"] = attribute_value unless attribute_value.empty?
+        params["enabled"] = enabled unless enabled.empty?
+        @client.request("/JSON/ajaxSpider/action/modifyExcludedElement/", params)
+      end
+
+      def set_option_enable_extensions(boolean : String) : JSON::Any
+        params = {} of String => String
+        params["Boolean"] = boolean
+        @client.request("/JSON/ajaxSpider/action/setOptionEnableExtensions/", params)
+      end
+
+      def set_option_logout_avoidance(boolean : String) : JSON::Any
+        params = {} of String => String
+        params["Boolean"] = boolean
+        @client.request("/JSON/ajaxSpider/action/setOptionLogoutAvoidance/", params)
+      end
+
+      def set_option_scope_check(string : String) : JSON::Any
+        params = {} of String => String
+        params["String"] = string
+        @client.request("/JSON/ajaxSpider/action/setOptionScopeCheck/", params)
+      end
+
+      def excluded_elements(context_name : String) : JSON::Any
+        params = {} of String => String
+        params["contextName"] = context_name
+        @client.request("/JSON/ajaxSpider/view/excludedElements/", params)
+      end
+
+      def option_click_default_elems : JSON::Any
+        @client.request("/JSON/ajaxSpider/view/optionClickDefaultElems/")
+      end
+
+      def option_click_elems_once : JSON::Any
+        @client.request("/JSON/ajaxSpider/view/optionClickElemsOnce/")
+      end
+
+      def option_enable_extensions : JSON::Any
+        @client.request("/JSON/ajaxSpider/view/optionEnableExtensions/")
+      end
+
+      def option_event_wait : JSON::Any
+        @client.request("/JSON/ajaxSpider/view/optionEventWait/")
+      end
+
+      def option_logout_avoidance : JSON::Any
+        @client.request("/JSON/ajaxSpider/view/optionLogoutAvoidance/")
+      end
+
+      def option_random_inputs : JSON::Any
+        @client.request("/JSON/ajaxSpider/view/optionRandomInputs/")
+      end
+
+      def option_reload_wait : JSON::Any
+        @client.request("/JSON/ajaxSpider/view/optionReloadWait/")
+      end
+
+      def option_scope_check : JSON::Any
+        @client.request("/JSON/ajaxSpider/view/optionScopeCheck/")
+      end
     end
   end
 end

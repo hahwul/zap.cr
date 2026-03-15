@@ -109,6 +109,30 @@ module Zap
       def set_option_report_beta_addons(enabled : Bool) : JSON::Any
         @client.request("/JSON/autoupdate/action/setOptionReportBetaAddons/", {"Boolean" => enabled.to_s})
       end
+
+      def local_addons : JSON::Any
+        @client.request("/JSON/autoupdate/view/localAddons/")
+      end
+
+      def option_addon_directories : JSON::Any
+        @client.request("/JSON/autoupdate/view/optionAddonDirectories/")
+      end
+
+      def option_day_last_checked : JSON::Any
+        @client.request("/JSON/autoupdate/view/optionDayLastChecked/")
+      end
+
+      def option_day_last_install_warned : JSON::Any
+        @client.request("/JSON/autoupdate/view/optionDayLastInstallWarned/")
+      end
+
+      def option_day_last_update_warned : JSON::Any
+        @client.request("/JSON/autoupdate/view/optionDayLastUpdateWarned/")
+      end
+
+      def option_download_directory : JSON::Any
+        @client.request("/JSON/autoupdate/view/optionDownloadDirectory/")
+      end
     end
   end
 end

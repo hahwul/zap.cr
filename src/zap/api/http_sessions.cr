@@ -55,6 +55,34 @@ module Zap
       def rename_session(site : String, old_name : String, new_name : String) : JSON::Any
         @client.request("/JSON/httpSessions/action/renameSession/", {"site" => site, "oldSessionName" => old_name, "newSessionName" => new_name})
       end
+
+      def add_default_session_token(session_token : String, token_enabled : String = "") : JSON::Any
+        params = {} of String => String
+        params["sessionToken"] = session_token
+        params["tokenEnabled"] = token_enabled unless token_enabled.empty?
+        @client.request("/JSON/httpSessions/action/addDefaultSessionToken/", params)
+      end
+
+      def remove_default_session_token(session_token : String) : JSON::Any
+        params = {} of String => String
+        params["sessionToken"] = session_token
+        @client.request("/JSON/httpSessions/action/removeDefaultSessionToken/", params)
+      end
+
+      def set_default_session_token_enabled(session_token : String, token_enabled : String) : JSON::Any
+        params = {} of String => String
+        params["sessionToken"] = session_token
+        params["tokenEnabled"] = token_enabled
+        @client.request("/JSON/httpSessions/action/setDefaultSessionTokenEnabled/", params)
+      end
+
+      def default_session_tokens : JSON::Any
+        @client.request("/JSON/httpSessions/view/defaultSessionTokens/")
+      end
+
+      def sites : JSON::Any
+        @client.request("/JSON/httpSessions/view/sites/")
+      end
     end
   end
 end

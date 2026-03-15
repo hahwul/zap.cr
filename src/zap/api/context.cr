@@ -81,6 +81,26 @@ module Zap
       def set_context_in_scope(name : String, in_scope : Bool) : JSON::Any
         @client.request("/JSON/context/action/setContextInScope/", {"contextName" => name, "booleanInScope" => in_scope.to_s})
       end
+
+      def set_context_checking_strategy(context_name : String, checking_strategy : String, poll_url : String = "", poll_data : String = "", poll_headers : String = "", poll_frequency : String = "", poll_frequency_units : String = "") : JSON::Any
+        params = {} of String => String
+        params["contextName"] = context_name
+        params["checkingStrategy"] = checking_strategy
+        params["pollUrl"] = poll_url unless poll_url.empty?
+        params["pollData"] = poll_data unless poll_data.empty?
+        params["pollHeaders"] = poll_headers unless poll_headers.empty?
+        params["pollFrequency"] = poll_frequency unless poll_frequency.empty?
+        params["pollFrequencyUnits"] = poll_frequency_units unless poll_frequency_units.empty?
+        @client.request("/JSON/context/action/setContextCheckingStrategy/", params)
+      end
+
+      def set_context_regexs(context_name : String, inc_regexs : String, exc_regexs : String) : JSON::Any
+        params = {} of String => String
+        params["contextName"] = context_name
+        params["incRegexs"] = inc_regexs
+        params["excRegexs"] = exc_regexs
+        @client.request("/JSON/context/action/setContextRegexs/", params)
+      end
     end
   end
 end

@@ -26,6 +26,17 @@ module Zap
           "channelId" => channel_id.to_s, "outgoing" => outgoing.to_s, "message" => message,
         })
       end
+
+      def set_break_text_message(message : String, outgoing : String) : JSON::Any
+        params = {} of String => String
+        params["message"] = message
+        params["outgoing"] = outgoing
+        @client.request("/JSON/websocket/action/setBreakTextMessage/", params)
+      end
+
+      def break_text_message : JSON::Any
+        @client.request("/JSON/websocket/view/breakTextMessage/")
+      end
     end
   end
 end

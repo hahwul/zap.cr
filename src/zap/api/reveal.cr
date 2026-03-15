@@ -11,6 +11,16 @@ module Zap
       def set_reveal_hidden_fields(enabled : Bool) : JSON::Any
         @client.request("/JSON/reveal/action/setRevealHiddenFields/", {"Boolean" => enabled.to_s})
       end
+
+      def set_reveal(reveal : String) : JSON::Any
+        params = {} of String => String
+        params["reveal"] = reveal
+        @client.request("/JSON/reveal/action/setReveal/", params)
+      end
+
+      def reveal : JSON::Any
+        @client.request("/JSON/reveal/view/reveal/")
+      end
     end
   end
 end
