@@ -6,7 +6,7 @@ describe Zap::Api::Core do
       mock.response_body = %({"version": "2.15.0"})
       result = client.core.version
       result["version"].as_s.should eq("2.15.0")
-      mock.last_path.should eq("/JSON/core/view/getVersion/")
+      mock.last_path.should eq("/JSON/core/view/version/")
       mock.last_params["apikey"].should eq("test-api-key")
     end
   end
