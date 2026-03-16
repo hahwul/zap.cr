@@ -6,7 +6,7 @@ module Zap
 
       # Views
       def version : JSON::Any
-        @client.request("/JSON/core/view/getVersion/")
+        @client.request("/JSON/core/view/version/")
       end
 
       def alerts(base_url : String = "", start : Int32 = -1, count : Int32 = -1) : JSON::Any
