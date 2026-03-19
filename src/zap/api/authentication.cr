@@ -39,6 +39,31 @@ module Zap
       def set_logged_out_indicator(context_id : Int32, indicator : String) : JSON::Any
         @client.request("/JSON/authentication/action/setLoggedOutIndicator/", {"contextId" => context_id.to_s, "loggedOutIndicatorRegex" => indicator})
       end
+
+      def get_authentication_method(context_id : String) : JSON::Any
+        params = {} of String => String
+        params["contextId"] = context_id
+        @client.request("/JSON/authentication/view/getAuthenticationMethod/", params)
+      end
+
+      def get_authentication_method_config_params(auth_method_name : String) : JSON::Any
+        params = {} of String => String
+        params["authMethodName"] = auth_method_name
+        @client.request("/JSON/authentication/view/getAuthenticationMethodConfigParams/", params)
+      end
+
+      def get_supported_authentication_methods : JSON::Any
+        params = {} of String => String
+        @client.request("/JSON/authentication/view/getSupportedAuthenticationMethods/", params)
+      end
+
+      def set_authentication_method(context_id : String, auth_method_name : String, auth_method_config_params : String? = nil) : JSON::Any
+        params = {} of String => String
+        params["contextId"] = context_id
+        params["authMethodName"] = auth_method_name
+        params["authMethodConfigParams"] = auth_method_config_params unless auth_method_config_params.nil?
+        @client.request("/JSON/authentication/action/setAuthenticationMethod/", params)
+      end
     end
   end
 end

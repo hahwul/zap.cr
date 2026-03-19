@@ -466,6 +466,21 @@ module Zap
       def option_target_params_injectable : JSON::Any
         @client.request("/JSON/ascan/view/optionTargetParamsInjectable/")
       end
+
+      def pause_all_scans : JSON::Any
+        params = {} of String => String
+        @client.request("/JSON/ascan/action/pauseAllScans/", params)
+      end
+
+      def resume_all_scans : JSON::Any
+        params = {} of String => String
+        @client.request("/JSON/ascan/action/resumeAllScans/", params)
+      end
+
+      def stop_all_scans : JSON::Any
+        params = {} of String => String
+        @client.request("/JSON/ascan/action/stopAllScans/", params)
+      end
     end
   end
 end

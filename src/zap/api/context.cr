@@ -101,6 +101,30 @@ module Zap
         params["excRegexs"] = exc_regexs
         @client.request("/JSON/context/action/setContextRegexs/", params)
       end
+
+      def exclude_regexs(context_name : String) : JSON::Any
+        params = {} of String => String
+        params["contextName"] = context_name
+        @client.request("/JSON/context/view/excludeRegexs/", params)
+      end
+
+      def include_regexs(context_name : String) : JSON::Any
+        params = {} of String => String
+        params["contextName"] = context_name
+        @client.request("/JSON/context/view/includeRegexs/", params)
+      end
+
+      def exclude_all_context_technologies(context_name : String) : JSON::Any
+        params = {} of String => String
+        params["contextName"] = context_name
+        @client.request("/JSON/context/action/excludeAllContextTechnologies/", params)
+      end
+
+      def include_all_context_technologies(context_name : String) : JSON::Any
+        params = {} of String => String
+        params["contextName"] = context_name
+        @client.request("/JSON/context/action/includeAllContextTechnologies/", params)
+      end
     end
   end
 end

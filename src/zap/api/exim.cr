@@ -56,6 +56,12 @@ module Zap
         params["followRedirects"] = follow_redirects unless follow_redirects.empty?
         @client.request_other("/OTHER/exim/other/sendHarRequest/", params)
       end
+
+      def import_modsec2_logs(file_path : String) : JSON::Any
+        params = {} of String => String
+        params["filePath"] = file_path
+        @client.request("/JSON/exim/action/importModsec2Logs/", params)
+      end
     end
   end
 end
