@@ -25,202 +25,64 @@ module Zap
     )
     end
 
-    # API components
-    def core : Api::Core
-      Api::Core.new(self)
+    # API components (lazily cached)
+    macro api_component(name, type)
+      @_{{name.id}} : {{type}}?
+
+      def {{name.id}} : {{type}}
+        @_{{name.id}} ||= {{type}}.new(self)
+      end
     end
 
-    def spider : Api::Spider
-      Api::Spider.new(self)
-    end
-
-    def ajax_spider : Api::AjaxSpider
-      Api::AjaxSpider.new(self)
-    end
-
-    def ascan : Api::Ascan
-      Api::Ascan.new(self)
-    end
-
-    def pscan : Api::Pscan
-      Api::Pscan.new(self)
-    end
-
-    def alert : Api::Alert
-      Api::Alert.new(self)
-    end
-
-    def alert_filter : Api::AlertFilter
-      Api::AlertFilter.new(self)
-    end
-
-    def context : Api::Context
-      Api::Context.new(self)
-    end
-
-    def authentication : Api::Authentication
-      Api::Authentication.new(self)
-    end
-
-    def authorization : Api::Authorization
-      Api::Authorization.new(self)
-    end
-
-    def forced_user : Api::ForcedUser
-      Api::ForcedUser.new(self)
-    end
-
-    def http_sessions : Api::HttpSessions
-      Api::HttpSessions.new(self)
-    end
-
-    def users : Api::Users
-      Api::Users.new(self)
-    end
-
-    def script : Api::Script
-      Api::Script.new(self)
-    end
-
-    def network : Api::Network
-      Api::Network.new(self)
-    end
-
-    def openapi : Api::OpenApi
-      Api::OpenApi.new(self)
-    end
-
-    def stats : Api::Stats
-      Api::Stats.new(self)
-    end
-
-    def session_management : Api::SessionManagement
-      Api::SessionManagement.new(self)
-    end
-
-    def autoupdate : Api::Autoupdate
-      Api::Autoupdate.new(self)
-    end
-
-    def selenium : Api::Selenium
-      Api::Selenium.new(self)
-    end
-
-    def replacer : Api::Replacer
-      Api::Replacer.new(self)
-    end
-
-    def reveal : Api::Reveal
-      Api::Reveal.new(self)
-    end
-
-    def params : Api::Params
-      Api::Params.new(self)
-    end
-
-    def acsrf : Api::Acsrf
-      Api::Acsrf.new(self)
-    end
-
-    def access_control : Api::AccessControl
-      Api::AccessControl.new(self)
-    end
-
-    def automation : Api::Automation
-      Api::Automation.new(self)
-    end
-
-    def breakpoints : Api::Breakpoints
-      Api::Breakpoints.new(self)
-    end
-
-    def websocket : Api::Websocket
-      Api::Websocket.new(self)
-    end
-
-    def search : Api::Search
-      Api::Search.new(self)
-    end
-
-    def graphql : Api::Graphql
-      Api::Graphql.new(self)
-    end
-
-    def soap : Api::Soap
-      Api::Soap.new(self)
-    end
-
-    def reports : Api::Reports
-      Api::Reports.new(self)
-    end
-
-    def exim : Api::Exim
-      Api::Exim.new(self)
-    end
-
-    def client : Api::Client
-      Api::Client.new(self)
-    end
-
-    def client_spider : Api::ClientSpider
-      Api::ClientSpider.new(self)
-    end
-
-    def custom_payloads : Api::CustomPayloads
-      Api::CustomPayloads.new(self)
-    end
-
-    def hud : Api::Hud
-      Api::Hud.new(self)
-    end
-
-    def local_proxies : Api::LocalProxies
-      Api::LocalProxies.new(self)
-    end
-
-    def oast : Api::Oast
-      Api::Oast.new(self)
-    end
-
-    def param_digger : Api::ParamDigger
-      Api::ParamDigger.new(self)
-    end
-
-    def pnh : Api::Pnh
-      Api::Pnh.new(self)
-    end
-
-    def postman : Api::Postman
-      Api::Postman.new(self)
-    end
-
-    def retest : Api::Retest
-      Api::Retest.new(self)
-    end
-
-    def revisit : Api::Revisit
-      Api::Revisit.new(self)
-    end
-
-    def rule_config : Api::RuleConfig
-      Api::RuleConfig.new(self)
-    end
-
-    def wappalyzer : Api::Wappalyzer
-      Api::Wappalyzer.new(self)
-    end
-
-    def dev : Api::Dev
-      Api::Dev.new(self)
-    end
-
-    def keyboard : Api::Keyboard
-      Api::Keyboard.new(self)
-    end
-
-    def quickstartlaunch : Api::Quickstartlaunch
-      Api::Quickstartlaunch.new(self)
-    end
+    api_component core, Api::Core
+    api_component spider, Api::Spider
+    api_component ajax_spider, Api::AjaxSpider
+    api_component ascan, Api::Ascan
+    api_component pscan, Api::Pscan
+    api_component alert, Api::Alert
+    api_component alert_filter, Api::AlertFilter
+    api_component context, Api::Context
+    api_component authentication, Api::Authentication
+    api_component authorization, Api::Authorization
+    api_component forced_user, Api::ForcedUser
+    api_component http_sessions, Api::HttpSessions
+    api_component users, Api::Users
+    api_component script, Api::Script
+    api_component network, Api::Network
+    api_component openapi, Api::OpenApi
+    api_component stats, Api::Stats
+    api_component session_management, Api::SessionManagement
+    api_component autoupdate, Api::Autoupdate
+    api_component selenium, Api::Selenium
+    api_component replacer, Api::Replacer
+    api_component reveal, Api::Reveal
+    api_component params, Api::Params
+    api_component acsrf, Api::Acsrf
+    api_component access_control, Api::AccessControl
+    api_component automation, Api::Automation
+    api_component breakpoints, Api::Breakpoints
+    api_component websocket, Api::Websocket
+    api_component search, Api::Search
+    api_component graphql, Api::Graphql
+    api_component soap, Api::Soap
+    api_component reports, Api::Reports
+    api_component exim, Api::Exim
+    api_component client, Api::Client
+    api_component client_spider, Api::ClientSpider
+    api_component custom_payloads, Api::CustomPayloads
+    api_component hud, Api::Hud
+    api_component local_proxies, Api::LocalProxies
+    api_component oast, Api::Oast
+    api_component param_digger, Api::ParamDigger
+    api_component pnh, Api::Pnh
+    api_component postman, Api::Postman
+    api_component retest, Api::Retest
+    api_component revisit, Api::Revisit
+    api_component rule_config, Api::RuleConfig
+    api_component wappalyzer, Api::Wappalyzer
+    api_component dev, Api::Dev
+    api_component keyboard, Api::Keyboard
+    api_component quickstartlaunch, Api::Quickstartlaunch
 
     # Convenience scanning
     def scan : Scan

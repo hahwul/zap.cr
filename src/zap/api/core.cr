@@ -9,11 +9,12 @@ module Zap
         @client.request("/JSON/core/view/version/")
       end
 
-      def alerts(base_url : String = "", start : Int32 = -1, count : Int32 = -1) : JSON::Any
+      def alerts(base_url : String = "", start : String = "", count : String = "", risk_id : String = "") : JSON::Any
         params = {} of String => String
         params["baseurl"] = base_url unless base_url.empty?
-        params["start"] = start.to_s if start >= 0
-        params["count"] = count.to_s if count >= 0
+        params["start"] = start unless start.empty?
+        params["count"] = count unless count.empty?
+        params["riskId"] = risk_id unless risk_id.empty?
         @client.request("/JSON/core/view/alerts/", params)
       end
 
@@ -23,29 +24,11 @@ module Zap
         @client.request("/JSON/core/view/alertsSummary/", params)
       end
 
-      def number_of_alerts(base_url : String = "", risk_id : Int32 = -1) : JSON::Any
+      def number_of_alerts(base_url : String = "", risk_id : String = "") : JSON::Any
         params = {} of String => String
         params["baseurl"] = base_url unless base_url.empty?
-        params["riskId"] = risk_id.to_s if risk_id >= 0
+        params["riskId"] = risk_id unless risk_id.empty?
         @client.request("/JSON/core/view/numberOfAlerts/", params)
-      end
-
-      def message(id : Int32) : JSON::Any
-        @client.request("/JSON/core/view/getMessage/", {"id" => id.to_s})
-      end
-
-      def messages(base_url : String = "", start : Int32 = -1, count : Int32 = -1) : JSON::Any
-        params = {} of String => String
-        params["baseurl"] = base_url unless base_url.empty?
-        params["start"] = start.to_s if start >= 0
-        params["count"] = count.to_s if count >= 0
-        @client.request("/JSON/core/view/getMessages/", params)
-      end
-
-      def number_of_messages(base_url : String = "") : JSON::Any
-        params = {} of String => String
-        params["baseurl"] = base_url unless base_url.empty?
-        @client.request("/JSON/core/view/getNumberOfMessages/", params)
       end
 
       def home_directory : JSON::Any
@@ -64,10 +47,6 @@ module Zap
 
       def session_properties : JSON::Any
         @client.request("/JSON/core/view/sessionProperties/")
-      end
-
-      def excluded_from_proxy : JSON::Any
-        @client.request("/JSON/core/view/getExcludedFromProxyRegexes/")
       end
 
       def certificate_content : JSON::Any
@@ -561,7 +540,6 @@ module Zap
         params["baseurl"] = baseurl unless baseurl.empty?
         @client.request("/JSON/core/view/urls/", params)
       end
-
 
       def zap_home_path : JSON::Any
         @client.request("/JSON/core/view/zapHomePath/")
