@@ -367,6 +367,21 @@ module Zap
       def scans : JSON::Any
         @client.request("/JSON/spider/view/scans/")
       end
+
+      def pause_all_scans : JSON::Any
+        params = {} of String => String
+        @client.request("/JSON/spider/action/pauseAllScans/", params)
+      end
+
+      def resume_all_scans : JSON::Any
+        params = {} of String => String
+        @client.request("/JSON/spider/action/resumeAllScans/", params)
+      end
+
+      def stop_all_scans : JSON::Any
+        params = {} of String => String
+        @client.request("/JSON/spider/action/stopAllScans/", params)
+      end
     end
   end
 end

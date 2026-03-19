@@ -115,6 +115,27 @@ module Zap
         params["scriptName"] = script_name
         @client.request("/JSON/script/view/scriptCustomVars/", params)
       end
+
+      def list_engines : JSON::Any
+        params = {} of String => String
+        @client.request("/JSON/script/view/listEngines/", params)
+      end
+
+      def list_scripts : JSON::Any
+        params = {} of String => String
+        @client.request("/JSON/script/view/listScripts/", params)
+      end
+
+      def list_types : JSON::Any
+        params = {} of String => String
+        @client.request("/JSON/script/view/listTypes/", params)
+      end
+
+      def run_stand_alone_script(script_name : String) : JSON::Any
+        params = {} of String => String
+        params["scriptName"] = script_name
+        @client.request("/JSON/script/action/runStandAloneScript/", params)
+      end
     end
   end
 end

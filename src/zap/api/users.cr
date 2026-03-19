@@ -93,6 +93,56 @@ module Zap
         params["userId"] = user_id
         @client.request("/JSON/users/view/getAuthenticationState/", params)
       end
+
+      def get_authentication_credentials(context_id : String, user_id : String) : JSON::Any
+        params = {} of String => String
+        params["contextId"] = context_id
+        params["userId"] = user_id
+        @client.request("/JSON/users/view/getAuthenticationCredentials/", params)
+      end
+
+      def get_authentication_credentials_config_params(context_id : String) : JSON::Any
+        params = {} of String => String
+        params["contextId"] = context_id
+        @client.request("/JSON/users/view/getAuthenticationCredentialsConfigParams/", params)
+      end
+
+      def get_user_by_id(context_id : String, user_id : String) : JSON::Any
+        params = {} of String => String
+        params["contextId"] = context_id
+        params["userId"] = user_id
+        @client.request("/JSON/users/view/getUserById/", params)
+      end
+
+      def users_list(context_id : String? = nil) : JSON::Any
+        params = {} of String => String
+        params["contextId"] = context_id unless context_id.nil?
+        @client.request("/JSON/users/view/usersList/", params)
+      end
+
+      def set_authentication_credentials(context_id : String, user_id : String, auth_credentials_config_params : String? = nil) : JSON::Any
+        params = {} of String => String
+        params["contextId"] = context_id
+        params["userId"] = user_id
+        params["authCredentialsConfigParams"] = auth_credentials_config_params unless auth_credentials_config_params.nil?
+        @client.request("/JSON/users/action/setAuthenticationCredentials/", params)
+      end
+
+      def set_user_enabled(context_id : String, user_id : String, enabled : String) : JSON::Any
+        params = {} of String => String
+        params["contextId"] = context_id
+        params["userId"] = user_id
+        params["enabled"] = enabled
+        @client.request("/JSON/users/action/setUserEnabled/", params)
+      end
+
+      def set_user_name(context_id : String, user_id : String, name : String) : JSON::Any
+        params = {} of String => String
+        params["contextId"] = context_id
+        params["userId"] = user_id
+        params["name"] = name
+        @client.request("/JSON/users/action/setUserName/", params)
+      end
     end
   end
 end

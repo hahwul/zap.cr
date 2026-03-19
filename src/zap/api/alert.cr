@@ -9,6 +9,12 @@ module Zap
         @client.request("/JSON/alert/view/alert/", {"id" => id.to_s})
       end
 
+      def alert(id : String) : JSON::Any
+        params = {} of String => String
+        params["id"] = id
+        @client.request("/JSON/alert/view/alert/", params)
+      end
+
       def alerts(base_url : String = "", start : Int32 = -1, count : Int32 = -1, risk_id : Int32 = -1, context_name : String = "") : JSON::Any
         params = {} of String => String
         params["baseurl"] = base_url unless base_url.empty?
