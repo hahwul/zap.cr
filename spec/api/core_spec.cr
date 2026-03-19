@@ -22,7 +22,7 @@ describe Zap::Api::Core do
   it "#alerts with params" do
     with_mock_zap do |mock, client|
       mock.response_body = %({"alerts": []})
-      client.core.alerts(base_url: "http://example.com", start: 0, count: 10)
+      client.core.alerts(base_url: "http://example.com", start: "0", count: "10")
       mock.last_params["baseurl"].should eq("http://example.com")
       mock.last_params["start"].should eq("0")
       mock.last_params["count"].should eq("10")
@@ -95,7 +95,8 @@ describe Zap::Api::Core do
   it "#message" do
     with_mock_zap do |mock, client|
       mock.response_body = %({"message": {"id": 1}})
-      client.core.message(1)
+      client.core.message("1")
+      mock.last_path.should eq("/JSON/core/view/message/")
       mock.last_params["id"].should eq("1")
     end
   end
