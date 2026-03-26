@@ -9,12 +9,6 @@ module Zap
         @client.request("/JSON/alert/view/alert/", {"id" => id.to_s})
       end
 
-      def alert(id : String) : JSON::Any
-        params = {} of String => String
-        params["id"] = id
-        @client.request("/JSON/alert/view/alert/", params)
-      end
-
       def alerts(base_url : String = "", start : Int32 = -1, count : Int32 = -1, risk_id : Int32 = -1, context_name : String = "") : JSON::Any
         params = {} of String => String
         params["baseurl"] = base_url unless base_url.empty?
@@ -90,21 +84,16 @@ module Zap
         @client.request("/JSON/alert/action/updateAlertsRisk/", {"ids" => ids, "riskId" => risk_id.to_s})
       end
 
-      def add_alert(message_id : String, name : String, risk_id : String, confidence_id : String, description : String, param : String = "", attack : String = "", other_info : String = "", solution : String = "", references : String = "", evidence : String = "", cwe_id : String = "", wasc_id : String = "") : JSON::Any
-        params = {} of String => String
-        params["messageId"] = message_id
-        params["name"] = name
-        params["riskId"] = risk_id
-        params["confidenceId"] = confidence_id
-        params["description"] = description
+      def add_alert(message_id : Int32, name : String, risk_id : Int32, confidence_id : Int32, description : String, param : String = "", attack : String = "", other_info : String = "", solution : String = "", references : String = "", evidence : String = "", cwe_id : Int32 = -1, wasc_id : Int32 = -1) : JSON::Any
+        params = {"messageId" => message_id.to_s, "name" => name, "riskId" => risk_id.to_s, "confidenceId" => confidence_id.to_s, "description" => description}
         params["param"] = param unless param.empty?
         params["attack"] = attack unless attack.empty?
         params["otherInfo"] = other_info unless other_info.empty?
         params["solution"] = solution unless solution.empty?
         params["references"] = references unless references.empty?
         params["evidence"] = evidence unless evidence.empty?
-        params["cweId"] = cwe_id unless cwe_id.empty?
-        params["wascId"] = wasc_id unless wasc_id.empty?
+        params["cweId"] = cwe_id.to_s if cwe_id >= 0
+        params["wascId"] = wasc_id.to_s if wasc_id >= 0
         @client.request("/JSON/alert/action/addAlert/", params)
       end
     end

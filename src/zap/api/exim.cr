@@ -33,35 +33,23 @@ module Zap
       end
 
       def export_sites_tree(file_path : String) : JSON::Any
-        params = {} of String => String
-        params["filePath"] = file_path
-        @client.request("/JSON/exim/action/exportSitesTree/", params)
+        @client.request("/JSON/exim/action/exportSitesTree/", {"filePath" => file_path})
       end
 
       def prune_sites_tree(file_path : String) : JSON::Any
-        params = {} of String => String
-        params["filePath"] = file_path
-        @client.request("/JSON/exim/action/pruneSitesTree/", params)
+        @client.request("/JSON/exim/action/pruneSitesTree/", {"filePath" => file_path})
       end
 
       def export_har_by_id(ids : String) : String
-        params = {} of String => String
-        params["ids"] = ids
-        @client.request_other("/OTHER/exim/other/exportHarById/", params)
+        @client.request_other("/OTHER/exim/other/exportHarById/", {"ids" => ids})
       end
 
       def send_har_request(request : String, follow_redirects : String = "") : String
-        params = {} of String => String
-        params["request"] = request
+        params = {"request" => request}
         params["followRedirects"] = follow_redirects unless follow_redirects.empty?
         @client.request_other("/OTHER/exim/other/sendHarRequest/", params)
       end
 
-      def import_modsec2_logs(file_path : String) : JSON::Any
-        params = {} of String => String
-        params["filePath"] = file_path
-        @client.request("/JSON/exim/action/importModsec2Logs/", params)
-      end
     end
   end
 end

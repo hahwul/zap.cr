@@ -65,4 +65,26 @@ describe Zap::Api::Alert do
       mock.last_params["confidenceId"].should eq("2")
     end
   end
+
+  it "#add_alert" do
+    with_mock_zap do |mock, client|
+      client.alert.add_alert(1, "Test Alert", 3, 2, "A test alert", cwe_id: 79, wasc_id: 8)
+      mock.last_path.should eq("/JSON/alert/action/addAlert/")
+      mock.last_params["messageId"].should eq("1")
+      mock.last_params["name"].should eq("Test Alert")
+      mock.last_params["riskId"].should eq("3")
+      mock.last_params["confidenceId"].should eq("2")
+      mock.last_params["description"].should eq("A test alert")
+      mock.last_params["cweId"].should eq("79")
+      mock.last_params["wascId"].should eq("8")
+    end
+  end
+
+  it "#add_alert without optional params" do
+    with_mock_zap do |mock, client|
+      client.alert.add_alert(1, "Test", 1, 1, "desc")
+      mock.last_params.has_key?("cweId").should be_false
+      mock.last_params.has_key?("param").should be_false
+    end
+  end
 end

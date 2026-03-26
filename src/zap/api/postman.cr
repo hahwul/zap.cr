@@ -5,13 +5,11 @@ module Zap
       end
 
       def import_file : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/postman/action/importFile/", params)
+        @client.request("/JSON/postman/action/importFile/")
       end
 
       def import_url : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/postman/action/importUrl/", params)
+        @client.request("/JSON/postman/action/importUrl/")
       end
     end
   end

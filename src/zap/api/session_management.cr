@@ -22,30 +22,6 @@ module Zap
         @client.request("/JSON/sessionManagement/action/setSessionManagementMethod/", params)
       end
 
-      def get_session_management_method(context_id : String) : JSON::Any
-        params = {} of String => String
-        params["contextId"] = context_id
-        @client.request("/JSON/sessionManagement/view/getSessionManagementMethod/", params)
-      end
-
-      def get_session_management_method_config_params(method_name : String) : JSON::Any
-        params = {} of String => String
-        params["methodName"] = method_name
-        @client.request("/JSON/sessionManagement/view/getSessionManagementMethodConfigParams/", params)
-      end
-
-      def get_supported_session_management_methods : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/sessionManagement/view/getSupportedSessionManagementMethods/", params)
-      end
-
-      def set_session_management_method(context_id : String, method_name : String, method_config_params : String? = nil) : JSON::Any
-        params = {} of String => String
-        params["contextId"] = context_id
-        params["methodName"] = method_name
-        params["methodConfigParams"] = method_config_params unless method_config_params.nil?
-        @client.request("/JSON/sessionManagement/action/setSessionManagementMethod/", params)
-      end
     end
   end
 end
