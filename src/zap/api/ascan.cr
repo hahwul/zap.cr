@@ -222,14 +222,11 @@ module Zap
       end
 
       def import_scan_policy(path : String) : JSON::Any
-        params = {} of String => String
-        params["path"] = path
-        @client.request("/JSON/ascan/action/importScanPolicy/", params)
+        @client.request("/JSON/ascan/action/importScanPolicy/", {"path" => path})
       end
 
       def modify_excluded_param(idx : String, name : String = "", type_param : String = "", url : String = "") : JSON::Any
-        params = {} of String => String
-        params["idx"] = idx
+        params = {"idx" => idx}
         params["name"] = name unless name.empty?
         params["type"] = type_param unless type_param.empty?
         params["url"] = url unless url.empty?
@@ -237,135 +234,91 @@ module Zap
       end
 
       def remove_excluded_param(idx : String) : JSON::Any
-        params = {} of String => String
-        params["idx"] = idx
-        @client.request("/JSON/ascan/action/removeExcludedParam/", params)
+        @client.request("/JSON/ascan/action/removeExcludedParam/", {"idx" => idx})
       end
 
-      def set_option_add_query_param(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/ascan/action/setOptionAddQueryParam/", params)
+      def set_option_add_query_param(enabled : Bool) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionAddQueryParam/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_allow_attack_on_start(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/ascan/action/setOptionAllowAttackOnStart/", params)
+      def set_option_allow_attack_on_start(enabled : Bool) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionAllowAttackOnStart/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_attack_policy(string : String) : JSON::Any
-        params = {} of String => String
-        params["String"] = string
-        @client.request("/JSON/ascan/action/setOptionAttackPolicy/", params)
+      def set_option_attack_policy(policy : String) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionAttackPolicy/", {"String" => policy})
       end
 
-      def set_option_default_policy(string : String) : JSON::Any
-        params = {} of String => String
-        params["String"] = string
-        @client.request("/JSON/ascan/action/setOptionDefaultPolicy/", params)
+      def set_option_default_policy(policy : String) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionDefaultPolicy/", {"String" => policy})
       end
 
-      def set_option_encode_cookie_values(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/ascan/action/setOptionEncodeCookieValues/", params)
+      def set_option_encode_cookie_values(enabled : Bool) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionEncodeCookieValues/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_handle_anti_csrf_tokens(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/ascan/action/setOptionHandleAntiCSRFTokens/", params)
+      def set_option_handle_anti_csrf_tokens(enabled : Bool) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionHandleAntiCSRFTokens/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_inject_plugin_id_in_header(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/ascan/action/setOptionInjectPluginIdInHeader/", params)
+      def set_option_inject_plugin_id_in_header(enabled : Bool) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionInjectPluginIdInHeader/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_max_alerts_per_rule(integer : String) : JSON::Any
-        params = {} of String => String
-        params["Integer"] = integer
-        @client.request("/JSON/ascan/action/setOptionMaxAlertsPerRule/", params)
+      def set_option_max_alerts_per_rule(max : Int32) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionMaxAlertsPerRule/", {"Integer" => max.to_s})
       end
 
-      def set_option_max_chart_time_in_mins(integer : String) : JSON::Any
-        params = {} of String => String
-        params["Integer"] = integer
-        @client.request("/JSON/ascan/action/setOptionMaxChartTimeInMins/", params)
+      def set_option_max_chart_time_in_mins(max : Int32) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionMaxChartTimeInMins/", {"Integer" => max.to_s})
       end
 
-      def set_option_max_rule_duration_in_mins(integer : String) : JSON::Any
-        params = {} of String => String
-        params["Integer"] = integer
-        @client.request("/JSON/ascan/action/setOptionMaxRuleDurationInMins/", params)
+      def set_option_max_rule_duration_in_mins(max : Int32) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionMaxRuleDurationInMins/", {"Integer" => max.to_s})
       end
 
-      def set_option_max_scan_duration_in_mins(integer : String) : JSON::Any
-        params = {} of String => String
-        params["Integer"] = integer
-        @client.request("/JSON/ascan/action/setOptionMaxScanDurationInMins/", params)
+      def set_option_max_scan_duration_in_mins(max : Int32) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionMaxScanDurationInMins/", {"Integer" => max.to_s})
       end
 
-      def set_option_prompt_in_attack_mode(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/ascan/action/setOptionPromptInAttackMode/", params)
+      def set_option_prompt_in_attack_mode(enabled : Bool) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionPromptInAttackMode/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_prompt_to_clear_finished_scans(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/ascan/action/setOptionPromptToClearFinishedScans/", params)
+      def set_option_prompt_to_clear_finished_scans(enabled : Bool) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionPromptToClearFinishedScans/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_rescan_in_attack_mode(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/ascan/action/setOptionRescanInAttackMode/", params)
+      def set_option_rescan_in_attack_mode(enabled : Bool) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionRescanInAttackMode/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_scan_headers_all_requests(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/ascan/action/setOptionScanHeadersAllRequests/", params)
+      def set_option_scan_headers_all_requests(enabled : Bool) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionScanHeadersAllRequests/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_scan_null_json_values(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/ascan/action/setOptionScanNullJsonValues/", params)
+      def set_option_scan_null_json_values(enabled : Bool) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionScanNullJsonValues/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_show_advanced_dialog(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/ascan/action/setOptionShowAdvancedDialog/", params)
+      def set_option_show_advanced_dialog(enabled : Bool) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionShowAdvancedDialog/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_target_params_enabled_rpc(integer : String) : JSON::Any
-        params = {} of String => String
-        params["Integer"] = integer
-        @client.request("/JSON/ascan/action/setOptionTargetParamsEnabledRPC/", params)
+      def set_option_target_params_enabled_rpc(value : Int32) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionTargetParamsEnabledRPC/", {"Integer" => value.to_s})
       end
 
-      def set_option_target_params_injectable(integer : String) : JSON::Any
-        params = {} of String => String
-        params["Integer"] = integer
-        @client.request("/JSON/ascan/action/setOptionTargetParamsInjectable/", params)
+      def set_option_target_params_injectable(value : Int32) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionTargetParamsInjectable/", {"Integer" => value.to_s})
       end
 
-      def skip_scanner(scan_id : String, scanner_id : String) : JSON::Any
-        params = {} of String => String
-        params["scanId"] = scan_id
-        params["scannerId"] = scanner_id
-        @client.request("/JSON/ascan/action/skipScanner/", params)
+      def skip_scanner(scan_id : Int32, scanner_id : Int32) : JSON::Any
+        @client.request("/JSON/ascan/action/skipScanner/", {"scanId" => scan_id.to_s, "scannerId" => scanner_id.to_s})
       end
 
       def update_scan_policy(scan_policy_name : String, alert_threshold : String = "", attack_strength : String = "") : JSON::Any
-        params = {} of String => String
-        params["scanPolicyName"] = scan_policy_name
+        params = {"scanPolicyName" => scan_policy_name}
         params["alertThreshold"] = alert_threshold unless alert_threshold.empty?
         params["attackStrength"] = attack_strength unless attack_strength.empty?
         @client.request("/JSON/ascan/action/updateScanPolicy/", params)
@@ -467,20 +420,6 @@ module Zap
         @client.request("/JSON/ascan/view/optionTargetParamsInjectable/")
       end
 
-      def pause_all_scans : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/ascan/action/pauseAllScans/", params)
-      end
-
-      def resume_all_scans : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/ascan/action/resumeAllScans/", params)
-      end
-
-      def stop_all_scans : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/ascan/action/stopAllScans/", params)
-      end
     end
   end
 end

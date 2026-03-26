@@ -81,22 +81,15 @@ module Zap
       end
 
       def clear_global_custom_var(var_key : String) : JSON::Any
-        params = {} of String => String
-        params["varKey"] = var_key
-        @client.request("/JSON/script/action/clearGlobalCustomVar/", params)
+        @client.request("/JSON/script/action/clearGlobalCustomVar/", {"varKey" => var_key})
       end
 
       def clear_script_custom_var(script_name : String, var_key : String) : JSON::Any
-        params = {} of String => String
-        params["scriptName"] = script_name
-        params["varKey"] = var_key
-        @client.request("/JSON/script/action/clearScriptCustomVar/", params)
+        @client.request("/JSON/script/action/clearScriptCustomVar/", {"scriptName" => script_name, "varKey" => var_key})
       end
 
       def global_custom_var(var_key : String) : JSON::Any
-        params = {} of String => String
-        params["varKey"] = var_key
-        @client.request("/JSON/script/view/globalCustomVar/", params)
+        @client.request("/JSON/script/view/globalCustomVar/", {"varKey" => var_key})
       end
 
       def global_custom_vars : JSON::Any
@@ -104,38 +97,13 @@ module Zap
       end
 
       def script_custom_var(script_name : String, var_key : String) : JSON::Any
-        params = {} of String => String
-        params["scriptName"] = script_name
-        params["varKey"] = var_key
-        @client.request("/JSON/script/view/scriptCustomVar/", params)
+        @client.request("/JSON/script/view/scriptCustomVar/", {"scriptName" => script_name, "varKey" => var_key})
       end
 
       def script_custom_vars(script_name : String) : JSON::Any
-        params = {} of String => String
-        params["scriptName"] = script_name
-        @client.request("/JSON/script/view/scriptCustomVars/", params)
+        @client.request("/JSON/script/view/scriptCustomVars/", {"scriptName" => script_name})
       end
 
-      def list_engines : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/script/view/listEngines/", params)
-      end
-
-      def list_scripts : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/script/view/listScripts/", params)
-      end
-
-      def list_types : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/script/view/listTypes/", params)
-      end
-
-      def run_stand_alone_script(script_name : String) : JSON::Any
-        params = {} of String => String
-        params["scriptName"] = script_name
-        @client.request("/JSON/script/action/runStandAloneScript/", params)
-      end
     end
   end
 end

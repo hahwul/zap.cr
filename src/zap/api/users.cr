@@ -44,104 +44,35 @@ module Zap
         @client.request("/JSON/users/action/setAuthenticationCredentials/", params)
       end
 
-      def authenticate_as_user(context_id : String, user_id : String) : JSON::Any
-        params = {} of String => String
-        params["contextId"] = context_id
-        params["userId"] = user_id
-        @client.request("/JSON/users/action/authenticateAsUser/", params)
+      def authenticate_as_user(context_id : Int32, user_id : Int32) : JSON::Any
+        @client.request("/JSON/users/action/authenticateAsUser/", {"contextId" => context_id.to_s, "userId" => user_id.to_s})
       end
 
-      def poll_as_user(context_id : String, user_id : String) : JSON::Any
-        params = {} of String => String
-        params["contextId"] = context_id
-        params["userId"] = user_id
-        @client.request("/JSON/users/action/pollAsUser/", params)
+      def poll_as_user(context_id : Int32, user_id : Int32) : JSON::Any
+        @client.request("/JSON/users/action/pollAsUser/", {"contextId" => context_id.to_s, "userId" => user_id.to_s})
       end
 
-      def set_authentication_state(context_id : String, user_id : String, last_poll_result : String = "", last_poll_time_in_ms : String = "", requests_since_last_poll : String = "") : JSON::Any
-        params = {} of String => String
-        params["contextId"] = context_id
-        params["userId"] = user_id
+      def set_authentication_state(context_id : Int32, user_id : Int32, last_poll_result : String = "", last_poll_time_in_ms : String = "", requests_since_last_poll : String = "") : JSON::Any
+        params = {"contextId" => context_id.to_s, "userId" => user_id.to_s}
         params["lastPollResult"] = last_poll_result unless last_poll_result.empty?
         params["lastPollTimeInMs"] = last_poll_time_in_ms unless last_poll_time_in_ms.empty?
         params["requestsSinceLastPoll"] = requests_since_last_poll unless requests_since_last_poll.empty?
         @client.request("/JSON/users/action/setAuthenticationState/", params)
       end
 
-      def set_cookie(context_id : String, user_id : String, domain : String, name : String, value : String, path : String = "", secure : String = "") : JSON::Any
-        params = {} of String => String
-        params["contextId"] = context_id
-        params["userId"] = user_id
-        params["domain"] = domain
-        params["name"] = name
-        params["value"] = value
+      def set_cookie(context_id : Int32, user_id : Int32, domain : String, name : String, value : String, path : String = "", secure : String = "") : JSON::Any
+        params = {"contextId" => context_id.to_s, "userId" => user_id.to_s, "domain" => domain, "name" => name, "value" => value}
         params["path"] = path unless path.empty?
         params["secure"] = secure unless secure.empty?
         @client.request("/JSON/users/action/setCookie/", params)
       end
 
-      def get_authentication_session(context_id : String, user_id : String) : JSON::Any
-        params = {} of String => String
-        params["contextId"] = context_id
-        params["userId"] = user_id
-        @client.request("/JSON/users/view/getAuthenticationSession/", params)
+      def get_authentication_session(context_id : Int32, user_id : Int32) : JSON::Any
+        @client.request("/JSON/users/view/getAuthenticationSession/", {"contextId" => context_id.to_s, "userId" => user_id.to_s})
       end
 
-      def get_authentication_state(context_id : String, user_id : String) : JSON::Any
-        params = {} of String => String
-        params["contextId"] = context_id
-        params["userId"] = user_id
-        @client.request("/JSON/users/view/getAuthenticationState/", params)
-      end
-
-      def get_authentication_credentials(context_id : String, user_id : String) : JSON::Any
-        params = {} of String => String
-        params["contextId"] = context_id
-        params["userId"] = user_id
-        @client.request("/JSON/users/view/getAuthenticationCredentials/", params)
-      end
-
-      def get_authentication_credentials_config_params(context_id : String) : JSON::Any
-        params = {} of String => String
-        params["contextId"] = context_id
-        @client.request("/JSON/users/view/getAuthenticationCredentialsConfigParams/", params)
-      end
-
-      def get_user_by_id(context_id : String, user_id : String) : JSON::Any
-        params = {} of String => String
-        params["contextId"] = context_id
-        params["userId"] = user_id
-        @client.request("/JSON/users/view/getUserById/", params)
-      end
-
-      def users_list(context_id : String? = nil) : JSON::Any
-        params = {} of String => String
-        params["contextId"] = context_id unless context_id.nil?
-        @client.request("/JSON/users/view/usersList/", params)
-      end
-
-      def set_authentication_credentials(context_id : String, user_id : String, auth_credentials_config_params : String? = nil) : JSON::Any
-        params = {} of String => String
-        params["contextId"] = context_id
-        params["userId"] = user_id
-        params["authCredentialsConfigParams"] = auth_credentials_config_params unless auth_credentials_config_params.nil?
-        @client.request("/JSON/users/action/setAuthenticationCredentials/", params)
-      end
-
-      def set_user_enabled(context_id : String, user_id : String, enabled : String) : JSON::Any
-        params = {} of String => String
-        params["contextId"] = context_id
-        params["userId"] = user_id
-        params["enabled"] = enabled
-        @client.request("/JSON/users/action/setUserEnabled/", params)
-      end
-
-      def set_user_name(context_id : String, user_id : String, name : String) : JSON::Any
-        params = {} of String => String
-        params["contextId"] = context_id
-        params["userId"] = user_id
-        params["name"] = name
-        @client.request("/JSON/users/action/setUserName/", params)
+      def get_authentication_state(context_id : Int32, user_id : Int32) : JSON::Any
+        @client.request("/JSON/users/view/getAuthenticationState/", {"contextId" => context_id.to_s, "userId" => user_id.to_s})
       end
     end
   end

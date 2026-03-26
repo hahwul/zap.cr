@@ -118,13 +118,13 @@ module Zap
 
     private def start_spider(target : String, context_name : String = "") : Int32
       result = @client.spider.scan(url: target, context_name: context_name)
-      result["scan"].as_s.to_i
+      result["scan"]?.try(&.as_s.to_i?) || raise Zap::Error.new("Failed to start spider: missing scan ID in response")
     end
 
     private def wait_for_spider(scan_id : Int32, poll_interval : Time::Span, &block : Int32 ->)
       loop do
         result = @client.spider.status(scan_id)
-        progress = result["status"].as_s.to_i
+        progress = result["status"]?.try(&.as_s.to_i?) || 0
         yield progress
         break if progress >= 100
         sleep poll_interval
@@ -147,13 +147,13 @@ module Zap
 
     private def start_active_scan(target : String, recurse : Bool = true) : Int32
       result = @client.ascan.scan(url: target, recurse: recurse)
-      result["scan"].as_s.to_i
+      result["scan"]?.try(&.as_s.to_i?) || raise Zap::Error.new("Failed to start active scan: missing scan ID in response")
     end
 
     private def wait_for_active_scan(scan_id : Int32, poll_interval : Time::Span, &block : Int32 ->)
       loop do
         result = @client.ascan.status(scan_id)
-        progress = result["status"].as_s.to_i
+        progress = result["status"]?.try(&.as_s.to_i?) || 0
         yield progress
         break if progress >= 100
         sleep poll_interval

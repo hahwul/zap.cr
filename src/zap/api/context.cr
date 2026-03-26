@@ -62,12 +62,16 @@ module Zap
         @client.request("/JSON/context/action/excludeFromContext/", {"contextName" => name, "regex" => regex})
       end
 
-      def include_all_contexts_technologies : JSON::Any
-        @client.request("/JSON/context/action/includeAllContextTechnologies/")
+      def include_all_context_technologies(name : String = "") : JSON::Any
+        params = {} of String => String
+        params["contextName"] = name unless name.empty?
+        @client.request("/JSON/context/action/includeAllContextTechnologies/", params)
       end
 
-      def exclude_all_contexts_technologies : JSON::Any
-        @client.request("/JSON/context/action/excludeAllContextTechnologies/")
+      def exclude_all_context_technologies(name : String = "") : JSON::Any
+        params = {} of String => String
+        params["contextName"] = name unless name.empty?
+        @client.request("/JSON/context/action/excludeAllContextTechnologies/", params)
       end
 
       def include_context_technologies(name : String, tech : String) : JSON::Any
@@ -83,9 +87,7 @@ module Zap
       end
 
       def set_context_checking_strategy(context_name : String, checking_strategy : String, poll_url : String = "", poll_data : String = "", poll_headers : String = "", poll_frequency : String = "", poll_frequency_units : String = "") : JSON::Any
-        params = {} of String => String
-        params["contextName"] = context_name
-        params["checkingStrategy"] = checking_strategy
+        params = {"contextName" => context_name, "checkingStrategy" => checking_strategy}
         params["pollUrl"] = poll_url unless poll_url.empty?
         params["pollData"] = poll_data unless poll_data.empty?
         params["pollHeaders"] = poll_headers unless poll_headers.empty?
@@ -95,36 +97,9 @@ module Zap
       end
 
       def set_context_regexs(context_name : String, inc_regexs : String, exc_regexs : String) : JSON::Any
-        params = {} of String => String
-        params["contextName"] = context_name
-        params["incRegexs"] = inc_regexs
-        params["excRegexs"] = exc_regexs
-        @client.request("/JSON/context/action/setContextRegexs/", params)
+        @client.request("/JSON/context/action/setContextRegexs/", {"contextName" => context_name, "incRegexs" => inc_regexs, "excRegexs" => exc_regexs})
       end
 
-      def exclude_regexs(context_name : String) : JSON::Any
-        params = {} of String => String
-        params["contextName"] = context_name
-        @client.request("/JSON/context/view/excludeRegexs/", params)
-      end
-
-      def include_regexs(context_name : String) : JSON::Any
-        params = {} of String => String
-        params["contextName"] = context_name
-        @client.request("/JSON/context/view/includeRegexs/", params)
-      end
-
-      def exclude_all_context_technologies(context_name : String) : JSON::Any
-        params = {} of String => String
-        params["contextName"] = context_name
-        @client.request("/JSON/context/action/excludeAllContextTechnologies/", params)
-      end
-
-      def include_all_context_technologies(context_name : String) : JSON::Any
-        params = {} of String => String
-        params["contextName"] = context_name
-        @client.request("/JSON/context/action/includeAllContextTechnologies/", params)
-      end
     end
   end
 end

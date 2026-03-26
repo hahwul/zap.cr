@@ -187,87 +187,59 @@ module Zap
       end
 
       def remove_domain_always_in_scope(idx : String) : JSON::Any
-        params = {} of String => String
-        params["idx"] = idx
-        @client.request("/JSON/spider/action/removeDomainAlwaysInScope/", params)
+        @client.request("/JSON/spider/action/removeDomainAlwaysInScope/", {"idx" => idx})
       end
 
       def remove_scan(scan_id : String) : JSON::Any
-        params = {} of String => String
-        params["scanId"] = scan_id
-        @client.request("/JSON/spider/action/removeScan/", params)
+        @client.request("/JSON/spider/action/removeScan/", {"scanId" => scan_id})
       end
 
-      def set_option_accept_cookies(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/spider/action/setOptionAcceptCookies/", params)
+      def set_option_accept_cookies(enabled : Bool) : JSON::Any
+        @client.request("/JSON/spider/action/setOptionAcceptCookies/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_handle_o_data_parameters_visited(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/spider/action/setOptionHandleODataParametersVisited/", params)
+      def set_option_handle_o_data_parameters_visited(enabled : Bool) : JSON::Any
+        @client.request("/JSON/spider/action/setOptionHandleODataParametersVisited/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_handle_parameters(string : String) : JSON::Any
-        params = {} of String => String
-        params["String"] = string
-        @client.request("/JSON/spider/action/setOptionHandleParameters/", params)
+      def set_option_handle_parameters(value : String) : JSON::Any
+        @client.request("/JSON/spider/action/setOptionHandleParameters/", {"String" => value})
       end
 
-      def set_option_logout_avoidance(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/spider/action/setOptionLogoutAvoidance/", params)
+      def set_option_logout_avoidance(enabled : Bool) : JSON::Any
+        @client.request("/JSON/spider/action/setOptionLogoutAvoidance/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_max_scans_in_ui(integer : String) : JSON::Any
-        params = {} of String => String
-        params["Integer"] = integer
-        @client.request("/JSON/spider/action/setOptionMaxScansInUI/", params)
+      def set_option_max_scans_in_ui(max : Int32) : JSON::Any
+        @client.request("/JSON/spider/action/setOptionMaxScansInUI/", {"Integer" => max.to_s})
       end
 
-      def set_option_parse_ds_store(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/spider/action/setOptionParseDsStore/", params)
+      def set_option_parse_ds_store(enabled : Bool) : JSON::Any
+        @client.request("/JSON/spider/action/setOptionParseDsStore/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_parse_git(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/spider/action/setOptionParseGit/", params)
+      def set_option_parse_git(enabled : Bool) : JSON::Any
+        @client.request("/JSON/spider/action/setOptionParseGit/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_parse_svn_entries(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/spider/action/setOptionParseSVNEntries/", params)
+      def set_option_parse_svn_entries(enabled : Bool) : JSON::Any
+        @client.request("/JSON/spider/action/setOptionParseSVNEntries/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_parse_sitemap_xml(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/spider/action/setOptionParseSitemapXml/", params)
+      def set_option_parse_sitemap_xml(enabled : Bool) : JSON::Any
+        @client.request("/JSON/spider/action/setOptionParseSitemapXml/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_show_advanced_dialog(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/spider/action/setOptionShowAdvancedDialog/", params)
+      def set_option_show_advanced_dialog(enabled : Bool) : JSON::Any
+        @client.request("/JSON/spider/action/setOptionShowAdvancedDialog/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_skip_url_string(string : String) : JSON::Any
-        params = {} of String => String
-        params["String"] = string
-        @client.request("/JSON/spider/action/setOptionSkipURLString/", params)
+      def set_option_skip_url_string(value : String) : JSON::Any
+        @client.request("/JSON/spider/action/setOptionSkipURLString/", {"String" => value})
       end
 
-      def set_option_thread_count(integer : String) : JSON::Any
-        params = {} of String => String
-        params["Integer"] = integer
-        @client.request("/JSON/spider/action/setOptionThreadCount/", params)
+      def set_option_thread_count(count : Int32) : JSON::Any
+        @client.request("/JSON/spider/action/setOptionThreadCount/", {"Integer" => count.to_s})
       end
 
       def added_nodes(scan_id : String = "") : JSON::Any
@@ -368,20 +340,6 @@ module Zap
         @client.request("/JSON/spider/view/scans/")
       end
 
-      def pause_all_scans : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/spider/action/pauseAllScans/", params)
-      end
-
-      def resume_all_scans : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/spider/action/resumeAllScans/", params)
-      end
-
-      def stop_all_scans : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/spider/action/stopAllScans/", params)
-      end
     end
   end
 end
