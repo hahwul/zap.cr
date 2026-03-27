@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Ajax Spider - Zap.cr</title>
+  <meta property="og:title" content="Ajax Spider">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://zap.cr.hahwul.com/api/ajax-spider/">
+<meta property="og:image" content="https://zap.cr.hahwul.com/og-images/api-ajax-spider.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ajax Spider">
+<meta name="twitter:image" content="https://zap.cr.hahwul.com/og-images/api-ajax-spider.svg">
+  <link rel="stylesheet" href="https://zap.cr.hahwul.com/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  
+</head>
+<body data-section="api">
+<header class="docs-header">
+  <a href="https://zap.cr.hahwul.com/" class="logo">Zap.cr <span>Documentation</span></a>
+  <nav>
+    <a href="https://zap.cr.hahwul.com/getting-started/">Getting Started</a>
+    <a href="https://zap.cr.hahwul.com/guide/">Guide</a>
+    <a href="https://zap.cr.hahwul.com/api/">API Reference</a>
+  </nav>
+  <div class="header-right">
+    <button class="search-trigger" onclick="openSearch()" title="Search (⌘K)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Search</span>
+      <kbd>⌘K</kbd>
+    </button>
+    <a href="https://github.com/hahwul/zap.cr">GitHub</a>
+  </div>
+</header>
+<div class="search-overlay" id="searchOverlay" onclick="if(event.target===this)closeSearch()">
+  <div class="search-modal">
+    <div class="search-input-wrap">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search documentation..." autocomplete="off">
+      <kbd onclick="closeSearch()">ESC</kbd>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+<div class="docs-container">
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/getting-started/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/installation/">Installation</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/quick-start/">Quick Start</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/configuration/">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Guide</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/guide/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/scanning/">Scanning</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/spidering/">Spidering</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/authentication/">Authentication</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/context/">Context Management</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/alerts/">Alerts</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/reporting/">Reporting</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">API Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/api/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/client/">Client</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/core/">Core</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/spider/">Spider</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/ajax-spider/">Ajax Spider</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/ascan/">Active Scan</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/pscan/">Passive Scan</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/alert/">Alert</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/context/">Context</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/search/">Search</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/network/">Network</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/scripts/">Script</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/others/">Others</a></li>
+      </ul>
+    </div>
+  </aside>
+  <main class="docs-main">
+    <h1>Ajax Spider</h1>
+    <p>Browser-based crawler for JavaScript-heavy applications.</p>
+<p><strong>Accessor:</strong> <code>client.ajax_spider</code></p>
+<h2 id="actions">Actions</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scan(url, in_scope, context_name, subtree_only)</code></td>
+<td>Start Ajax spidering</td>
+</tr>
+<tr>
+<td><code>scan_as_user(context_name, user_name, url, subtree_only)</code></td>
+<td>Spider as user</td>
+</tr>
+<tr>
+<td><code>stop</code></td>
+<td>Stop the Ajax spider</td>
+</tr>
+<tr>
+<td><code>add_allowed_resource(regex, enabled)</code></td>
+<td>Allow resource</td>
+</tr>
+<tr>
+<td><code>remove_allowed_resource(regex)</code></td>
+<td>Remove allowed resource</td>
+</tr>
+<tr>
+<td><code>set_enabled_allowed_resource(regex, enabled)</code></td>
+<td>Toggle resource</td>
+</tr>
+<tr>
+<td><code>add_excluded_element(context_name, description, element)</code></td>
+<td>Exclude element</td>
+</tr>
+<tr>
+<td><code>remove_excluded_element(context_name, description)</code></td>
+<td>Remove exclusion</td>
+</tr>
+</tbody>
+</table>
+<h3 id="options">Options</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>set_option_browser_id(browser)</code></td>
+<td>Browser to use (e.g. <code>firefox-headless</code>)</td>
+</tr>
+<tr>
+<td><code>set_option_max_crawl_depth(depth)</code></td>
+<td>Max crawl depth</td>
+</tr>
+<tr>
+<td><code>set_option_max_crawl_states(states)</code></td>
+<td>Max crawl states (0=unlimited)</td>
+</tr>
+<tr>
+<td><code>set_option_max_duration(minutes)</code></td>
+<td>Max duration</td>
+</tr>
+<tr>
+<td><code>set_option_number_of_browsers(n)</code></td>
+<td>Parallel browsers</td>
+</tr>
+<tr>
+<td><code>set_option_click_default_elems(bool)</code></td>
+<td>Click default elements</td>
+</tr>
+<tr>
+<td><code>set_option_click_elems_once(bool)</code></td>
+<td>Click each element once</td>
+</tr>
+<tr>
+<td><code>set_option_event_wait(ms)</code></td>
+<td>Wait after events</td>
+</tr>
+<tr>
+<td><code>set_option_reload_wait(ms)</code></td>
+<td>Wait after page reload</td>
+</tr>
+<tr>
+<td><code>set_option_random_inputs(bool)</code></td>
+<td>Use random inputs</td>
+</tr>
+</tbody>
+</table>
+<h2 id="views">Views</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>status</code></td>
+<td>Running status (<code>&quot;running&quot;</code> / <code>&quot;stopped&quot;</code>)</td>
+</tr>
+<tr>
+<td><code>results(start, count)</code></td>
+<td>Crawled resources</td>
+</tr>
+<tr>
+<td><code>full_results</code></td>
+<td>Complete results</td>
+</tr>
+<tr>
+<td><code>number_of_results</code></td>
+<td>Result count</td>
+</tr>
+<tr>
+<td><code>allowed_resources</code></td>
+<td>Allowed resources list</td>
+</tr>
+<tr>
+<td><code>option_browser_id</code></td>
+<td>Current browser</td>
+</tr>
+<tr>
+<td><code>option_max_crawl_depth</code></td>
+<td>Current depth limit</td>
+</tr>
+<tr>
+<td><code>option_max_crawl_states</code></td>
+<td>Current states limit</td>
+</tr>
+<tr>
+<td><code>option_max_duration</code></td>
+<td>Current duration limit</td>
+</tr>
+<tr>
+<td><code>option_number_of_browsers</code></td>
+<td>Current browser count</td>
+</tr>
+</tbody>
+</table>
+<h2 id="example">Example</h2>
+<pre><code class="language-crystal hljs">client.ajax_spider.scan(url: &quot;http://spa-app.com&quot;)
+
+loop do
+  status = client.ajax_spider.status[&quot;status&quot;].as_s
+  break if status != &quot;running&quot;
+  sleep 5.seconds
+end
+
+results = client.ajax_spider.full_results
+</code></pre>
+
+    <div class="docs-footer">
+      <p>Zap.cr - Crystal client library for ZAP API</p>
+    </div>
+  </main>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<script src="https://zap.cr.hahwul.com/js/search.js"></script>
+</body>
+</html>

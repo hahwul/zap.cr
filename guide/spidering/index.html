@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Spidering - Zap.cr</title>
+  <meta property="og:title" content="Spidering">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://zap.cr.hahwul.com/guide/spidering/">
+<meta property="og:image" content="https://zap.cr.hahwul.com/og-images/guide-spidering.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Spidering">
+<meta name="twitter:image" content="https://zap.cr.hahwul.com/og-images/guide-spidering.svg">
+  <link rel="stylesheet" href="https://zap.cr.hahwul.com/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  
+</head>
+<body data-section="guide">
+<header class="docs-header">
+  <a href="https://zap.cr.hahwul.com/" class="logo">Zap.cr <span>Documentation</span></a>
+  <nav>
+    <a href="https://zap.cr.hahwul.com/getting-started/">Getting Started</a>
+    <a href="https://zap.cr.hahwul.com/guide/">Guide</a>
+    <a href="https://zap.cr.hahwul.com/api/">API Reference</a>
+  </nav>
+  <div class="header-right">
+    <button class="search-trigger" onclick="openSearch()" title="Search (⌘K)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Search</span>
+      <kbd>⌘K</kbd>
+    </button>
+    <a href="https://github.com/hahwul/zap.cr">GitHub</a>
+  </div>
+</header>
+<div class="search-overlay" id="searchOverlay" onclick="if(event.target===this)closeSearch()">
+  <div class="search-modal">
+    <div class="search-input-wrap">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search documentation..." autocomplete="off">
+      <kbd onclick="closeSearch()">ESC</kbd>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+<div class="docs-container">
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/getting-started/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/installation/">Installation</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/quick-start/">Quick Start</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/configuration/">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Guide</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/guide/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/scanning/">Scanning</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/spidering/">Spidering</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/authentication/">Authentication</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/context/">Context Management</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/alerts/">Alerts</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/reporting/">Reporting</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">API Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/api/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/client/">Client</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/core/">Core</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/spider/">Spider</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/ajax-spider/">Ajax Spider</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/ascan/">Active Scan</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/pscan/">Passive Scan</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/alert/">Alert</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/context/">Context</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/search/">Search</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/network/">Network</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/scripts/">Script</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/others/">Others</a></li>
+      </ul>
+    </div>
+  </aside>
+  <main class="docs-main">
+    <h1>Spidering</h1>
+    <p>ZAP provides two types of spiders: the traditional spider (fast, HTTP-based) and the Ajax spider (browser-based, handles JavaScript).</p>
+<h2 id="traditional-spider">Traditional Spider</h2>
+<h3 id="basic-spider">Basic Spider</h3>
+<pre><code class="language-crystal hljs">result = client.spider.scan(url: &quot;http://target.com&quot;)
+scan_id = result[&quot;scan&quot;].as_s.to_i
+
+# Wait for completion
+loop do
+  status = client.spider.status(scan_id)
+  progress = status[&quot;status&quot;].as_s.to_i
+  puts &quot;Spider: #{progress}%&quot;
+  break if progress &gt;= 100
+  sleep 2.seconds
+end
+
+# Get discovered URLs
+results = client.spider.results
+</code></pre>
+<h3 id="spider-with-context">Spider with Context</h3>
+<pre><code class="language-crystal hljs">client.spider.scan(
+  url: &quot;http://target.com&quot;,
+  context_name: &quot;my-context&quot;,
+  subtree_only: true
+)
+</code></pre>
+<h3 id="spider-as-user">Spider as User</h3>
+<pre><code class="language-crystal hljs">client.spider.scan_as_user(&quot;my-context&quot;, &quot;admin&quot;,
+  url: &quot;http://target.com&quot;
+)
+</code></pre>
+<h3 id="spider-options">Spider Options</h3>
+<pre><code class="language-crystal hljs">client.spider.set_option_max_depth(10)
+client.spider.set_option_max_children(100)
+client.spider.set_option_max_duration(60)       # minutes
+client.spider.set_option_request_wait_time(200)  # ms between requests
+client.spider.set_option_user_agent(&quot;CustomBot/1.0&quot;)
+
+# Parsing options
+client.spider.set_option_parse_comments(true)
+client.spider.set_option_parse_robots_txt(true)
+client.spider.set_option_post_form(true)
+client.spider.set_option_process_form(true)
+</code></pre>
+<h3 id="exclusions">Exclusions</h3>
+<pre><code class="language-crystal hljs"># Exclude URLs matching a regex
+client.spider.exclude_from_scan(&quot;.*logout.*&quot;)
+client.spider.exclude_from_scan(&quot;.*\\.pdf$&quot;)
+
+# Allow specific resources
+client.spider.add_allowed_resource(&quot;.*\\.js$&quot;)
+
+# Clear exclusions
+client.spider.clear_excluded_from_scan
+</code></pre>
+<h2 id="ajax-spider">Ajax Spider</h2>
+<p>The Ajax spider uses a real browser to crawl JavaScript-heavy applications.</p>
+<h3 id="basic-ajax-spider">Basic Ajax Spider</h3>
+<pre><code class="language-crystal hljs">client.ajax_spider.scan(url: &quot;http://target.com&quot;)
+
+# Wait for completion (status is &quot;running&quot; or &quot;stopped&quot;)
+loop do
+  status = client.ajax_spider.status
+  break if status[&quot;status&quot;].as_s != &quot;running&quot;
+  puts &quot;Ajax Spider running...&quot;
+  sleep 5.seconds
+end
+
+results = client.ajax_spider.results
+</code></pre>
+<h3 id="ajax-spider-options">Ajax Spider Options</h3>
+<pre><code class="language-crystal hljs"># Browser selection
+client.ajax_spider.set_option_browser_id(&quot;firefox-headless&quot;)
+
+# Crawl limits
+client.ajax_spider.set_option_max_crawl_depth(10)
+client.ajax_spider.set_option_max_crawl_states(0)  # 0 = unlimited
+client.ajax_spider.set_option_max_duration(60)       # minutes
+
+# Performance
+client.ajax_spider.set_option_number_of_browsers(2)
+client.ajax_spider.set_option_event_wait(1000)   # ms
+client.ajax_spider.set_option_reload_wait(1000)  # ms
+
+# Behavior
+client.ajax_spider.set_option_click_default_elems(true)
+client.ajax_spider.set_option_click_elems_once(true)
+client.ajax_spider.set_option_random_inputs(true)
+</code></pre>
+<h2 id="combined-spidering">Combined Spidering</h2>
+<p>Use the convenience method to run both spiders:</p>
+<pre><code class="language-crystal hljs">result = client.scan.spider_full(&quot;http://target.com&quot;) do |phase, progress|
+  puts &quot;[#{phase}] #{progress}%&quot;
+end
+</code></pre>
+<p>Or run them individually with the convenience methods:</p>
+<pre><code class="language-crystal hljs"># Traditional spider only
+client.scan.spider(&quot;http://target.com&quot;)
+
+# Ajax spider only
+client.scan.ajax_spider(&quot;http://target.com&quot;)
+</code></pre>
+
+    <div class="docs-footer">
+      <p>Zap.cr - Crystal client library for ZAP API</p>
+    </div>
+  </main>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<script src="https://zap.cr.hahwul.com/js/search.js"></script>
+</body>
+</html>
