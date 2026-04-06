@@ -7,6 +7,7 @@ class MockZapServer
   property last_path : String = ""
   property last_params : URI::Params = URI::Params.new
   property response_body : String = %({"Result": "OK"})
+  property response_handler : Proc(String, URI::Params, String)?
   property server : HTTP::Server?
 
   def initialize(@port : Int32 = 0)
@@ -17,7 +18,11 @@ class MockZapServer
       @last_path = ctx.request.path
       @last_params = ctx.request.query_params
       ctx.response.content_type = "application/json"
-      ctx.response.print @response_body
+      if handler = @response_handler
+        ctx.response.print handler.call(ctx.request.path, ctx.request.query_params)
+      else
+        ctx.response.print @response_body
+      end
     end
     address = srv.bind_tcp("127.0.0.1", @port)
     @server = srv

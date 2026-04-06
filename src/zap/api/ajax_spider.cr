@@ -147,16 +147,12 @@ module Zap
         @client.request("/JSON/ajaxSpider/action/modifyExcludedElement/", params)
       end
 
-      def set_option_enable_extensions(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/ajaxSpider/action/setOptionEnableExtensions/", params)
+      def set_option_enable_extensions(enabled : Bool) : JSON::Any
+        @client.request("/JSON/ajaxSpider/action/setOptionEnableExtensions/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_logout_avoidance(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/ajaxSpider/action/setOptionLogoutAvoidance/", params)
+      def set_option_logout_avoidance(enabled : Bool) : JSON::Any
+        @client.request("/JSON/ajaxSpider/action/setOptionLogoutAvoidance/", {"Boolean" => enabled.to_s})
       end
 
       def set_option_scope_check(string : String) : JSON::Any

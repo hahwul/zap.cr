@@ -44,9 +44,9 @@ module Zap
         @client.request_other("/OTHER/exim/other/exportHarById/", {"ids" => ids})
       end
 
-      def send_har_request(request : String, follow_redirects : String = "") : String
+      def send_har_request(request : String, follow_redirects : Bool? = nil) : String
         params = {"request" => request}
-        params["followRedirects"] = follow_redirects unless follow_redirects.empty?
+        params["followRedirects"] = follow_redirects.to_s unless follow_redirects.nil?
         @client.request_other("/OTHER/exim/other/sendHarRequest/", params)
       end
 

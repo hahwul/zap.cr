@@ -5,43 +5,35 @@ module Zap
       end
 
       def monitor : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/pnh/action/monitor/", params)
+        @client.request("/JSON/pnh/action/monitor/")
       end
 
       def oracle : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/pnh/action/oracle/", params)
+        @client.request("/JSON/pnh/action/oracle/")
       end
 
       def start_monitoring : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/pnh/action/startMonitoring/", params)
+        @client.request("/JSON/pnh/action/startMonitoring/")
       end
 
       def stop_monitoring : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/pnh/action/stopMonitoring/", params)
+        @client.request("/JSON/pnh/action/stopMonitoring/")
       end
 
       def fx_pnh_xpi : String
-        params = {} of String => String
-        @client.request_other("/OTHER/pnh/other/fx_pnh.xpi/", params)
+        @client.request_other("/OTHER/pnh/other/fx_pnh.xpi/")
       end
 
       def manifest : String
-        params = {} of String => String
-        @client.request_other("/OTHER/pnh/other/manifest/", params)
+        @client.request_other("/OTHER/pnh/other/manifest/")
       end
 
       def pnh : String
-        params = {} of String => String
-        @client.request_other("/OTHER/pnh/other/pnh/", params)
+        @client.request_other("/OTHER/pnh/other/pnh/")
       end
 
       def service : String
-        params = {} of String => String
-        @client.request_other("/OTHER/pnh/other/service/", params)
+        @client.request_other("/OTHER/pnh/other/service/")
       end
     end
   end

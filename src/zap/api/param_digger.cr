@@ -5,8 +5,7 @@ module Zap
       end
 
       def hello_world : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/paramDigger/action/helloWorld/", params)
+        @client.request("/JSON/paramDigger/action/helloWorld/")
       end
     end
   end

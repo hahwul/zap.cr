@@ -5,18 +5,15 @@ module Zap
       end
 
       def scan : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/clientSpider/action/scan/", params)
+        @client.request("/JSON/clientSpider/action/scan/")
       end
 
       def stop : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/clientSpider/action/stop/", params)
+        @client.request("/JSON/clientSpider/action/stop/")
       end
 
       def status : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/clientSpider/view/status/", params)
+        @client.request("/JSON/clientSpider/view/status/")
       end
     end
   end

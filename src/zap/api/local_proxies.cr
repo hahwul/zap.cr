@@ -5,18 +5,15 @@ module Zap
       end
 
       def add_additional_proxy : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/localProxies/action/addAdditionalProxy/", params)
+        @client.request("/JSON/localProxies/action/addAdditionalProxy/")
       end
 
       def remove_additional_proxy : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/localProxies/action/removeAdditionalProxy/", params)
+        @client.request("/JSON/localProxies/action/removeAdditionalProxy/")
       end
 
       def additional_proxies : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/localProxies/view/additionalProxies/", params)
+        @client.request("/JSON/localProxies/view/additionalProxies/")
       end
     end
   end

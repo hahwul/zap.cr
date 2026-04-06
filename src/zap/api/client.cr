@@ -5,28 +5,23 @@ module Zap
       end
 
       def export_client_map : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/client/action/exportClientMap/", params)
+        @client.request("/JSON/client/action/exportClientMap/")
       end
 
       def report_event : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/client/action/reportEvent/", params)
+        @client.request("/JSON/client/action/reportEvent/")
       end
 
       def report_object : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/client/action/reportObject/", params)
+        @client.request("/JSON/client/action/reportObject/")
       end
 
       def report_zest_script : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/client/action/reportZestScript/", params)
+        @client.request("/JSON/client/action/reportZestScript/")
       end
 
       def report_zest_statement : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/client/action/reportZestStatement/", params)
+        @client.request("/JSON/client/action/reportZestStatement/")
       end
     end
   end

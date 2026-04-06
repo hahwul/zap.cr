@@ -148,11 +148,11 @@ module Zap
         @client.request("/JSON/core/action/deleteAllAlerts/")
       end
 
-      def add_proxy_chain_excluded_domain(value : String, is_regex : String = "", is_enabled : String = "") : JSON::Any
+      def add_proxy_chain_excluded_domain(value : String, is_regex : Bool? = nil, is_enabled : Bool? = nil) : JSON::Any
         params = {} of String => String
         params["value"] = value
-        params["isRegex"] = is_regex unless is_regex.empty?
-        params["isEnabled"] = is_enabled unless is_enabled.empty?
+        params["isRegex"] = is_regex.to_s unless is_regex.nil?
+        params["isEnabled"] = is_enabled.to_s unless is_enabled.nil?
         @client.request("/JSON/core/action/addProxyChainExcludedDomain/", params)
       end
 
@@ -202,12 +202,12 @@ module Zap
         @client.request("/JSON/core/action/loadSession/", params)
       end
 
-      def modify_proxy_chain_excluded_domain(idx : String, value : String = "", is_regex : String = "", is_enabled : String = "") : JSON::Any
+      def modify_proxy_chain_excluded_domain(idx : String, value : String = "", is_regex : Bool? = nil, is_enabled : Bool? = nil) : JSON::Any
         params = {} of String => String
         params["idx"] = idx
         params["value"] = value unless value.empty?
-        params["isRegex"] = is_regex unless is_regex.empty?
-        params["isEnabled"] = is_enabled unless is_enabled.empty?
+        params["isRegex"] = is_regex.to_s unless is_regex.nil?
+        params["isEnabled"] = is_enabled.to_s unless is_enabled.nil?
         @client.request("/JSON/core/action/modifyProxyChainExcludedDomain/", params)
       end
 
@@ -221,10 +221,10 @@ module Zap
         @client.request("/JSON/core/action/runGarbageCollection/")
       end
 
-      def send_request(request : String, follow_redirects : String = "") : JSON::Any
+      def send_request(request : String, follow_redirects : Bool? = nil) : JSON::Any
         params = {} of String => String
         params["request"] = request
-        params["followRedirects"] = follow_redirects unless follow_redirects.empty?
+        params["followRedirects"] = follow_redirects.to_s unless follow_redirects.nil?
         @client.request("/JSON/core/action/sendRequest/", params)
       end
 
@@ -253,88 +253,60 @@ module Zap
         @client.request("/JSON/core/action/setOptionAlertOverridesFilePath/", params)
       end
 
-      def set_option_dns_ttl_successful_queries(integer : String) : JSON::Any
-        params = {} of String => String
-        params["Integer"] = integer
-        @client.request("/JSON/core/action/setOptionDnsTtlSuccessfulQueries/", params)
+      def set_option_dns_ttl_successful_queries(value : Int32) : JSON::Any
+        @client.request("/JSON/core/action/setOptionDnsTtlSuccessfulQueries/", {"Integer" => value.to_s})
       end
 
-      def set_option_http_state_enabled(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/core/action/setOptionHttpStateEnabled/", params)
+      def set_option_http_state_enabled(enabled : Bool) : JSON::Any
+        @client.request("/JSON/core/action/setOptionHttpStateEnabled/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_merge_related_alerts(enabled : String) : JSON::Any
-        params = {} of String => String
-        params["enabled"] = enabled
-        @client.request("/JSON/core/action/setOptionMergeRelatedAlerts/", params)
+      def set_option_merge_related_alerts(enabled : Bool) : JSON::Any
+        @client.request("/JSON/core/action/setOptionMergeRelatedAlerts/", {"enabled" => enabled.to_s})
       end
 
-      def set_option_proxy_chain_name(string : String) : JSON::Any
-        params = {} of String => String
-        params["String"] = string
-        @client.request("/JSON/core/action/setOptionProxyChainName/", params)
+      def set_option_proxy_chain_name(name : String) : JSON::Any
+        @client.request("/JSON/core/action/setOptionProxyChainName/", {"String" => name})
       end
 
-      def set_option_proxy_chain_password(string : String) : JSON::Any
-        params = {} of String => String
-        params["String"] = string
-        @client.request("/JSON/core/action/setOptionProxyChainPassword/", params)
+      def set_option_proxy_chain_password(password : String) : JSON::Any
+        @client.request("/JSON/core/action/setOptionProxyChainPassword/", {"String" => password})
       end
 
-      def set_option_proxy_chain_port(integer : String) : JSON::Any
-        params = {} of String => String
-        params["Integer"] = integer
-        @client.request("/JSON/core/action/setOptionProxyChainPort/", params)
+      def set_option_proxy_chain_port(port : Int32) : JSON::Any
+        @client.request("/JSON/core/action/setOptionProxyChainPort/", {"Integer" => port.to_s})
       end
 
-      def set_option_proxy_chain_prompt(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/core/action/setOptionProxyChainPrompt/", params)
+      def set_option_proxy_chain_prompt(enabled : Bool) : JSON::Any
+        @client.request("/JSON/core/action/setOptionProxyChainPrompt/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_proxy_chain_realm(string : String) : JSON::Any
-        params = {} of String => String
-        params["String"] = string
-        @client.request("/JSON/core/action/setOptionProxyChainRealm/", params)
+      def set_option_proxy_chain_realm(realm : String) : JSON::Any
+        @client.request("/JSON/core/action/setOptionProxyChainRealm/", {"String" => realm})
       end
 
-      def set_option_proxy_chain_skip_name(string : String) : JSON::Any
-        params = {} of String => String
-        params["String"] = string
-        @client.request("/JSON/core/action/setOptionProxyChainSkipName/", params)
+      def set_option_proxy_chain_skip_name(name : String) : JSON::Any
+        @client.request("/JSON/core/action/setOptionProxyChainSkipName/", {"String" => name})
       end
 
-      def set_option_proxy_chain_user_name(string : String) : JSON::Any
-        params = {} of String => String
-        params["String"] = string
-        @client.request("/JSON/core/action/setOptionProxyChainUserName/", params)
+      def set_option_proxy_chain_user_name(username : String) : JSON::Any
+        @client.request("/JSON/core/action/setOptionProxyChainUserName/", {"String" => username})
       end
 
-      def set_option_single_cookie_request_header(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/core/action/setOptionSingleCookieRequestHeader/", params)
+      def set_option_single_cookie_request_header(enabled : Bool) : JSON::Any
+        @client.request("/JSON/core/action/setOptionSingleCookieRequestHeader/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_use_proxy_chain(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/core/action/setOptionUseProxyChain/", params)
+      def set_option_use_proxy_chain(enabled : Bool) : JSON::Any
+        @client.request("/JSON/core/action/setOptionUseProxyChain/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_use_proxy_chain_auth(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/core/action/setOptionUseProxyChainAuth/", params)
+      def set_option_use_proxy_chain_auth(enabled : Bool) : JSON::Any
+        @client.request("/JSON/core/action/setOptionUseProxyChainAuth/", {"Boolean" => enabled.to_s})
       end
 
-      def set_option_use_socks_proxy(boolean : String) : JSON::Any
-        params = {} of String => String
-        params["Boolean"] = boolean
-        @client.request("/JSON/core/action/setOptionUseSocksProxy/", params)
+      def set_option_use_socks_proxy(enabled : Bool) : JSON::Any
+        @client.request("/JSON/core/action/setOptionUseSocksProxy/", {"Boolean" => enabled.to_s})
       end
 
       def file_download(file_name : String) : String
@@ -390,10 +362,10 @@ module Zap
         @client.request_other("/OTHER/core/other/rootcert/")
       end
 
-      def send_har_request(request : String, follow_redirects : String = "") : String
+      def send_har_request(request : String, follow_redirects : Bool? = nil) : String
         params = {} of String => String
         params["request"] = request
-        params["followRedirects"] = follow_redirects unless follow_redirects.empty?
+        params["followRedirects"] = follow_redirects.to_s unless follow_redirects.nil?
         @client.request_other("/OTHER/core/other/sendHarRequest/", params)
       end
 

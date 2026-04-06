@@ -119,7 +119,9 @@ module Zap
       response = http_client.get(full_path)
 
       unless response.success?
-        raise Zap::HttpError.new(response.status_code, response.body)
+        body = response.body
+        truncated = body.size > 500 ? "#{body[0, 500]}... (truncated)" : body
+        raise Zap::HttpError.new(response.status_code, truncated)
       end
 
       response

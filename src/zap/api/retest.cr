@@ -5,8 +5,7 @@ module Zap
       end
 
       def retest : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/retest/action/retest/", params)
+        @client.request("/JSON/retest/action/retest/")
       end
     end
   end

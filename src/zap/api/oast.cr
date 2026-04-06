@@ -5,58 +5,47 @@ module Zap
       end
 
       def set_active_scan_service : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/oast/action/setActiveScanService/", params)
+        @client.request("/JSON/oast/action/setActiveScanService/")
       end
 
       def set_boast_options : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/oast/action/setBoastOptions/", params)
+        @client.request("/JSON/oast/action/setBoastOptions/")
       end
 
       def set_callback_options : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/oast/action/setCallbackOptions/", params)
+        @client.request("/JSON/oast/action/setCallbackOptions/")
       end
 
       def set_days_to_keep_records : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/oast/action/setDaysToKeepRecords/", params)
+        @client.request("/JSON/oast/action/setDaysToKeepRecords/")
       end
 
       def set_interactsh_options : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/oast/action/setInteractshOptions/", params)
+        @client.request("/JSON/oast/action/setInteractshOptions/")
       end
 
       def get_active_scan_service : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/oast/view/getActiveScanService/", params)
+        @client.request("/JSON/oast/view/getActiveScanService/")
       end
 
       def get_boast_options : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/oast/view/getBoastOptions/", params)
+        @client.request("/JSON/oast/view/getBoastOptions/")
       end
 
       def get_callback_options : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/oast/view/getCallbackOptions/", params)
+        @client.request("/JSON/oast/view/getCallbackOptions/")
       end
 
       def get_days_to_keep_records : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/oast/view/getDaysToKeepRecords/", params)
+        @client.request("/JSON/oast/view/getDaysToKeepRecords/")
       end
 
       def get_interactsh_options : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/oast/view/getInteractshOptions/", params)
+        @client.request("/JSON/oast/view/getInteractshOptions/")
       end
 
       def get_services : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/oast/view/getServices/", params)
+        @client.request("/JSON/oast/view/getServices/")
       end
     end
   end

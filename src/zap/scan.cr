@@ -105,7 +105,7 @@ module Zap
     def wait_for_passive_scan(poll_interval : Time::Span = POLL_INTERVAL, &block : Int32 ->)
       loop do
         result = @client.pscan.records_to_scan
-        remaining = result["recordsToScan"]?.try(&.as_s.to_i) || 0
+        remaining = parse_int_field(result, "recordsToScan") || 0
         yield remaining
         break if remaining == 0
         sleep poll_interval
@@ -118,13 +118,13 @@ module Zap
 
     private def start_spider(target : String, context_name : String = "") : Int32
       result = @client.spider.scan(url: target, context_name: context_name)
-      result["scan"]?.try(&.as_s.to_i?) || raise Zap::Error.new("Failed to start spider: missing scan ID in response")
+      parse_int_field(result, "scan") || raise Zap::Error.new("Failed to start spider: missing scan ID in response")
     end
 
     private def wait_for_spider(scan_id : Int32, poll_interval : Time::Span, &block : Int32 ->)
       loop do
         result = @client.spider.status(scan_id)
-        progress = result["status"]?.try(&.as_s.to_i?) || 0
+        progress = parse_int_field(result, "status") || 0
         yield progress
         break if progress >= 100
         sleep poll_interval
@@ -147,16 +147,29 @@ module Zap
 
     private def start_active_scan(target : String, recurse : Bool = true) : Int32
       result = @client.ascan.scan(url: target, recurse: recurse)
-      result["scan"]?.try(&.as_s.to_i?) || raise Zap::Error.new("Failed to start active scan: missing scan ID in response")
+      parse_int_field(result, "scan") || raise Zap::Error.new("Failed to start active scan: missing scan ID in response")
     end
 
     private def wait_for_active_scan(scan_id : Int32, poll_interval : Time::Span, &block : Int32 ->)
       loop do
         result = @client.ascan.status(scan_id)
-        progress = result["status"]?.try(&.as_s.to_i?) || 0
+        progress = parse_int_field(result, "status") || 0
         yield progress
         break if progress >= 100
         sleep poll_interval
+      end
+    end
+
+    private def parse_int_field(json : JSON::Any, field : String) : Int32?
+      value = json[field]?
+      return nil unless value
+      case raw = value.raw
+      when Int64
+        raw.to_i32
+      when String
+        raw.to_i32?
+      else
+        nil
       end
     end
   end

@@ -5,18 +5,15 @@ module Zap
       end
 
       def revisit_site_off : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/revisit/action/revisitSiteOff/", params)
+        @client.request("/JSON/revisit/action/revisitSiteOff/")
       end
 
       def revisit_site_on : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/revisit/action/revisitSiteOn/", params)
+        @client.request("/JSON/revisit/action/revisitSiteOn/")
       end
 
       def revisit_list : JSON::Any
-        params = {} of String => String
-        @client.request("/JSON/revisit/view/revisitList/", params)
+        @client.request("/JSON/revisit/view/revisitList/")
       end
     end
   end
