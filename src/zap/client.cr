@@ -1,11 +1,30 @@
 module Zap
   class Error < Exception; end
 
+  # Raised when ZAP returns a non-2xx response. The exception message
+  # deliberately contains only the status code and request path — never
+  # the response body. ZAP error bodies frequently echo the offending
+  # request parameters, which on calls like
+  # `Api::Network.set_proxy_chain_password` or
+  # `Api::Network.add_pkcs12_client_certificate` would otherwise embed a
+  # secret into any log line that prints the exception.
+  #
+  # Callers that need the body (e.g. for diagnostics in a controlled
+  # environment) can read it from `#body`. Treat that string as
+  # potentially containing secrets that the caller passed in.
   class HttpError < Error
     getter status_code : Int32
+    getter path : String?
+    getter body : String?
 
-    def initialize(@status_code : Int32, message : String)
-      super("HTTP #{@status_code}: #{message}")
+    def initialize(@status_code : Int32, @path : String? = nil, @body : String? = nil)
+      msg = String.build do |io|
+        io << "HTTP " << @status_code
+        if p = @path
+          io << " for " << p
+        end
+      end
+      super(msg)
     end
   end
 
@@ -119,9 +138,15 @@ module Zap
       response = http_client.get(full_path)
 
       unless response.success?
+        # The body may echo the request parameters — including any secret
+        # the caller just sent (proxy passwords, client-cert PKCS#12
+        # passphrases, etc). Stash it on the exception (truncated) so a
+        # caller that explicitly inspects `#body` can still debug, but
+        # keep it out of the exception message which is what loggers
+        # typically print.
         body = response.body
-        truncated = body.size > 500 ? "#{body[0, 500]}... (truncated)" : body
-        raise Zap::HttpError.new(response.status_code, truncated)
+        truncated_body = body.size > 500 ? "#{body[0, 500]}... (truncated)" : body
+        raise Zap::HttpError.new(response.status_code, path, truncated_body)
       end
 
       response

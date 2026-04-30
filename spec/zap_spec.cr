@@ -96,6 +96,52 @@ describe Zap::Client do
       end
     end
 
+    it "keeps the response body off the exception message but exposes it on #body" do
+      secret_echo = "secret-passphrase-pkcs12-foo"
+      srv = HTTP::Server.new do |ctx|
+        ctx.response.status_code = 400
+        ctx.response.print "ZAP error: param 'password=#{secret_echo}' rejected"
+      end
+      address = srv.bind_tcp("127.0.0.1", 0)
+      spawn { srv.listen }
+      Fiber.yield
+
+      client = Zap::Client.new("http://127.0.0.1:#{address.port}")
+      begin
+        ex = expect_raises(Zap::HttpError) { client.core.version }
+        msg = ex.message.not_nil!
+        msg.should_not contain(secret_echo)
+        msg.should contain("400")
+        ex.body.should_not be_nil
+        ex.body.not_nil!.should contain(secret_echo)
+        ex.path.should_not be_nil
+      ensure
+        client.close
+        srv.close
+      end
+    end
+
+    it "truncates extremely large response bodies stored on #body" do
+      payload = "X" * 5_000
+      srv = HTTP::Server.new do |ctx|
+        ctx.response.status_code = 502
+        ctx.response.print payload
+      end
+      address = srv.bind_tcp("127.0.0.1", 0)
+      spawn { srv.listen }
+      Fiber.yield
+
+      client = Zap::Client.new("http://127.0.0.1:#{address.port}")
+      begin
+        ex = expect_raises(Zap::HttpError) { client.core.version }
+        ex.body.not_nil!.bytesize.should be < 600
+        ex.body.not_nil!.should contain("(truncated)")
+      ensure
+        client.close
+        srv.close
+      end
+    end
+
     it "raises Error on invalid JSON responses" do
       srv = HTTP::Server.new do |ctx|
         ctx.response.status_code = 200
