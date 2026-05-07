@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Reporting - Zap.cr</title>
+  <meta property="og:title" content="Reporting">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://zap.cr.hahwul.com/guide/reporting/">
+<meta property="og:image" content="https://zap.cr.hahwul.com/og-images/guide-reporting.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Reporting">
+<meta name="twitter:image" content="https://zap.cr.hahwul.com/og-images/guide-reporting.svg">
+  <link rel="stylesheet" href="https://zap.cr.hahwul.com/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  
+</head>
+<body data-section="guide">
+<header class="docs-header">
+  <a href="https://zap.cr.hahwul.com/" class="logo">Zap.cr <span>Documentation</span></a>
+  <nav>
+    <a href="https://zap.cr.hahwul.com/getting-started/">Getting Started</a>
+    <a href="https://zap.cr.hahwul.com/guide/">Guide</a>
+    <a href="https://zap.cr.hahwul.com/api/">API Reference</a>
+  </nav>
+  <div class="header-right">
+    <button class="search-trigger" onclick="openSearch()" title="Search (⌘K)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Search</span>
+      <kbd>⌘K</kbd>
+    </button>
+    <a href="https://github.com/hahwul/zap.cr">GitHub</a>
+  </div>
+</header>
+<div class="search-overlay" id="searchOverlay" onclick="if(event.target===this)closeSearch()">
+  <div class="search-modal">
+    <div class="search-input-wrap">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search documentation..." autocomplete="off">
+      <kbd onclick="closeSearch()">ESC</kbd>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+<div class="docs-container">
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/getting-started/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/installation/">Installation</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/quick-start/">Quick Start</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/configuration/">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Guide</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/guide/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/scanning/">Scanning</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/spidering/">Spidering</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/authentication/">Authentication</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/context/">Context Management</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/alerts/">Alerts</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/reporting/">Reporting</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">API Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/api/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/client/">Client</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/core/">Core</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/spider/">Spider</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/ajax-spider/">Ajax Spider</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/ascan/">Active Scan</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/pscan/">Passive Scan</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/alert/">Alert</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/context/">Context</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/search/">Search</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/network/">Network</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/scripts/">Script</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/others/">Others</a></li>
+      </ul>
+    </div>
+  </aside>
+  <main class="docs-main">
+    <h1>Reporting</h1>
+    <p>Generate reports from scan results using ZAP's built-in reporting engine.</p>
+<h2 id="generate-a-report">Generate a Report</h2>
+<pre><code class="language-crystal hljs">client.reports.generate(
+  title: &quot;Security Scan Report&quot;,
+  template: &quot;traditional-html&quot;,
+  sites: &quot;http://target.com&quot;,
+  report_dir: &quot;/tmp/reports&quot;
+)
+</code></pre>
+<h2 id="available-templates">Available Templates</h2>
+<pre><code class="language-crystal hljs">templates = client.reports.templates
+</code></pre>
+<p>Get details about a specific template:</p>
+<pre><code class="language-crystal hljs">client.reports.template_details(&quot;traditional-html&quot;)
+</code></pre>
+<h2 id="report-options">Report Options</h2>
+<pre><code class="language-crystal hljs">client.reports.generate(
+  title: &quot;High Risk Report&quot;,
+  template: &quot;traditional-html&quot;,
+  description: &quot;Scan results for target.com&quot;,
+  sites: &quot;http://target.com&quot;,
+  included_risks: &quot;High,Medium&quot;,           # filter by risk
+  included_confidences: &quot;High,Confirmed&quot;,   # filter by confidence
+  sections: &quot;alertcount,alertdetails&quot;,       # specific sections
+  report_file_name: &quot;scan-report.html&quot;,
+  report_dir: &quot;/tmp/reports&quot;,
+  display: false
+)
+</code></pre>
+<h2 id="exporting-data">Exporting Data</h2>
+<h3 id="har-export">HAR Export</h3>
+<pre><code class="language-crystal hljs"># Export all traffic as HAR
+client.exim.export_har(base_url: &quot;http://target.com&quot;)
+</code></pre>
+<h3 id="search-and-export">Search and Export</h3>
+<pre><code class="language-crystal hljs"># Search HAR by URL pattern
+client.search.har_by_url_regex(&quot;.*target\\.com.*&quot;)
+
+# Search HAR by response content
+client.search.har_by_response_regex(&quot;password&quot;)
+</code></pre>
+<h2 id="importing-data">Importing Data</h2>
+<pre><code class="language-crystal hljs"># Import URLs from file
+client.exim.import_urls(&quot;/path/to/urls.txt&quot;)
+
+# Import HAR file
+client.exim.import_har(&quot;/path/to/traffic.har&quot;)
+
+# Import OpenAPI spec
+client.openapi.import_url(&quot;http://target.com/openapi.json&quot;)
+client.openapi.import_file(&quot;/path/to/openapi.yaml&quot;)
+
+# Import GraphQL schema
+client.graphql.import_url(&quot;http://target.com/graphql&quot;)
+
+# Import SOAP WSDL
+client.soap.import_url(&quot;http://target.com/service?wsdl&quot;)
+</code></pre>
+
+    <div class="docs-footer">
+      <p>Zap.cr - Crystal client library for ZAP API</p>
+    </div>
+  </main>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<script src="https://zap.cr.hahwul.com/js/search.js"></script>
+</body>
+</html>

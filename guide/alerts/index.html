@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Alerts - Zap.cr</title>
+  <meta property="og:title" content="Alerts">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://zap.cr.hahwul.com/guide/alerts/">
+<meta property="og:image" content="https://zap.cr.hahwul.com/og-images/guide-alerts.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Alerts">
+<meta name="twitter:image" content="https://zap.cr.hahwul.com/og-images/guide-alerts.svg">
+  <link rel="stylesheet" href="https://zap.cr.hahwul.com/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  
+</head>
+<body data-section="guide">
+<header class="docs-header">
+  <a href="https://zap.cr.hahwul.com/" class="logo">Zap.cr <span>Documentation</span></a>
+  <nav>
+    <a href="https://zap.cr.hahwul.com/getting-started/">Getting Started</a>
+    <a href="https://zap.cr.hahwul.com/guide/">Guide</a>
+    <a href="https://zap.cr.hahwul.com/api/">API Reference</a>
+  </nav>
+  <div class="header-right">
+    <button class="search-trigger" onclick="openSearch()" title="Search (⌘K)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Search</span>
+      <kbd>⌘K</kbd>
+    </button>
+    <a href="https://github.com/hahwul/zap.cr">GitHub</a>
+  </div>
+</header>
+<div class="search-overlay" id="searchOverlay" onclick="if(event.target===this)closeSearch()">
+  <div class="search-modal">
+    <div class="search-input-wrap">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search documentation..." autocomplete="off">
+      <kbd onclick="closeSearch()">ESC</kbd>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+<div class="docs-container">
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/getting-started/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/installation/">Installation</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/quick-start/">Quick Start</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/configuration/">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Guide</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/guide/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/scanning/">Scanning</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/spidering/">Spidering</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/authentication/">Authentication</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/context/">Context Management</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/alerts/">Alerts</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/reporting/">Reporting</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">API Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/api/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/client/">Client</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/core/">Core</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/spider/">Spider</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/ajax-spider/">Ajax Spider</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/ascan/">Active Scan</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/pscan/">Passive Scan</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/alert/">Alert</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/context/">Context</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/search/">Search</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/network/">Network</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/scripts/">Script</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/others/">Others</a></li>
+      </ul>
+    </div>
+  </aside>
+  <main class="docs-main">
+    <h1>Alerts</h1>
+    <p>Alerts represent security findings discovered during scanning.</p>
+<h2 id="listing-alerts">Listing Alerts</h2>
+<pre><code class="language-crystal hljs"># All alerts
+alerts = client.alert.alerts
+
+# Alerts for a specific URL
+alerts = client.alert.alerts(base_url: &quot;http://target.com&quot;)
+
+# Paginated
+alerts = client.alert.alerts(start: 0, count: 50)
+
+# By risk level (0=Info, 1=Low, 2=Medium, 3=High)
+alerts = client.alert.alerts(risk_id: 3)  # High only
+</code></pre>
+<h2 id="alert-summary">Alert Summary</h2>
+<pre><code class="language-crystal hljs">summary = client.alert.alerts_summary(&quot;http://target.com&quot;)
+# =&gt; {&quot;alertsSummary&quot;: {&quot;High&quot;: 2, &quot;Medium&quot;: 5, &quot;Low&quot;: 8, &quot;Informational&quot;: 3}}
+
+counts = client.alert.alert_counts_by_risk(&quot;http://target.com&quot;)
+</code></pre>
+<h2 id="single-alert">Single Alert</h2>
+<pre><code class="language-crystal hljs">alert = client.alert.get(42)
+</code></pre>
+<h2 id="iterating-alerts">Iterating Alerts</h2>
+<pre><code class="language-crystal hljs">alerts = client.alert.alerts(base_url: &quot;http://target.com&quot;)
+alerts[&quot;alerts&quot;].as_a.each do |alert|
+  puts &quot;#{alert[&quot;risk&quot;]} | #{alert[&quot;name&quot;]} | #{alert[&quot;url&quot;]}&quot;
+  puts &quot;  CWE: #{alert[&quot;cweid&quot;]}, WASC: #{alert[&quot;wascid&quot;]}&quot;
+  puts &quot;  #{alert[&quot;description&quot;]}&quot;
+  puts
+end
+</code></pre>
+<h2 id="grouped-by-risk">Grouped by Risk</h2>
+<pre><code class="language-crystal hljs">by_risk = client.alert.alerts_by_risk(url: &quot;http://target.com&quot;)
+</code></pre>
+<h2 id="managing-alerts">Managing Alerts</h2>
+<h3 id="delete">Delete</h3>
+<pre><code class="language-crystal hljs"># Delete single alert
+client.alert.delete_alert(42)
+
+# Delete by criteria
+client.alert.delete_alerts(
+  base_url: &quot;http://target.com&quot;,
+  risk_id: 0  # delete Informational
+)
+
+# Delete all
+client.alert.delete_all_alerts
+</code></pre>
+<h3 id="update">Update</h3>
+<pre><code class="language-crystal hljs">client.alert.update_alerts_risk(&quot;1,2,3&quot;, risk_id: 2)     # set to Medium
+client.alert.update_alerts_confidence(&quot;1,2,3&quot;, confidence_id: 3)
+</code></pre>
+<h2 id="alert-filters">Alert Filters</h2>
+<p>Suppress or change alert risk levels based on rules:</p>
+<pre><code class="language-crystal hljs"># Add global filter (suppress false positive)
+client.alert_filter.add_global_alert_filter(
+  rule_id: 10016,
+  new_level: -1,  # -1 = False Positive
+  url: &quot;.*\\.css$&quot;
+)
+
+# Context-specific filter
+client.alert_filter.add_alert_filter(
+  context_id: 1,
+  rule_id: 10016,
+  new_level: -1
+)
+
+# Apply filters
+client.alert_filter.apply_all
+
+# List filters
+client.alert_filter.global_alert_filter_list
+client.alert_filter.alert_filter_list(1)
+</code></pre>
+
+    <div class="docs-footer">
+      <p>Zap.cr - Crystal client library for ZAP API</p>
+    </div>
+  </main>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<script src="https://zap.cr.hahwul.com/js/search.js"></script>
+</body>
+</html>

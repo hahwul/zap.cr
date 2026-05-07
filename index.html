@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Crystal client library for ZAP API">
+  <title>Zap.cr - Zap.cr</title>
+  <meta property="og:title" content="Zap.cr">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://zap.cr.hahwul.com/">
+<meta property="og:description" content="Crystal client library for ZAP API">
+<meta property="og:image" content="https://zap.cr.hahwul.com/og-images/zapcr.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Zap.cr">
+<meta name="twitter:description" content="Crystal client library for ZAP API">
+<meta name="twitter:image" content="https://zap.cr.hahwul.com/og-images/zapcr.svg">
+  <link rel="stylesheet" href="https://zap.cr.hahwul.com/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  
+</head>
+<body data-section="">
+<header class="docs-header">
+  <a href="https://zap.cr.hahwul.com/" class="logo">Zap.cr <span>Documentation</span></a>
+  <nav>
+    <a href="https://zap.cr.hahwul.com/getting-started/">Getting Started</a>
+    <a href="https://zap.cr.hahwul.com/guide/">Guide</a>
+    <a href="https://zap.cr.hahwul.com/api/">API Reference</a>
+  </nav>
+  <div class="header-right">
+    <button class="search-trigger" onclick="openSearch()" title="Search (⌘K)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Search</span>
+      <kbd>⌘K</kbd>
+    </button>
+    <a href="https://github.com/hahwul/zap.cr">GitHub</a>
+  </div>
+</header>
+<div class="search-overlay" id="searchOverlay" onclick="if(event.target===this)closeSearch()">
+  <div class="search-modal">
+    <div class="search-input-wrap">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search documentation..." autocomplete="off">
+      <kbd onclick="closeSearch()">ESC</kbd>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+<div class="docs-container">
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/getting-started/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/installation/">Installation</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/quick-start/">Quick Start</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/configuration/">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Guide</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/guide/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/scanning/">Scanning</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/spidering/">Spidering</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/authentication/">Authentication</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/context/">Context Management</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/alerts/">Alerts</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/reporting/">Reporting</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">API Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/api/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/client/">Client</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/core/">Core</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/spider/">Spider</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/ajax-spider/">Ajax Spider</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/ascan/">Active Scan</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/pscan/">Passive Scan</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/alert/">Alert</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/context/">Context</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/search/">Search</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/network/">Network</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/scripts/">Script</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/others/">Others</a></li>
+      </ul>
+    </div>
+  </aside>
+  <main class="docs-main">
+    <h1>Zap.cr</h1>
+    <p>Crystal client library for <a href="https://zaproxy.org">ZAP</a> (Zed Attack Proxy) API. Provides complete API coverage and high-level convenience methods for common security testing workflows.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Complete ZAP API coverage with 33 API modules</li>
+<li>High-level scanning workflows (full scan, spider + scan, etc.)</li>
+<li>Progress tracking with callbacks</li>
+<li>Typed Crystal interface over ZAP's REST API</li>
+</ul>
+<h2 id="quick-example">Quick Example</h2>
+<pre><code class="language-crystal hljs">require &quot;zap&quot;
+
+client = Zap::Client.new(&quot;http://localhost:8080&quot;, &quot;your-api-key&quot;)
+
+# High-level: full scan (spider + ajax spider + active scan)
+result = client.scan.full(&quot;http://target.com&quot;) do |phase, progress|
+  puts &quot;[#{phase}] #{progress}%&quot;
+end
+
+# Check results
+puts result  # alerts summary
+</code></pre>
+<h2 id="getting-started">Getting Started</h2>
+<ul>
+<li><strong><a href="/getting-started/installation/">Installation</a></strong> - Add zap.cr to your project</li>
+<li><strong><a href="/getting-started/quick-start/">Quick Start</a></strong> - Run your first scan</li>
+<li><strong><a href="/getting-started/configuration/">Configuration</a></strong> - Client options</li>
+</ul>
+<h2 id="guide">Guide</h2>
+<ul>
+<li><strong><a href="/guide/scanning/">Scanning</a></strong> - Full scan, active scan, passive scan workflows</li>
+<li><strong><a href="/guide/spidering/">Spidering</a></strong> - Traditional and Ajax spidering</li>
+<li><strong><a href="/guide/authentication/">Authentication</a></strong> - Authenticated scanning</li>
+<li><strong><a href="/guide/alerts/">Alerts</a></strong> - Working with scan results</li>
+</ul>
+<h2 id="api-reference">API Reference</h2>
+<ul>
+<li><strong><a href="/api/client/">Client</a></strong> - Core client class</li>
+<li><strong><a href="/api/">API Modules</a></strong> - All 33 API module references</li>
+</ul>
+
+    <div class="docs-footer">
+      <p>Zap.cr - Crystal client library for ZAP API</p>
+    </div>
+  </main>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<script src="https://zap.cr.hahwul.com/js/search.js"></script>
+</body>
+</html>

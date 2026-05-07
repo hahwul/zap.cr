@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Client - Zap.cr</title>
+  <meta property="og:title" content="Client">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://zap.cr.hahwul.com/api/client/">
+<meta property="og:image" content="https://zap.cr.hahwul.com/og-images/api-client.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Client">
+<meta name="twitter:image" content="https://zap.cr.hahwul.com/og-images/api-client.svg">
+  <link rel="stylesheet" href="https://zap.cr.hahwul.com/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  
+</head>
+<body data-section="api">
+<header class="docs-header">
+  <a href="https://zap.cr.hahwul.com/" class="logo">Zap.cr <span>Documentation</span></a>
+  <nav>
+    <a href="https://zap.cr.hahwul.com/getting-started/">Getting Started</a>
+    <a href="https://zap.cr.hahwul.com/guide/">Guide</a>
+    <a href="https://zap.cr.hahwul.com/api/">API Reference</a>
+  </nav>
+  <div class="header-right">
+    <button class="search-trigger" onclick="openSearch()" title="Search (⌘K)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Search</span>
+      <kbd>⌘K</kbd>
+    </button>
+    <a href="https://github.com/hahwul/zap.cr">GitHub</a>
+  </div>
+</header>
+<div class="search-overlay" id="searchOverlay" onclick="if(event.target===this)closeSearch()">
+  <div class="search-modal">
+    <div class="search-input-wrap">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search documentation..." autocomplete="off">
+      <kbd onclick="closeSearch()">ESC</kbd>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+<div class="docs-container">
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/getting-started/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/installation/">Installation</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/quick-start/">Quick Start</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/configuration/">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Guide</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/guide/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/scanning/">Scanning</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/spidering/">Spidering</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/authentication/">Authentication</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/context/">Context Management</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/alerts/">Alerts</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/reporting/">Reporting</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">API Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/api/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/client/">Client</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/core/">Core</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/spider/">Spider</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/ajax-spider/">Ajax Spider</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/ascan/">Active Scan</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/pscan/">Passive Scan</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/alert/">Alert</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/context/">Context</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/search/">Search</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/network/">Network</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/scripts/">Script</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/others/">Others</a></li>
+      </ul>
+    </div>
+  </aside>
+  <main class="docs-main">
+    <h1>Client</h1>
+    <p>The main entry point for interacting with ZAP.</p>
+<h2 id="constructor">Constructor</h2>
+<pre><code class="language-crystal hljs">client = Zap::Client.new(base_url : String = &quot;http://localhost:8080&quot;, api_key : String = &quot;&quot;)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>base_url</code></td>
+<td><code>String</code></td>
+<td><code>&quot;http://localhost:8080&quot;</code></td>
+<td>ZAP API base URL</td>
+</tr>
+<tr>
+<td><code>api_key</code></td>
+<td><code>String</code></td>
+<td><code>&quot;&quot;</code></td>
+<td>API key for authentication</td>
+</tr>
+</tbody>
+</table>
+<h2 id="properties">Properties</h2>
+<pre><code class="language-crystal hljs">client.base_url : String   # get/set
+client.api_key : String    # get/set
+</code></pre>
+<h2 id="api-module-accessors">API Module Accessors</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Returns</th>
+<th>ZAP Component</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>client.core</code></td>
+<td><code>Api::Core</code></td>
+<td>core</td>
+</tr>
+<tr>
+<td><code>client.spider</code></td>
+<td><code>Api::Spider</code></td>
+<td>spider</td>
+</tr>
+<tr>
+<td><code>client.ajax_spider</code></td>
+<td><code>Api::AjaxSpider</code></td>
+<td>ajaxSpider</td>
+</tr>
+<tr>
+<td><code>client.ascan</code></td>
+<td><code>Api::Ascan</code></td>
+<td>ascan</td>
+</tr>
+<tr>
+<td><code>client.pscan</code></td>
+<td><code>Api::Pscan</code></td>
+<td>pscan</td>
+</tr>
+<tr>
+<td><code>client.alert</code></td>
+<td><code>Api::Alert</code></td>
+<td>alert</td>
+</tr>
+<tr>
+<td><code>client.alert_filter</code></td>
+<td><code>Api::AlertFilter</code></td>
+<td>alertFilter</td>
+</tr>
+<tr>
+<td><code>client.context</code></td>
+<td><code>Api::Context</code></td>
+<td>context</td>
+</tr>
+<tr>
+<td><code>client.authentication</code></td>
+<td><code>Api::Authentication</code></td>
+<td>authentication</td>
+</tr>
+<tr>
+<td><code>client.authorization</code></td>
+<td><code>Api::Authorization</code></td>
+<td>authorization</td>
+</tr>
+<tr>
+<td><code>client.forced_user</code></td>
+<td><code>Api::ForcedUser</code></td>
+<td>forcedUser</td>
+</tr>
+<tr>
+<td><code>client.http_sessions</code></td>
+<td><code>Api::HttpSessions</code></td>
+<td>httpSessions</td>
+</tr>
+<tr>
+<td><code>client.users</code></td>
+<td><code>Api::Users</code></td>
+<td>users</td>
+</tr>
+<tr>
+<td><code>client.script</code></td>
+<td><code>Api::Script</code></td>
+<td>script</td>
+</tr>
+<tr>
+<td><code>client.network</code></td>
+<td><code>Api::Network</code></td>
+<td>network</td>
+</tr>
+<tr>
+<td><code>client.openapi</code></td>
+<td><code>Api::OpenApi</code></td>
+<td>openapi</td>
+</tr>
+<tr>
+<td><code>client.graphql</code></td>
+<td><code>Api::Graphql</code></td>
+<td>graphql</td>
+</tr>
+<tr>
+<td><code>client.soap</code></td>
+<td><code>Api::Soap</code></td>
+<td>soap</td>
+</tr>
+<tr>
+<td><code>client.exim</code></td>
+<td><code>Api::Exim</code></td>
+<td>exim</td>
+</tr>
+<tr>
+<td><code>client.reports</code></td>
+<td><code>Api::Reports</code></td>
+<td>reports</td>
+</tr>
+<tr>
+<td><code>client.search</code></td>
+<td><code>Api::Search</code></td>
+<td>search</td>
+</tr>
+<tr>
+<td><code>client.stats</code></td>
+<td><code>Api::Stats</code></td>
+<td>stats</td>
+</tr>
+<tr>
+<td><code>client.session_management</code></td>
+<td><code>Api::SessionManagement</code></td>
+<td>sessionManagement</td>
+</tr>
+<tr>
+<td><code>client.autoupdate</code></td>
+<td><code>Api::Autoupdate</code></td>
+<td>autoupdate</td>
+</tr>
+<tr>
+<td><code>client.selenium</code></td>
+<td><code>Api::Selenium</code></td>
+<td>selenium</td>
+</tr>
+<tr>
+<td><code>client.replacer</code></td>
+<td><code>Api::Replacer</code></td>
+<td>replacer</td>
+</tr>
+<tr>
+<td><code>client.reveal</code></td>
+<td><code>Api::Reveal</code></td>
+<td>reveal</td>
+</tr>
+<tr>
+<td><code>client.params</code></td>
+<td><code>Api::Params</code></td>
+<td>params</td>
+</tr>
+<tr>
+<td><code>client.acsrf</code></td>
+<td><code>Api::Acsrf</code></td>
+<td>acsrf</td>
+</tr>
+<tr>
+<td><code>client.access_control</code></td>
+<td><code>Api::AccessControl</code></td>
+<td>accessControl</td>
+</tr>
+<tr>
+<td><code>client.automation</code></td>
+<td><code>Api::Automation</code></td>
+<td>automation</td>
+</tr>
+<tr>
+<td><code>client.breakpoints</code></td>
+<td><code>Api::Breakpoints</code></td>
+<td>break</td>
+</tr>
+<tr>
+<td><code>client.websocket</code></td>
+<td><code>Api::Websocket</code></td>
+<td>websocket</td>
+</tr>
+</tbody>
+</table>
+<h2 id="convenience">Convenience</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Returns</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>client.scan</code></td>
+<td><code>Zap::Scan</code></td>
+<td>High-level scanning workflows</td>
+</tr>
+</tbody>
+</table>
+<h2 id="low-level-methods">Low-Level Methods</h2>
+<pre><code class="language-crystal hljs"># JSON response
+client.request(path : String, params : Hash(String, String) = {}) : JSON::Any
+
+# Raw string response
+client.request_other(path : String, params : Hash(String, String) = {}) : String
+</code></pre>
+<p>These are used internally by all API modules. You can use them for endpoints not yet wrapped:</p>
+<pre><code class="language-crystal hljs">result = client.request(&quot;/JSON/core/view/getVersion/&quot;)
+</code></pre>
+
+    <div class="docs-footer">
+      <p>Zap.cr - Crystal client library for ZAP API</p>
+    </div>
+  </main>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<script src="https://zap.cr.hahwul.com/js/search.js"></script>
+</body>
+</html>

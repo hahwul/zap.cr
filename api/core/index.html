@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Core - Zap.cr</title>
+  <meta property="og:title" content="Core">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://zap.cr.hahwul.com/api/core/">
+<meta property="og:image" content="https://zap.cr.hahwul.com/og-images/api-core.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Core">
+<meta name="twitter:image" content="https://zap.cr.hahwul.com/og-images/api-core.svg">
+  <link rel="stylesheet" href="https://zap.cr.hahwul.com/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  
+</head>
+<body data-section="api">
+<header class="docs-header">
+  <a href="https://zap.cr.hahwul.com/" class="logo">Zap.cr <span>Documentation</span></a>
+  <nav>
+    <a href="https://zap.cr.hahwul.com/getting-started/">Getting Started</a>
+    <a href="https://zap.cr.hahwul.com/guide/">Guide</a>
+    <a href="https://zap.cr.hahwul.com/api/">API Reference</a>
+  </nav>
+  <div class="header-right">
+    <button class="search-trigger" onclick="openSearch()" title="Search (⌘K)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Search</span>
+      <kbd>⌘K</kbd>
+    </button>
+    <a href="https://github.com/hahwul/zap.cr">GitHub</a>
+  </div>
+</header>
+<div class="search-overlay" id="searchOverlay" onclick="if(event.target===this)closeSearch()">
+  <div class="search-modal">
+    <div class="search-input-wrap">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search documentation..." autocomplete="off">
+      <kbd onclick="closeSearch()">ESC</kbd>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+<div class="docs-container">
+  <aside class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/getting-started/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/installation/">Installation</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/quick-start/">Quick Start</a></li>
+        <li><a href="https://zap.cr.hahwul.com/getting-started/configuration/">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Guide</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/guide/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/scanning/">Scanning</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/spidering/">Spidering</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/authentication/">Authentication</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/context/">Context Management</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/alerts/">Alerts</a></li>
+        <li><a href="https://zap.cr.hahwul.com/guide/reporting/">Reporting</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">API Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="https://zap.cr.hahwul.com/api/">Overview</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/client/">Client</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/core/">Core</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/spider/">Spider</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/ajax-spider/">Ajax Spider</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/ascan/">Active Scan</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/pscan/">Passive Scan</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/alert/">Alert</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/context/">Context</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/search/">Search</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/network/">Network</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/scripts/">Script</a></li>
+        <li><a href="https://zap.cr.hahwul.com/api/others/">Others</a></li>
+      </ul>
+    </div>
+  </aside>
+  <main class="docs-main">
+    <h1>Core</h1>
+    <p>Core ZAP operations: sessions, messages, site tree, and global options.</p>
+<p><strong>Accessor:</strong> <code>client.core</code></p>
+<h2 id="views">Views</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>version</code></td>
+<td>ZAP version</td>
+</tr>
+<tr>
+<td><code>alerts(base_url, start, count)</code></td>
+<td>Alerts list</td>
+</tr>
+<tr>
+<td><code>alerts_summary(base_url)</code></td>
+<td>Alert counts by risk level</td>
+</tr>
+<tr>
+<td><code>number_of_alerts(base_url, risk_id)</code></td>
+<td>Alert count</td>
+</tr>
+<tr>
+<td><code>message(id)</code></td>
+<td>Single HTTP message by ID</td>
+</tr>
+<tr>
+<td><code>messages(base_url, start, count)</code></td>
+<td>HTTP messages list</td>
+</tr>
+<tr>
+<td><code>number_of_messages(base_url)</code></td>
+<td>Message count</td>
+</tr>
+<tr>
+<td><code>home_directory</code></td>
+<td>ZAP home directory</td>
+</tr>
+<tr>
+<td><code>site_tree(url)</code></td>
+<td>Discovered site tree</td>
+</tr>
+<tr>
+<td><code>sessions</code></td>
+<td>Session list</td>
+</tr>
+<tr>
+<td><code>session_properties</code></td>
+<td>Current session properties</td>
+</tr>
+<tr>
+<td><code>excluded_from_proxy</code></td>
+<td>Proxy exclusion regexes</td>
+</tr>
+<tr>
+<td><code>certificate_content</code></td>
+<td>Root CA certificate</td>
+</tr>
+<tr>
+<td><code>option(name)</code></td>
+<td>Get option by name</td>
+</tr>
+<tr>
+<td><code>option_default_user_agent</code></td>
+<td>Default User-Agent</td>
+</tr>
+<tr>
+<td><code>option_timeout_in_secs</code></td>
+<td>Request timeout</td>
+</tr>
+<tr>
+<td><code>option_http_state</code></td>
+<td>HTTP state enabled</td>
+</tr>
+<tr>
+<td><code>option_proxy_chain_name</code></td>
+<td>Upstream proxy host</td>
+</tr>
+<tr>
+<td><code>option_proxy_chain_port</code></td>
+<td>Upstream proxy port</td>
+</tr>
+<tr>
+<td><code>option_maximum_alert_instances</code></td>
+<td>Max alert instances</td>
+</tr>
+</tbody>
+</table>
+<h2 id="actions">Actions</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>new_session(name, overwrite)</code></td>
+<td>Create new session</td>
+</tr>
+<tr>
+<td><code>save_session(name, overwrite)</code></td>
+<td>Save current session</td>
+</tr>
+<tr>
+<td><code>snapshot_session(name, overwrite)</code></td>
+<td>Snapshot session</td>
+</tr>
+<tr>
+<td><code>delete_session(name)</code></td>
+<td>Delete session</td>
+</tr>
+<tr>
+<td><code>access_url(url, follow_redirects)</code></td>
+<td>Access a URL through ZAP</td>
+</tr>
+<tr>
+<td><code>shutdown</code></td>
+<td>Shutdown ZAP</td>
+</tr>
+<tr>
+<td><code>exclude_from_proxy(regex)</code></td>
+<td>Exclude from proxy</td>
+</tr>
+<tr>
+<td><code>clear_excluded_from_proxy</code></td>
+<td>Clear proxy exclusions</td>
+</tr>
+<tr>
+<td><code>generate_root_ca</code></td>
+<td>Generate new root CA</td>
+</tr>
+<tr>
+<td><code>add_session_token(site, name)</code></td>
+<td>Add session token</td>
+</tr>
+<tr>
+<td><code>remove_session_token(site, name)</code></td>
+<td>Remove session token</td>
+</tr>
+<tr>
+<td><code>set_option_default_user_agent(ua)</code></td>
+<td>Set User-Agent</td>
+</tr>
+<tr>
+<td><code>set_option_timeout_in_secs(timeout)</code></td>
+<td>Set timeout</td>
+</tr>
+<tr>
+<td><code>set_option_maximum_alert_instances(n)</code></td>
+<td>Set max alert instances</td>
+</tr>
+<tr>
+<td><code>delete_all_alerts</code></td>
+<td>Delete all alerts</td>
+</tr>
+</tbody>
+</table>
+<h2 id="examples">Examples</h2>
+<pre><code class="language-crystal hljs"># Check ZAP version
+puts client.core.version
+
+# Create a fresh session
+client.core.new_session(&quot;test&quot;, overwrite: true)
+
+# Browse site tree
+tree = client.core.site_tree
+</code></pre>
+
+    <div class="docs-footer">
+      <p>Zap.cr - Crystal client library for ZAP API</p>
+    </div>
+  </main>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<script src="https://zap.cr.hahwul.com/js/search.js"></script>
+</body>
+</html>
