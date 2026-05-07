@@ -103,7 +103,6 @@ module Zap
       def script_custom_vars(script_name : String) : JSON::Any
         @client.request("/JSON/script/view/scriptCustomVars/", {"scriptName" => script_name})
       end
-
     end
   end
 end

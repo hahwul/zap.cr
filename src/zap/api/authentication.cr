@@ -39,7 +39,6 @@ module Zap
       def set_logged_out_indicator(context_id : Int32, indicator : String) : JSON::Any
         @client.request("/JSON/authentication/action/setLoggedOutIndicator/", {"contextId" => context_id.to_s, "loggedOutIndicatorRegex" => indicator})
       end
-
     end
   end
 end
