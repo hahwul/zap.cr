@@ -419,7 +419,6 @@ module Zap
       def option_target_params_injectable : JSON::Any
         @client.request("/JSON/ascan/view/optionTargetParamsInjectable/")
       end
-
     end
   end
 end

@@ -15,7 +15,6 @@ module Zap
         params["statusCode"] = status_code.to_s if status_code >= 0
         @client.request("/JSON/authorization/action/setBasicAuthorizationDetectionMethod/", params)
       end
-
     end
   end
 end

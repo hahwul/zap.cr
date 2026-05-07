@@ -339,7 +339,6 @@ module Zap
       def scans : JSON::Any
         @client.request("/JSON/spider/view/scans/")
       end
-
     end
   end
 end

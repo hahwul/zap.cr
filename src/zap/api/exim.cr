@@ -49,7 +49,6 @@ module Zap
         params["followRedirects"] = follow_redirects.to_s unless follow_redirects.nil?
         @client.request_other("/OTHER/exim/other/sendHarRequest/", params)
       end
-
     end
   end
 end

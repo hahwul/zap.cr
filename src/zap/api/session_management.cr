@@ -21,7 +21,6 @@ module Zap
         params["methodConfigParams"] = method_config_params unless method_config_params.empty?
         @client.request("/JSON/sessionManagement/action/setSessionManagementMethod/", params)
       end
-
     end
   end
 end

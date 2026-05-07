@@ -99,7 +99,6 @@ module Zap
       def set_context_regexs(context_name : String, inc_regexs : String, exc_regexs : String) : JSON::Any
         @client.request("/JSON/context/action/setContextRegexs/", {"contextName" => context_name, "incRegexs" => inc_regexs, "excRegexs" => exc_regexs})
       end
-
     end
   end
 end

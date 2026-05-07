@@ -19,7 +19,6 @@ module Zap
       def set_enabled(context_id : Int32, enabled : Bool) : JSON::Any
         @client.request("/JSON/forcedUser/action/setForcedUserModeEnabled/", {"contextId" => context_id.to_s, "boolean" => enabled.to_s})
       end
-
     end
   end
 end
