@@ -1,0 +1,27 @@
+Lint/UselessAssign:
+  Excluded:
+    - spec/**/*.cr
+
+Lint/NotNil:
+  Excluded:
+    - spec/**/*.cr
+
+Style/MultilineStringLiteral:
+  Excluded:
+    - spec/**/*.cr
+
+Metrics/CyclomaticComplexity:
+  MaxComplexity: 25
+
+Naming/BlockParameterName:
+  MinNameLength: 1
+  AllowNamesEndingInNumbers: true
+
+Naming/QueryBoolMethods:
+  Enabled: false
+
+# Method names mirror ZAP's REST API (e.g. get_options, set_option_*, is_*).
+Naming/AccessorMethodName:
+  Enabled: false
+Naming/PredicateName:
+  Enabled: false

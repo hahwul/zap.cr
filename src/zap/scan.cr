@@ -8,7 +8,7 @@ module Zap
 
     # Run a full scan: Spider -> Ajax Spider -> Active Scan
     # Returns alerts summary when complete.
-    def full(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, &block : String, Int32 ->) : JSON::Any
+    def full(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, & : String, Int32 ->) : JSON::Any
       yield "spider", 0
       spider_id = start_spider(target, context_name)
       wait_for_spider(spider_id, poll_interval) { |progress| yield "spider", progress }
@@ -29,7 +29,7 @@ module Zap
     end
 
     # Spider + Active Scan (no Ajax Spider)
-    def spider_and_scan(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, &block : String, Int32 ->) : JSON::Any
+    def spider_and_scan(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, & : String, Int32 ->) : JSON::Any
       yield "spider", 0
       spider_id = start_spider(target, context_name)
       wait_for_spider(spider_id, poll_interval) { |progress| yield "spider", progress }
@@ -46,7 +46,7 @@ module Zap
     end
 
     # Spider only (traditional + ajax)
-    def spider_full(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, &block : String, Int32 ->) : JSON::Any
+    def spider_full(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, & : String, Int32 ->) : JSON::Any
       yield "spider", 0
       spider_id = start_spider(target, context_name)
       wait_for_spider(spider_id, poll_interval) { |progress| yield "spider", progress }
@@ -63,7 +63,7 @@ module Zap
     end
 
     # Active Scan only
-    def active(target : String, recurse : Bool = true, poll_interval : Time::Span = POLL_INTERVAL, &block : String, Int32 ->) : JSON::Any
+    def active(target : String, recurse : Bool = true, poll_interval : Time::Span = POLL_INTERVAL, & : String, Int32 ->) : JSON::Any
       yield "ascan", 0
       scan_id = start_active_scan(target, recurse)
       wait_for_active_scan(scan_id, poll_interval) { |progress| yield "ascan", progress }
@@ -76,7 +76,7 @@ module Zap
     end
 
     # Spider only (traditional)
-    def spider(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, &block : String, Int32 ->) : JSON::Any
+    def spider(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, & : String, Int32 ->) : JSON::Any
       yield "spider", 0
       spider_id = start_spider(target, context_name)
       wait_for_spider(spider_id, poll_interval) { |progress| yield "spider", progress }
@@ -89,7 +89,7 @@ module Zap
     end
 
     # Ajax Spider only
-    def ajax_spider(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, &block : String, Int32 ->) : JSON::Any
+    def ajax_spider(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, & : String, Int32 ->) : JSON::Any
       yield "ajaxSpider", 0
       start_ajax_spider(target, context_name)
       wait_for_ajax_spider(poll_interval) { |progress| yield "ajaxSpider", progress }
@@ -102,7 +102,7 @@ module Zap
     end
 
     # Wait for passive scan to complete
-    def wait_for_passive_scan(poll_interval : Time::Span = POLL_INTERVAL, &block : Int32 ->)
+    def wait_for_passive_scan(poll_interval : Time::Span = POLL_INTERVAL, & : Int32 ->)
       loop do
         result = @client.pscan.records_to_scan
         remaining = parse_int_field(result, "recordsToScan") || 0
@@ -121,7 +121,7 @@ module Zap
       parse_int_field(result, "scan") || raise Zap::Error.new("Failed to start spider: missing scan ID in response")
     end
 
-    private def wait_for_spider(scan_id : Int32, poll_interval : Time::Span, &block : Int32 ->)
+    private def wait_for_spider(scan_id : Int32, poll_interval : Time::Span, & : Int32 ->)
       loop do
         result = @client.spider.status(scan_id)
         progress = parse_int_field(result, "status") || 0
@@ -135,7 +135,7 @@ module Zap
       @client.ajax_spider.scan(url: target, context_name: context_name)
     end
 
-    private def wait_for_ajax_spider(poll_interval : Time::Span, &block : Int32 ->)
+    private def wait_for_ajax_spider(poll_interval : Time::Span, & : Int32 ->)
       loop do
         result = @client.ajax_spider.status
         status = result["status"]?.try(&.as_s) || "stopped"
@@ -150,7 +150,7 @@ module Zap
       parse_int_field(result, "scan") || raise Zap::Error.new("Failed to start active scan: missing scan ID in response")
     end
 
-    private def wait_for_active_scan(scan_id : Int32, poll_interval : Time::Span, &block : Int32 ->)
+    private def wait_for_active_scan(scan_id : Int32, poll_interval : Time::Span, & : Int32 ->)
       loop do
         result = @client.ascan.status(scan_id)
         progress = parse_int_field(result, "status") || 0
@@ -162,14 +162,12 @@ module Zap
 
     private def parse_int_field(json : JSON::Any, field : String) : Int32?
       value = json[field]?
-      return nil unless value
+      return unless value
       case raw = value.raw
       when Int64
         raw.to_i32
       when String
         raw.to_i32?
-      else
-        nil
       end
     end
   end

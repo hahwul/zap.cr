@@ -46,10 +46,10 @@ module Zap
 
     # API components (lazily cached)
     macro api_component(name, type)
-      @_{{name.id}} : {{type}}?
+      @_{{ name.id }} : {{ type }}?
 
-      def {{name.id}} : {{type}}
-        @_{{name.id}} ||= {{type}}.new(self)
+      def {{ name.id }} : {{ type }}
+        @_{{ name.id }} ||= {{ type }}.new(self)
       end
     end
 

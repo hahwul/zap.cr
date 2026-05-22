@@ -5,7 +5,7 @@ describe Zap::Scan do
     it "#spider polls until complete" do
       with_mock_zap do |mock, client|
         call_count = 0
-        mock.response_handler = ->(path : String, params : URI::Params) {
+        mock.response_handler = ->(path : String, _params : URI::Params) {
           call_count += 1
           case path
           when "/JSON/spider/action/scan/"
@@ -34,7 +34,7 @@ describe Zap::Scan do
     it "#active polls until complete" do
       with_mock_zap do |mock, client|
         call_count = 0
-        mock.response_handler = ->(path : String, params : URI::Params) {
+        mock.response_handler = ->(path : String, _params : URI::Params) {
           call_count += 1
           case path
           when "/JSON/ascan/action/scan/"
@@ -62,7 +62,7 @@ describe Zap::Scan do
   describe "error handling" do
     it "raises error when spider scan ID is missing" do
       with_mock_zap do |mock, client|
-        mock.response_handler = ->(path : String, params : URI::Params) {
+        mock.response_handler = ->(_path : String, _params : URI::Params) {
           %({"error": "no scan"})
         }
 
@@ -74,7 +74,7 @@ describe Zap::Scan do
 
     it "raises error when active scan ID is missing" do
       with_mock_zap do |mock, client|
-        mock.response_handler = ->(path : String, params : URI::Params) {
+        mock.response_handler = ->(_path : String, _params : URI::Params) {
           %({"error": "no scan"})
         }
 
@@ -88,7 +88,7 @@ describe Zap::Scan do
   describe "without block" do
     it "#spider works without block" do
       with_mock_zap do |mock, client|
-        mock.response_handler = ->(path : String, params : URI::Params) {
+        mock.response_handler = ->(path : String, _params : URI::Params) {
           case path
           when "/JSON/spider/action/scan/"
             %({"scan": "1"})
@@ -108,7 +108,7 @@ describe Zap::Scan do
 
     it "#active works without block" do
       with_mock_zap do |mock, client|
-        mock.response_handler = ->(path : String, params : URI::Params) {
+        mock.response_handler = ->(path : String, _params : URI::Params) {
           case path
           when "/JSON/ascan/action/scan/"
             %({"scan": "0"})
@@ -131,7 +131,7 @@ describe Zap::Scan do
     it "#full runs spider, ajax spider, and active scan" do
       with_mock_zap do |mock, client|
         call_count = 0
-        mock.response_handler = ->(path : String, params : URI::Params) {
+        mock.response_handler = ->(path : String, _params : URI::Params) {
           call_count += 1
           case path
           when "/JSON/spider/action/scan/"
@@ -158,7 +158,7 @@ describe Zap::Scan do
           phases << {phase, progress}
         end
 
-        phase_names = phases.map(&.[0]).uniq
+        phase_names = phases.map(&.[0]).uniq!
         phase_names.should contain("spider")
         phase_names.should contain("ajaxSpider")
         phase_names.should contain("ascan")
@@ -170,7 +170,7 @@ describe Zap::Scan do
   describe "spider_and_scan workflow" do
     it "#spider_and_scan runs spider and active scan without ajax spider" do
       with_mock_zap do |mock, client|
-        mock.response_handler = ->(path : String, params : URI::Params) {
+        mock.response_handler = ->(path : String, _params : URI::Params) {
           case path
           when "/JSON/spider/action/scan/"
             %({"scan": "1"})
@@ -192,7 +192,7 @@ describe Zap::Scan do
           phases << {phase, progress}
         end
 
-        phase_names = phases.map(&.[0]).uniq
+        phase_names = phases.map(&.[0]).uniq!
         phase_names.should contain("spider")
         phase_names.should contain("ascan")
         phase_names.should_not contain("ajaxSpider")
@@ -205,7 +205,7 @@ describe Zap::Scan do
     it "#ajax_spider polls until stopped" do
       with_mock_zap do |mock, client|
         call_count = 0
-        mock.response_handler = ->(path : String, params : URI::Params) {
+        mock.response_handler = ->(path : String, _params : URI::Params) {
           call_count += 1
           case path
           when "/JSON/ajaxSpider/action/scan/"
@@ -234,7 +234,7 @@ describe Zap::Scan do
   describe "spider_full workflow" do
     it "#spider_full runs traditional and ajax spider" do
       with_mock_zap do |mock, client|
-        mock.response_handler = ->(path : String, params : URI::Params) {
+        mock.response_handler = ->(path : String, _params : URI::Params) {
           case path
           when "/JSON/spider/action/scan/"
             %({"scan": "1"})
@@ -261,7 +261,7 @@ describe Zap::Scan do
     it "defaults to 0 progress on non-numeric spider status" do
       with_mock_zap do |mock, client|
         status_calls = 0
-        mock.response_handler = ->(path : String, params : URI::Params) {
+        mock.response_handler = ->(path : String, _params : URI::Params) {
           case path
           when "/JSON/spider/action/scan/"
             %({"scan": "1"})
@@ -290,7 +290,7 @@ describe Zap::Scan do
     it "defaults to 0 progress on missing status field" do
       with_mock_zap do |mock, client|
         status_calls = 0
-        mock.response_handler = ->(path : String, params : URI::Params) {
+        mock.response_handler = ->(path : String, _params : URI::Params) {
           case path
           when "/JSON/ascan/action/scan/"
             %({"scan": "0"})
