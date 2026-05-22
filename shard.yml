@@ -1,6 +1,11 @@
 name: zap
 version: 0.1.0
-description: Crystal client library for ZAP API
+description: |
+  Crystal client library for the OWASP ZAP (Zed Attack Proxy) HTTP API.
+  Provides typed access to spider, active scan, and core endpoints.
+repository: https://github.com/hahwul/zap.cr
+homepage: https://github.com/hahwul/zap.cr
+documentation: https://github.com/hahwul/zap.cr#readme
 
 authors:
   - hahwul <hahwul@gmail.com>
@@ -8,3 +13,8 @@ authors:
 crystal: '>= 1.19.1'
 
 license: MIT
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
+    branch: master
