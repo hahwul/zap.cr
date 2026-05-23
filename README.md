@@ -2,6 +2,18 @@
 
 Crystal client library for [ZAP](https://www.zaproxy.org/) API.
 
+## Requirements
+
+zap.cr talks to a running ZAP daemon over HTTP. Before using the library:
+
+- Install and run ZAP — `zap.sh -daemon -port 8080 -config api.key=YOUR_KEY`
+  (or use the official Docker image `zaproxy/zap-stable`).
+- Set the daemon URL and API key via constructor arguments or environment
+  variables `ZAP_URL` (default `http://localhost:8080`) and `ZAP_API_KEY`.
+
+See [`examples/README.md`](./examples) for runnable scripts that cover spider,
+active scan, alerts, contexts, and report generation.
+
 ## Installation
 
 Add the dependency to your `shard.yml`:
