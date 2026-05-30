@@ -29,12 +29,23 @@ module Zap
   end
 
   class Client
-    property base_url : String
+    # `base_url` and the timeouts are read-only: the shared `HTTP::Client`
+    # (`@http`) is memoized from them on first use, so mutating them after
+    # construction would silently have no effect. Build a new `Client` if you
+    # need a different daemon URL or timeouts. `api_key` stays mutable because
+    # it is read per request and does not feed the memoized connection.
+    getter base_url : String
     property api_key : String
-    property connect_timeout : Time::Span
-    property read_timeout : Time::Span
+    getter connect_timeout : Time::Span
+    getter read_timeout : Time::Span
 
     @http : HTTP::Client?
+    # Serializes request execution through the shared `HTTP::Client`. Crystal's
+    # HTTP::Client is not safe for overlapping use from multiple fibers, and a
+    # single memoized instance is shared by every API component, so concurrent
+    # component calls / concurrent scans could otherwise interleave on the wire
+    # and corrupt responses. Single-fiber behavior is unchanged.
+    @request_mutex = Mutex.new
 
     def initialize(
       @base_url : String = "http://localhost:8080",
@@ -42,6 +53,11 @@ module Zap
       @connect_timeout : Time::Span = 30.seconds,
       @read_timeout : Time::Span = 300.seconds,
     )
+      # ENV fallback: when an explicit value is not supplied, fall back to
+      # ZAP_URL / ZAP_API_KEY so the daemon location can be configured from the
+      # environment (as documented in the README).
+      @base_url = ENV["ZAP_URL"] if @base_url == "http://localhost:8080" && ENV.has_key?("ZAP_URL") && !ENV["ZAP_URL"].empty?
+      @api_key = ENV["ZAP_API_KEY"] if @api_key.empty? && ENV.has_key?("ZAP_API_KEY") && !ENV["ZAP_API_KEY"].empty?
     end
 
     # API components (lazily cached)
@@ -135,7 +151,15 @@ module Zap
       query = URI::Params.encode(params)
       full_path = query.empty? ? path : "#{path}?#{query}"
 
-      response = http_client.get(full_path)
+      # Serialize use of the shared HTTP::Client. Crystal's HTTP::Client cannot
+      # be used from multiple fibers concurrently, and the same memoized
+      # instance backs every API component, so concurrent calls would otherwise
+      # interleave requests/responses on one connection. The mutex also guards
+      # the lazy construction of `@http`, preventing a race that builds two
+      # clients. For the common single-fiber case this is an uncontended lock.
+      response = @request_mutex.synchronize do
+        http_client.get(full_path)
+      end
 
       unless response.success?
         # The body may echo the request parameters — including any secret

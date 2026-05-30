@@ -117,7 +117,9 @@ module Zap
     end
 
     private def start_spider(target : String, context_name : String = "") : Int32
-      result = @client.spider.scan(url: target, context_name: context_name)
+      # `recurse: true` so a full scan crawls into discovered links rather
+      # than only hitting the seed URL.
+      result = @client.spider.scan(url: target, context_name: context_name, recurse: true)
       parse_int_field(result, "scan") || raise Zap::Error.new("Failed to start spider: missing scan ID in response")
     end
 
