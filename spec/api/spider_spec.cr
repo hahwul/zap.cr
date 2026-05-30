@@ -11,6 +11,45 @@ describe Zap::Api::Spider do
     end
   end
 
+  it "#scan recurses by default" do
+    with_mock_zap do |mock, client|
+      mock.response_body = %({"scan": "1"})
+      client.spider.scan(url: "http://example.com")
+      # recurse must default to true so the spider crawls discovered links.
+      mock.last_params["recurse"].should eq("true")
+      # maxChildren is omitted (no limit) unless explicitly set.
+      mock.last_params["maxChildren"]?.should be_nil
+    end
+  end
+
+  it "#scan honours recurse: false and maxChildren" do
+    with_mock_zap do |mock, client|
+      mock.response_body = %({"scan": "1"})
+      client.spider.scan(url: "http://example.com", recurse: false, max_children: 10)
+      mock.last_params["recurse"].should eq("false")
+      mock.last_params["maxChildren"].should eq("10")
+    end
+  end
+
+  it "#scan sends the exact expected query params" do
+    with_mock_zap do |mock, client|
+      mock.response_body = %({"scan": "2"})
+      client.spider.scan(
+        url: "http://example.com",
+        context_name: "ctx",
+        subtree_only: true,
+        recurse: true,
+        max_children: 5,
+      )
+      mock.last_path.should eq("/JSON/spider/action/scan/")
+      mock.last_params["url"].should eq("http://example.com")
+      mock.last_params["contextName"].should eq("ctx")
+      mock.last_params["subtreeOnly"].should eq("true")
+      mock.last_params["recurse"].should eq("true")
+      mock.last_params["maxChildren"].should eq("5")
+    end
+  end
+
   it "#scan with context" do
     with_mock_zap do |mock, client|
       mock.response_body = %({"scan": "2"})

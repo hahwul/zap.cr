@@ -2,6 +2,7 @@ require "http/client"
 require "json"
 require "uri"
 
+require "./zap/enums"
 require "./zap/client"
 require "./zap/api/*"
 require "./zap/scan"

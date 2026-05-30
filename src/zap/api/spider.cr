@@ -5,12 +5,19 @@ module Zap
       end
 
       # Actions
-      def scan(url : String = "", context_name : String = "", subtree_only : Bool = false, in_scope : Bool = false) : JSON::Any
+      #
+      # `recurse` controls whether the spider follows links it discovers
+      # (ZAP's `recurse` boolean). It defaults to `true` so a spider actually
+      # crawls the site. `max_children` maps to ZAP's `maxChildren` and caps
+      # the number of child nodes crawled per node; the default of `0` (the
+      # parameter is omitted) means "no limit".
+      def scan(url : String = "", context_name : String = "", subtree_only : Bool = false, recurse : Bool = true, max_children : Int32 = 0) : JSON::Any
         params = {} of String => String
         params["url"] = url unless url.empty?
         params["contextName"] = context_name unless context_name.empty?
         params["subtreeOnly"] = subtree_only.to_s
-        params["recurse"] = in_scope.to_s
+        params["recurse"] = recurse.to_s
+        params["maxChildren"] = max_children.to_s if max_children > 0
         @client.request("/JSON/spider/action/scan/", params)
       end
 
