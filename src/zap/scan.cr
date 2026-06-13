@@ -167,7 +167,11 @@ module Zap
       return unless value
       case raw = value.raw
       when Int64
-        raw.to_i32
+        # `Int64#to_i32` raises OverflowError for values outside the Int32
+        # range (e.g. a scan id/value > Int32::MAX). Range-check first and
+        # return nil (so callers fall back to `0`) instead of crashing.
+        # `Int64#to_i32?` is not available on the Crystal versions CI targets.
+        Int32::MIN <= raw <= Int32::MAX ? raw.to_i32 : nil
       when String
         raw.to_i32?
       end

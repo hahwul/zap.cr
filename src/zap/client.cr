@@ -158,7 +158,15 @@ module Zap
       # the lazy construction of `@http`, preventing a race that builds two
       # clients. For the common single-fiber case this is an uncontended lock.
       response = @request_mutex.synchronize do
-        http_client.get(full_path)
+        begin
+          http_client.get(full_path)
+        rescue ex : IO::Error
+          # IO::Error is the common ancestor of the socket / TCP, timeout
+          # (IO::TimeoutError) and OpenSSL transport failures raised by
+          # HTTP::Client. Surface them as the library's error type instead of
+          # leaking a raw IO/Socket/OpenSSL exception to callers.
+          raise Zap::Error.new("Network error: #{ex.message}")
+        end
       end
 
       unless response.success?
@@ -178,8 +186,17 @@ module Zap
 
     private def http_client : HTTP::Client
       @http ||= begin
-        uri = URI.parse(@base_url)
-        client = HTTP::Client.new(uri)
+        # A malformed `base_url` makes URI.parse raise URI::Error, or makes
+        # HTTP::Client.new raise ArgumentError ("Missing scheme") when the URI
+        # lacks a usable scheme/host. Convert both into the library's error
+        # type so callers see a clear, typed failure instead of a bare
+        # ArgumentError/URI::Error.
+        begin
+          uri = URI.parse(@base_url)
+          client = HTTP::Client.new(uri)
+        rescue ex : URI::Error | ArgumentError
+          raise Zap::Error.new("Invalid base_url: #{ex.message}")
+        end
         client.connect_timeout = @connect_timeout
         client.read_timeout = @read_timeout
         client
