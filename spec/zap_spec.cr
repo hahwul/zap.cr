@@ -2,7 +2,7 @@ require "./spec_helper"
 
 describe Zap do
   it "has a version" do
-    Zap::VERSION.should eq("0.1.0")
+    Zap::VERSION.should eq("0.2.0")
   end
 end
 
