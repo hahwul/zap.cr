@@ -6,7 +6,7 @@ Get up and running with zap.cr in minutes.
 
 ## Prerequisites
 
-- [Crystal](https://crystal-lang.org/) >= 1.19.1
+- [Crystal](https://crystal-lang.org/) >= 1.21.0
 - A running [ZAP](https://zaproxy.org) instance with API enabled
 
 ## What You'll Learn
