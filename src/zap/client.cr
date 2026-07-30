@@ -141,9 +141,17 @@ module Zap
     end
 
     # Close the underlying HTTP connection and release resources.
+    #
+    # Takes the same lock as request execution, so closing from one fiber while
+    # another is mid-request waits for that request to finish instead of
+    # yanking the socket out from under it (which surfaced as a spurious
+    # "Network error"/truncated response). A later request transparently opens
+    # a fresh connection, and closing twice is a no-op.
     def close
-      @http.try(&.close)
-      @http = nil
+      @request_mutex.synchronize do
+        @http.try(&.close)
+        @http = nil
+      end
     end
 
     # Low-level request methods

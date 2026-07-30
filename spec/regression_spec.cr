@@ -194,4 +194,60 @@ describe "regressions" do
       end
     end
   end
+
+  describe "R5: close is serialized against in-flight requests" do
+    it "waits for a request that is already on the wire" do
+      arrived = Channel(Nil).new
+      release = Channel(Nil).new
+      srv = HTTP::Server.new do |ctx|
+        arrived.send(nil)
+        release.receive
+        ctx.response.print %({"Result": "OK"})
+      end
+      address = srv.bind_tcp("127.0.0.1", 0)
+      spawn { srv.listen }
+      Fiber.yield
+
+      client = Zap::Client.new("http://127.0.0.1:#{address.port}", "k")
+      order = [] of String
+      done = Channel(Nil).new
+
+      begin
+        spawn do
+          client.core.version
+          order << "request"
+          done.send(nil)
+        end
+        # The handler only signals once the request is fully on the wire, so
+        # the requesting fiber is provably inside perform_request from here.
+        arrived.receive
+
+        spawn do
+          client.close
+          order << "close"
+          done.send(nil)
+        end
+        Fiber.yield
+
+        release.send(nil)
+        2.times { done.receive }
+
+        # Without the lock, close ran immediately and tore down the socket
+        # while the response was still being read.
+        order.should eq(["request", "close"])
+      ensure
+        client.close
+        srv.close
+      end
+    end
+
+    it "reopens transparently after a close and tolerates a double close" do
+      with_mock_zap do |_mock, client|
+        client.core.version
+        client.close
+        client.close
+        client.core.version["Result"].should eq("OK")
+      end
+    end
+  end
 end
