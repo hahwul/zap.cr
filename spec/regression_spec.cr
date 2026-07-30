@@ -213,4 +213,80 @@ describe "regressions" do
       end
     end
   end
+
+  describe "Scan polling" do
+    it "gives up instead of looping forever on a scan that never progresses" do
+      with_mock_zap do |mock, client|
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/ascan/action/scan/" then %({"scan": "0"})
+          when "/JSON/ascan/view/status/" then %({"status": "0"})
+          else                                 %({"Result": "OK"})
+          end
+        }
+
+        expect_raises(Zap::Error, /Timed out waiting for active scan/) do
+          client.scan.active("http://example.com", poll_interval: 0.seconds, timeout: 20.milliseconds)
+        end
+      end
+    end
+
+    it "does not time out a scan that finishes in budget" do
+      with_mock_zap do |mock, client|
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/ascan/action/scan/"        then %({"scan": "0"})
+          when "/JSON/ascan/view/status/"        then %({"status": "100"})
+          when "/JSON/alert/view/alertsSummary/" then %({"alertsSummary": {}})
+          else                                        %({"Result": "OK"})
+          end
+        }
+
+        result = client.scan.active("http://example.com", poll_interval: 0.seconds, timeout: 10.seconds)
+        result["alertsSummary"].should_not be_nil
+      end
+    end
+
+    it "reads a float progress value instead of stalling at 0" do
+      with_mock_zap do |mock, client|
+        polls = 0
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/ascan/action/scan/"
+            %({"scan": "0"})
+          when "/JSON/ascan/view/status/"
+            polls += 1
+            # A JSON number with a fractional part, then a float-ish string.
+            polls <= 1 ? %({"status": 42.0}) : %({"status": "100.0"})
+          when "/JSON/alert/view/alertsSummary/"
+            %({"alertsSummary": {}})
+          else
+            %({"Result": "OK"})
+          end
+        }
+
+        progress = [] of Int32
+        client.scan.active("http://example.com", poll_interval: 0.seconds) do |_phase, pct|
+          progress << pct
+        end
+        progress.should contain(42)
+        progress.should contain(100)
+      end
+    end
+
+    it "does not crash when the ajax spider reports a non-string status" do
+      with_mock_zap do |mock, client|
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/ajaxSpider/view/status/"      then %({"status": 0})
+          when "/JSON/ajaxSpider/view/fullResults/" then %({"fullResults": []})
+          else                                           %({"Result": "OK"})
+          end
+        }
+
+        result = client.scan.ajax_spider("http://example.com", poll_interval: 0.seconds)
+        result["fullResults"].should_not be_nil
+      end
+    end
+  end
 end
