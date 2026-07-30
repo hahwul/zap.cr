@@ -94,9 +94,28 @@ describe Zap::Api::Spider do
   it "#results" do
     with_mock_zap do |mock, client|
       mock.response_body = %({"results": ["http://example.com/a", "http://example.com/b"]})
-      client.spider.results(start: 0, count: 10)
-      mock.last_params["start"].should eq("0")
-      mock.last_params["count"].should eq("10")
+      client.spider.results(3)
+      # ZAP's spider results view selects a scan by id; it has no start/count.
+      mock.last_params["scanId"].should eq("3")
+      mock.last_params.has_key?("start").should be_false
+      mock.last_params.has_key?("count").should be_false
+    end
+  end
+
+  it "#results omits scanId when not given" do
+    with_mock_zap do |mock, client|
+      mock.response_body = %({"results": []})
+      client.spider.results
+      mock.last_params.has_key?("scanId").should be_false
+    end
+  end
+
+  it "#full_results selects the scan by id" do
+    with_mock_zap do |mock, client|
+      mock.response_body = %({"fullResults": []})
+      client.spider.full_results(4)
+      mock.last_path.should eq("/JSON/spider/view/fullResults/")
+      mock.last_params["scanId"].should eq("4")
     end
   end
 
@@ -134,13 +153,6 @@ describe Zap::Api::Spider do
     with_mock_zap do |mock, client|
       client.spider.set_option_max_depth(5)
       mock.last_params["Integer"].should eq("5")
-    end
-  end
-
-  it "#full_results" do
-    with_mock_zap do |mock, client|
-      client.spider.full_results
-      mock.last_path.should eq("/JSON/spider/view/fullResults/")
     end
   end
 

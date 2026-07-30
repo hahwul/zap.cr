@@ -130,15 +130,19 @@ module Zap
         @client.request("/JSON/spider/view/status/", params)
       end
 
-      def results(start : Int32 = -1, count : Int32 = -1) : JSON::Any
+      # The URLs found by a spider scan. ZAP selects the scan by id here; it
+      # has no pagination for this view (unlike the AJAX Spider's `results`).
+      # Omitting the scan id reports on the most recent scan.
+      def results(scan_id : Int32 = -1) : JSON::Any
         params = {} of String => String
-        params["start"] = start.to_s if start >= 0
-        params["count"] = count.to_s if count >= 0
+        params["scanId"] = scan_id.to_s if scan_id >= 0
         @client.request("/JSON/spider/view/results/", params)
       end
 
-      def full_results : JSON::Any
-        @client.request("/JSON/spider/view/fullResults/")
+      # The full results (URLs in/out of scope, plus those skipped) for a
+      # spider scan. ZAP requires the scan id for this view.
+      def full_results(scan_id : Int32) : JSON::Any
+        @client.request("/JSON/spider/view/fullResults/", {"scanId" => scan_id.to_s})
       end
 
       def number_of_results : JSON::Any

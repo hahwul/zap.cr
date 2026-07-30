@@ -55,7 +55,7 @@ module Zap
       start_ajax_spider(target, context_name)
       wait_for_ajax_spider(poll_interval) { |progress| yield "ajaxSpider", progress }
 
-      @client.spider.full_results
+      @client.spider.full_results(spider_id)
     end
 
     def spider_full(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL) : JSON::Any
@@ -81,7 +81,7 @@ module Zap
       spider_id = start_spider(target, context_name)
       wait_for_spider(spider_id, poll_interval) { |progress| yield "spider", progress }
 
-      @client.spider.full_results
+      @client.spider.full_results(spider_id)
     end
 
     def spider(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL) : JSON::Any
