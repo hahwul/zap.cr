@@ -154,6 +154,6 @@ Additional API modules for specialized functionality.
 | Reveal | `client.reveal` | `set_reveal_hidden_fields(bool)` |
 | Params | `client.params` | `params(site)` - discovered parameters |
 | Acsrf | `client.acsrf` | Anti-CSRF token management |
-| Access Control | `client.access_control` | `scan(context_id)`, `write_html_report(...)` |
+| Access Control | `client.access_control` | `scan(context_id, user_id, ...)`, `write_html_report(...)` |
 | Breakpoints | `client.breakpoints` | HTTP breakpoint debugging |
 | Websocket | `client.websocket` | `channels`, `messages`, `send_text_message` |

@@ -13,13 +13,17 @@ module Zap
       # `-1` meaning "no filter") or a `Zap::Risk` enum value, which is mapped to
       # its integer id. Passing the enum reads more clearly at call sites without
       # breaking the existing `Int32` API.
-      def alerts(base_url : String = "", start : Int32 = -1, count : Int32 = -1, risk_id : Int32 | Zap::Risk = -1, context_name : String = "") : JSON::Any
+      # `false_positive` filters on whether alerts have been marked as false
+      # positives; leaving it `nil` returns both.
+      def alerts(base_url : String = "", start : Int32 = -1, count : Int32 = -1, risk_id : Int32 | Zap::Risk = -1, context_name : String = "", false_positive : Bool? = nil) : JSON::Any
+        rid = Zap.risk_id(risk_id)
         params = {} of String => String
         params["baseurl"] = base_url unless base_url.empty?
         params["start"] = start.to_s if start >= 0
         params["count"] = count.to_s if count >= 0
-        params["riskId"] = Zap.risk_id(risk_id).to_s if Zap.risk_id(risk_id) >= 0
+        params["riskId"] = rid.to_s if rid >= 0
         params["contextName"] = context_name unless context_name.empty?
+        params["falsePositive"] = false_positive.to_s unless false_positive.nil?
         @client.request("/JSON/alert/view/alerts/", params)
       end
 

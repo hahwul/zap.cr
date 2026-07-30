@@ -214,6 +214,82 @@ describe "regressions" do
     end
   end
 
+  describe "optional criteria ZAP accepts" do
+    it "alertFilter sends the attack/evidence/methods criteria" do
+      with_mock_zap do |mock, client|
+        client.alert_filter.add_alert_filter(
+          1, 10016, Zap::Risk::Low,
+          url: ".*\\.css", url_is_regex: true,
+          parameter: "q", parameter_is_regex: false,
+          attack: "<script>", attack_is_regex: false,
+          evidence: "alert(1)", evidence_is_regex: true,
+          methods: "GET,POST",
+        )
+        mock.last_params["contextId"].should eq("1")
+        mock.last_params["newLevel"].should eq("1")
+        mock.last_params["urlIsRegex"].should eq("true")
+        mock.last_params["parameterIsRegex"].should eq("false")
+        mock.last_params["attack"].should eq("<script>")
+        mock.last_params["evidence"].should eq("alert(1)")
+        mock.last_params["evidenceIsRegex"].should eq("true")
+        mock.last_params["methods"].should eq("GET,POST")
+      end
+    end
+
+    it "alertFilter omits an isRegex flag whose criterion was not given" do
+      with_mock_zap do |mock, client|
+        client.alert_filter.add_global_alert_filter(10016, -1, url: ".*\\.css")
+        mock.last_params["urlIsRegex"].should eq("false")
+        mock.last_params.has_key?("attackIsRegex").should be_false
+        mock.last_params.has_key?("evidenceIsRegex").should be_false
+        mock.last_params.has_key?("parameterIsRegex").should be_false
+      end
+    end
+
+    it "alert alerts filters on falsePositive only when asked" do
+      with_mock_zap do |mock, client|
+        mock.response_body = %({"alerts": []})
+        client.alert.alerts
+        mock.last_params.has_key?("falsePositive").should be_false
+
+        client.alert.alerts(false_positive: false)
+        mock.last_params["falsePositive"].should eq("false")
+      end
+    end
+
+    it "openapi imports as a user" do
+      with_mock_zap do |mock, client|
+        client.openapi.import_url("http://example.com/openapi.json", context_id: 1, user_id: 2)
+        mock.last_params["contextId"].should eq("1")
+        mock.last_params["userId"].should eq("2")
+      end
+    end
+
+    it "script load passes a charset" do
+      with_mock_zap do |mock, client|
+        client.script.load("s", "standalone", "ECMAScript", "/tmp/s.js", charset: "ISO-8859-1")
+        mock.last_params["charset"].should eq("ISO-8859-1")
+      end
+    end
+
+    it "replacer rules can be scoped by url and method" do
+      with_mock_zap do |mock, client|
+        client.replacer.add_rule("r", true, "REQ_HEADER", false, "Authorization", url: ".*/api/.*", method: "POST")
+        mock.last_params["url"].should eq(".*/api/.*")
+        mock.last_params["method"].should eq("POST")
+      end
+    end
+
+    it "ajaxSpider excluded elements accept the matching criteria" do
+      with_mock_zap do |mock, client|
+        client.ajax_spider.add_excluded_element("ctx", "logout link", "a", xpath: "//a[@id='logout']", text: "Log out")
+        mock.last_params["xpath"].should eq("//a[@id='logout']")
+        mock.last_params["text"].should eq("Log out")
+        mock.last_params.has_key?("attributeName").should be_false
+      end
+    end
+  end
+
   describe "Scan polling" do
     it "gives up instead of looping forever on a scan that never progresses" do
       with_mock_zap do |mock, client|

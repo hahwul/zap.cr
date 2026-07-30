@@ -11,9 +11,21 @@ describe Zap::Api::AccessControl do
 
   it "#scan" do
     with_mock_zap do |mock, client|
-      client.access_control.scan(1)
+      client.access_control.scan(1, 2)
       mock.last_path.should eq("/JSON/accessControl/action/scan/")
       mock.last_params["contextId"].should eq("1")
+      # ZAP requires the user to scan as.
+      mock.last_params["userId"].should eq("2")
+      mock.last_params.has_key?("raiseAlert").should be_false
+    end
+  end
+
+  it "#scan with the optional flags" do
+    with_mock_zap do |mock, client|
+      client.access_control.scan(1, 2, scan_as_unauth_user: true, raise_alert: false, alert_risk_level: "High")
+      mock.last_params["scanAsUnAuthUser"].should eq("true")
+      mock.last_params["raiseAlert"].should eq("false")
+      mock.last_params["alertRiskLevel"].should eq("High")
     end
   end
 

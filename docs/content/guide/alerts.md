@@ -91,11 +91,13 @@ client.alert_filter.add_global_alert_filter(
   url: ".*\\.css$"
 )
 
-# Context-specific filter
+# Context-specific filter, narrowed by attack/evidence and HTTP method
 client.alert_filter.add_alert_filter(
   context_id: 1,
   rule_id: 10016,
-  new_level: -1
+  new_level: -1,
+  evidence: "X-Frame-Options",
+  methods: "GET,POST"
 )
 
 # Apply filters

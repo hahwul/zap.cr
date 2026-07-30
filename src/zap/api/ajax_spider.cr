@@ -37,10 +37,17 @@ module Zap
         @client.request("/JSON/ajaxSpider/action/setEnabledAllowedResource/", {"regex" => regex, "enabled" => enabled.to_s})
       end
 
-      def add_excluded_element(context_name : String, description : String, element : String) : JSON::Any
-        @client.request("/JSON/ajaxSpider/action/addExcludedElement/", {
-          "contextName" => context_name, "description" => description, "element" => element,
-        })
+      # The optional criteria narrow which elements are excluded: an `xpath`,
+      # the element's `text`, or an attribute name/value pair. Mirrors
+      # `#modify_excluded_element`.
+      def add_excluded_element(context_name : String, description : String, element : String, xpath : String = "", text : String = "", attribute_name : String = "", attribute_value : String = "", enabled : String = "") : JSON::Any
+        params = {"contextName" => context_name, "description" => description, "element" => element}
+        params["xpath"] = xpath unless xpath.empty?
+        params["text"] = text unless text.empty?
+        params["attributeName"] = attribute_name unless attribute_name.empty?
+        params["attributeValue"] = attribute_value unless attribute_value.empty?
+        params["enabled"] = enabled unless enabled.empty?
+        @client.request("/JSON/ajaxSpider/action/addExcludedElement/", params)
       end
 
       def remove_excluded_element(context_name : String, description : String) : JSON::Any
