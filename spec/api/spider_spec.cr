@@ -62,9 +62,23 @@ describe Zap::Api::Spider do
   it "#scan_as_user" do
     with_mock_zap do |mock, client|
       mock.response_body = %({"scan": "3"})
-      client.spider.scan_as_user("ctx", "admin", url: "http://example.com")
-      mock.last_params["contextName"].should eq("ctx")
-      mock.last_params["userName"].should eq("admin")
+      client.spider.scan_as_user(1, 0, url: "http://example.com")
+      # ZAP's spider scanAsUser mandates the numeric ids and accepts no
+      # contextName / userName at all.
+      mock.last_params["contextId"].should eq("1")
+      mock.last_params["userId"].should eq("0")
+      mock.last_params["contextName"]?.should be_nil
+      mock.last_params["userName"]?.should be_nil
+      mock.last_params["recurse"].should eq("true")
+    end
+  end
+
+  it "#scan_as_user forwards recurse and max_children" do
+    with_mock_zap do |mock, client|
+      mock.response_body = %({"scan": "3"})
+      client.spider.scan_as_user(2, 5, url: "http://example.com", recurse: false, max_children: 7)
+      mock.last_params["recurse"].should eq("false")
+      mock.last_params["maxChildren"].should eq("7")
     end
   end
 
