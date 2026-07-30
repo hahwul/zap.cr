@@ -85,4 +85,15 @@ describe "regressions" do
       end
     end
   end
+
+  describe "ZAP parameter names" do
+    it "sends numberOfInstances for core setOptionMaximumAlertInstances" do
+      with_mock_zap do |mock, client|
+        client.core.set_option_maximum_alert_instances(25)
+        mock.last_path.should eq("/JSON/core/action/setOptionMaximumAlertInstances/")
+        mock.last_params["numberOfInstances"].should eq("25")
+        mock.last_params.has_key?("Integer").should be_false
+      end
+    end
+  end
 end
