@@ -96,4 +96,54 @@ describe "regressions" do
       end
     end
   end
+
+  describe "endpoints that ZAP requires parameters for" do
+    it "ruleConfig sends key (and value)" do
+      with_mock_zap do |mock, client|
+        client.rule_config.rule_config_value("rules.common.sleep")
+        mock.last_params["key"].should eq("rules.common.sleep")
+
+        client.rule_config.reset_rule_config_value("rules.common.sleep")
+        mock.last_params["key"].should eq("rules.common.sleep")
+
+        client.rule_config.set_rule_config_value("rules.common.sleep", "5")
+        mock.last_params["key"].should eq("rules.common.sleep")
+        mock.last_params["value"].should eq("5")
+      end
+    end
+
+    it "ruleConfig omits an empty value so the setting is cleared" do
+      with_mock_zap do |mock, client|
+        client.rule_config.set_rule_config_value("rules.common.sleep")
+        mock.last_params.has_key?("value").should be_false
+      end
+    end
+
+    it "retest sends alertIds" do
+      with_mock_zap do |mock, client|
+        client.retest.retest("1,2,3")
+        mock.last_path.should eq("/JSON/retest/action/retest/")
+        mock.last_params["alertIds"].should eq("1,2,3")
+      end
+    end
+
+    it "wappalyzer listSite sends site" do
+      with_mock_zap do |mock, client|
+        client.wappalyzer.list_site("http://example.com")
+        mock.last_params["site"].should eq("http://example.com")
+      end
+    end
+
+    it "revisit sends site and the time window" do
+      with_mock_zap do |mock, client|
+        client.revisit.revisit_site_on("http://example.com", "2026-01-01 00:00:00", "2026-01-02 00:00:00")
+        mock.last_params["site"].should eq("http://example.com")
+        mock.last_params["startTime"].should eq("2026-01-01 00:00:00")
+        mock.last_params["endTime"].should eq("2026-01-02 00:00:00")
+
+        client.revisit.revisit_site_off("http://example.com")
+        mock.last_params["site"].should eq("http://example.com")
+      end
+    end
+  end
 end
