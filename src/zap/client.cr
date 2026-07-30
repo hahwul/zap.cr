@@ -1,6 +1,12 @@
 module Zap
   class Error < Exception; end
 
+  # Raised by the `Zap::Scan` workflows when a scan does not finish within the
+  # `timeout` the caller asked for. Distinct from the transport-level read
+  # timeout, which surfaces as a plain `Zap::Error` ("Network error"): this one
+  # means the daemon kept answering, the scan just never reached 100%.
+  class TimeoutError < Error; end
+
   # Raised when ZAP returns a non-2xx response. The exception message
   # deliberately contains only the status code and request path — never
   # the response body. ZAP error bodies frequently echo the offending
@@ -40,6 +46,9 @@ module Zap
     getter read_timeout : Time::Span
 
     @http : HTTP::Client?
+    # Path prefix taken from `base_url`, resolved alongside `@http`. Empty for
+    # the usual root-mounted daemon.
+    @base_path : String = ""
     # Serializes request execution through the shared `HTTP::Client`. Crystal's
     # HTTP::Client is not safe for overlapping use from multiple fibers, and a
     # single memoized instance is shared by every API component, so concurrent
@@ -47,17 +56,30 @@ module Zap
     # and corrupt responses. Single-fiber behavior is unchanged.
     @request_mutex = Mutex.new
 
+    # Daemon URL used when neither an argument nor `ZAP_URL` supplies one.
+    DEFAULT_BASE_URL = "http://localhost:8080"
+
+    # `base_url` / `api_key` default to `nil`, meaning "not supplied" — that is
+    # the only state in which the `ZAP_URL` / `ZAP_API_KEY` environment
+    # fallbacks apply. Passing a value always wins, even when it happens to
+    # equal the built-in default.
     def initialize(
-      @base_url : String = "http://localhost:8080",
-      @api_key : String = "",
+      base_url : String? = nil,
+      api_key : String? = nil,
       @connect_timeout : Time::Span = 30.seconds,
       @read_timeout : Time::Span = 300.seconds,
     )
       # ENV fallback: when an explicit value is not supplied, fall back to
       # ZAP_URL / ZAP_API_KEY so the daemon location can be configured from the
-      # environment (as documented in the README).
-      @base_url = ENV["ZAP_URL"] if @base_url == "http://localhost:8080" && ENV.has_key?("ZAP_URL") && !ENV["ZAP_URL"].empty?
-      @api_key = ENV["ZAP_API_KEY"] if @api_key.empty? && ENV.has_key?("ZAP_API_KEY") && !ENV["ZAP_API_KEY"].empty?
+      # environment (as documented in the README). An env var set to the empty
+      # string counts as unset.
+      @base_url = base_url || env_value("ZAP_URL") || DEFAULT_BASE_URL
+      @api_key = api_key || env_value("ZAP_API_KEY") || ""
+    end
+
+    private def env_value(name : String) : String?
+      value = ENV[name]?
+      value unless value.nil? || value.empty?
     end
 
     # API components (lazily cached)
@@ -158,7 +180,6 @@ module Zap
 
     private def perform_request(path : String, params : Hash(String, String)) : HTTP::Client::Response
       query = URI::Params.encode(with_api_key(params))
-      full_path = query.empty? ? path : "#{path}?#{query}"
 
       # Serialize use of the shared HTTP::Client. Crystal's HTTP::Client cannot
       # be used from multiple fibers concurrently, and the same memoized
@@ -167,7 +188,10 @@ module Zap
       # the lazy construction of `@http`, preventing a race that builds two
       # clients. For the common single-fiber case this is an uncontended lock.
       response = @request_mutex.synchronize do
-        http_client.get(full_path)
+        # `http_client` also resolves `@base_path`, so it has to run first.
+        client = http_client
+        request_path = "#{@base_path}#{path}"
+        client.get(query.empty? ? request_path : "#{request_path}?#{query}")
       rescue ex : IO::Error
         # IO::Error is the common ancestor of the socket / TCP, timeout
         # (IO::TimeoutError) and OpenSSL transport failures raised by
@@ -215,6 +239,14 @@ module Zap
         rescue ex : URI::Error | ArgumentError
           raise Zap::Error.new("Invalid base_url: #{ex.message}")
         end
+        # `HTTP::Client.new(uri)` keeps only scheme/host/port — the URI's path
+        # is discarded. A `base_url` that mounts ZAP under a prefix (say
+        # `https://ci.example/zap`, a common reverse-proxy setup) would
+        # therefore send every request to `/JSON/...` at the server root and
+        # get an unexplained 404. Remember the prefix and re-apply it to each
+        # request path. Endpoint paths always start with "/", so a trailing
+        # slash on the prefix is dropped to avoid an empty "//" segment.
+        @base_path = uri.path.chomp("/")
         client.connect_timeout = @connect_timeout
         client.read_timeout = @read_timeout
         client

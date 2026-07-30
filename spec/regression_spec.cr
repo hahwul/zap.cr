@@ -1,5 +1,20 @@
 require "./spec_helper"
 
+# Runs the block with ZAP_URL / ZAP_API_KEY set to the given values (nil
+# deletes the variable) and restores the previous environment afterwards.
+def with_zap_env(url : String?, key : String?, &)
+  prev_url = ENV["ZAP_URL"]?
+  prev_key = ENV["ZAP_API_KEY"]?
+  begin
+    url ? (ENV["ZAP_URL"] = url) : ENV.delete("ZAP_URL")
+    key ? (ENV["ZAP_API_KEY"] = key) : ENV.delete("ZAP_API_KEY")
+    yield
+  ensure
+    prev_url ? (ENV["ZAP_URL"] = prev_url) : ENV.delete("ZAP_URL")
+    prev_key ? (ENV["ZAP_API_KEY"] = prev_key) : ENV.delete("ZAP_API_KEY")
+  end
+end
+
 # Regression specs for bugs found by auditing the client against the ZAP API.
 describe "regressions" do
   describe "Client does not mutate caller-supplied params" do
@@ -362,6 +377,275 @@ describe "regressions" do
 
         result = client.scan.ajax_spider("http://example.com", poll_interval: 0.seconds)
         result["fullResults"].should_not be_nil
+      end
+    end
+  end
+
+  describe "base_url path prefix" do
+    it "keeps a path prefix from base_url on every request" do
+      mock = MockZapServer.new
+      port = mock.start
+      client = Zap::Client.new("http://127.0.0.1:#{port}/zap", "test-api-key")
+      begin
+        client.core.version
+        mock.last_path.should eq("/zap/JSON/core/view/version/")
+      ensure
+        client.close
+        mock.stop
+      end
+    end
+
+    it "does not produce a double slash when base_url ends with one" do
+      mock = MockZapServer.new
+      port = mock.start
+      client = Zap::Client.new("http://127.0.0.1:#{port}/zap/", "test-api-key")
+      begin
+        client.core.version
+        mock.last_path.should eq("/zap/JSON/core/view/version/")
+      ensure
+        client.close
+        mock.stop
+      end
+    end
+
+    it "leaves paths unchanged for a root-mounted daemon" do
+      with_mock_zap do |mock, client|
+        client.core.version
+        mock.last_path.should eq("/JSON/core/view/version/")
+      end
+    end
+
+    it "applies the prefix to OTHER endpoints and keeps the query string" do
+      mock = MockZapServer.new
+      port = mock.start
+      client = Zap::Client.new("http://127.0.0.1:#{port}/zap", "test-api-key")
+      begin
+        client.core.message_har("7")
+        mock.last_path.should eq("/zap/OTHER/core/other/messageHar/")
+        mock.last_params["id"].should eq("7")
+        mock.last_params["apikey"].should eq("test-api-key")
+      ensure
+        client.close
+        mock.stop
+      end
+    end
+  end
+
+  describe "explicit constructor args always beat ENV" do
+    it "does not let ZAP_URL hijack a base_url that equals the built-in default" do
+      with_zap_env("http://someone-elses-zap:9999", nil) do
+        client = Zap::Client.new("http://localhost:8080")
+        client.base_url.should eq("http://localhost:8080")
+      end
+    end
+
+    it "does not let ZAP_API_KEY override an explicitly empty api_key" do
+      with_zap_env(nil, "env-secret") do
+        client = Zap::Client.new("http://localhost:8080", "")
+        client.api_key.should eq("")
+      end
+    end
+
+    it "still falls back to ENV when no arguments are given" do
+      with_zap_env("http://env-host:7070", "env-secret") do
+        client = Zap::Client.new
+        client.base_url.should eq("http://env-host:7070")
+        client.api_key.should eq("env-secret")
+      end
+    end
+
+    it "treats an empty env var as unset" do
+      with_zap_env("", "") do
+        client = Zap::Client.new
+        client.base_url.should eq(Zap::Client::DEFAULT_BASE_URL)
+        client.api_key.should eq("")
+      end
+    end
+  end
+
+  describe "alerts are read only after the passive queue drains" do
+    it "waits for recordsToScan to reach zero before fetching the summary" do
+      with_mock_zap do |mock, client|
+        order = [] of String
+        records = 3
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/ascan/action/scan/"
+            %({"scan": "0"})
+          when "/JSON/ascan/view/status/"
+            %({"status": "100"})
+          when "/JSON/pscan/view/recordsToScan/"
+            order << "pscan"
+            records -= 1
+            %({"recordsToScan": "#{records}"})
+          when "/JSON/alert/view/alertsSummary/"
+            order << "summary"
+            %({"alertsSummary": {"High": 1}})
+          else
+            %({"Result": "OK"})
+          end
+        }
+
+        phases = [] of String
+        client.scan.active("http://example.com", poll_interval: 0.seconds) do |phase, _progress|
+          phases << phase
+        end
+
+        # The summary must come last, after the queue reported zero.
+        order.should eq(["pscan", "pscan", "pscan", "summary"])
+        phases.should contain("pscan")
+      end
+    end
+
+    it "reports the pscan phase as 0 then 100" do
+      with_mock_zap do |mock, client|
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/ascan/action/scan/"        then %({"scan": "0"})
+          when "/JSON/ascan/view/status/"        then %({"status": "100"})
+          when "/JSON/pscan/view/recordsToScan/" then %({"recordsToScan": "0"})
+          when "/JSON/alert/view/alertsSummary/" then %({"alertsSummary": {}})
+          else                                        %({"Result": "OK"})
+          end
+        }
+
+        pscan = [] of Int32
+        client.scan.active("http://example.com", poll_interval: 0.seconds) do |phase, progress|
+          pscan << progress if phase == "pscan"
+        end
+        pscan.should eq([0, 100])
+      end
+    end
+
+    it "skips the wait when wait_for_passive is false" do
+      with_mock_zap do |mock, client|
+        pscan_calls = 0
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/ascan/action/scan/"
+            %({"scan": "0"})
+          when "/JSON/ascan/view/status/"
+            %({"status": "100"})
+          when "/JSON/pscan/view/recordsToScan/"
+            pscan_calls += 1
+            %({"recordsToScan": "0"})
+          when "/JSON/alert/view/alertsSummary/"
+            %({"alertsSummary": {}})
+          else
+            %({"Result": "OK"})
+          end
+        }
+
+        client.scan.active("http://example.com", poll_interval: 0.seconds, wait_for_passive: false)
+        pscan_calls.should eq(0)
+      end
+    end
+
+    it "applies the workflow timeout to the passive wait too" do
+      with_mock_zap do |mock, client|
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/ascan/action/scan/"        then %({"scan": "0"})
+          when "/JSON/ascan/view/status/"        then %({"status": "100"})
+          when "/JSON/pscan/view/recordsToScan/" then %({"recordsToScan": "9"}) # never drains
+          else                                        %({"Result": "OK"})
+          end
+        }
+
+        expect_raises(Zap::TimeoutError, /passive scan/) do
+          client.scan.active("http://example.com", poll_interval: 1.millisecond, timeout: 20.milliseconds)
+        end
+      end
+    end
+
+    it "leaves spider-only workflows untouched" do
+      with_mock_zap do |mock, client|
+        pscan_calls = 0
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/spider/action/scan/"
+            %({"scan": "0"})
+          when "/JSON/spider/view/status/"
+            %({"status": "100"})
+          when "/JSON/pscan/view/recordsToScan/"
+            pscan_calls += 1
+            %({"recordsToScan": "0"})
+          else
+            %({"Result": "OK"})
+          end
+        }
+
+        client.scan.spider("http://example.com", poll_interval: 0.seconds)
+        pscan_calls.should eq(0)
+      end
+    end
+  end
+
+  describe "a scan timeout is a Zap::TimeoutError" do
+    it "is still a Zap::Error, so existing rescues keep working" do
+      with_mock_zap do |mock, client|
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/ascan/action/scan/" then %({"scan": "0"})
+          when "/JSON/ascan/view/status/" then %({"status": "42"}) # wedged forever
+          else                                 %({"Result": "OK"})
+          end
+        }
+
+        ex = expect_raises(Zap::Error, /Timed out/) do
+          client.scan.active("http://example.com", poll_interval: 1.millisecond, timeout: 20.milliseconds)
+        end
+        ex.should be_a(Zap::TimeoutError)
+      end
+    end
+  end
+
+  describe "core alert filters accept the same types as Api::Alert" do
+    it "accepts a Zap::Risk enum for risk_id" do
+      with_mock_zap do |mock, client|
+        client.core.alerts(risk_id: Zap::Risk::High)
+        mock.last_params["riskId"].should eq("3")
+
+        client.core.number_of_alerts(risk_id: Zap::Risk::Medium)
+        mock.last_params["riskId"].should eq("2")
+      end
+    end
+
+    it "accepts Int32 start / count / risk_id and omits negatives" do
+      with_mock_zap do |mock, client|
+        client.core.alerts(start: 0, count: 10, risk_id: 1)
+        mock.last_params["start"].should eq("0")
+        mock.last_params["count"].should eq("10")
+        mock.last_params["riskId"].should eq("1")
+
+        client.core.alerts(start: -1, count: -1, risk_id: -1)
+        mock.last_params["start"]?.should be_nil
+        mock.last_params["count"]?.should be_nil
+        mock.last_params["riskId"]?.should be_nil
+      end
+    end
+
+    it "still accepts the historical String form" do
+      with_mock_zap do |mock, client|
+        client.core.alerts(base_url: "http://example.com", start: "0", count: "10", risk_id: "3")
+        mock.last_params["start"].should eq("0")
+        mock.last_params["count"].should eq("10")
+        mock.last_params["riskId"].should eq("3")
+
+        client.core.alerts(start: "", count: "", risk_id: "")
+        mock.last_params["start"]?.should be_nil
+        mock.last_params["count"]?.should be_nil
+        mock.last_params["riskId"]?.should be_nil
+      end
+    end
+
+    it "agrees with Api::Alert on the wire for the same enum" do
+      with_mock_zap do |mock, client|
+        client.core.number_of_alerts(base_url: "http://example.com", risk_id: Zap::Risk::High)
+        core_risk = mock.last_params["riskId"]
+
+        client.alert.number_of_alerts(base_url: "http://example.com", risk_id: Zap::Risk::High)
+        mock.last_params["riskId"].should eq(core_risk)
       end
     end
   end

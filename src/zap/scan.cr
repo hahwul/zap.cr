@@ -1,5 +1,13 @@
 module Zap
   # High-level convenience scanning workflows that combine multiple ZAP API calls.
+  #
+  # The workflows that return an alerts summary (`full`, `spider_and_scan`,
+  # `active`) drain ZAP's passive-scan queue before reading it, and report that
+  # as a final `"pscan"` phase to the progress block. Passive rules run
+  # asynchronously over the traffic the spider and active scanner generate, so
+  # reading the summary the instant the active scan hits 100% returns whatever
+  # subset happened to be analysed by then. Pass `wait_for_passive: false` to
+  # skip the wait and read the summary immediately.
   class Scan
     POLL_INTERVAL = 5.seconds
 
@@ -12,7 +20,7 @@ module Zap
     # `timeout` bounds the whole workflow: if the phases have not finished by
     # then, a `Zap::Error` is raised instead of polling forever. It is `nil`
     # (wait indefinitely) by default.
-    def full(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, & : String, Int32 ->) : JSON::Any
+    def full(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, wait_for_passive : Bool = true, & : String, Int32 ->) : JSON::Any
       deadline = deadline_for(timeout)
 
       yield "spider", 0
@@ -27,15 +35,21 @@ module Zap
       scan_id = start_active_scan(target)
       wait_for_active_scan(scan_id, poll_interval, deadline) { |progress| yield "ascan", progress }
 
+      if wait_for_passive
+        yield "pscan", 0
+        drain_passive_scan(poll_interval, deadline) { }
+        yield "pscan", 100
+      end
+
       @client.alert.alerts_summary(target)
     end
 
-    def full(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil) : JSON::Any
-      full(target, context_name, poll_interval, timeout) { |_phase, _progress| }
+    def full(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, wait_for_passive : Bool = true) : JSON::Any
+      full(target, context_name, poll_interval, timeout, wait_for_passive) { |_phase, _progress| }
     end
 
     # Spider + Active Scan (no Ajax Spider)
-    def spider_and_scan(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, & : String, Int32 ->) : JSON::Any
+    def spider_and_scan(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, wait_for_passive : Bool = true, & : String, Int32 ->) : JSON::Any
       deadline = deadline_for(timeout)
 
       yield "spider", 0
@@ -46,11 +60,17 @@ module Zap
       scan_id = start_active_scan(target)
       wait_for_active_scan(scan_id, poll_interval, deadline) { |progress| yield "ascan", progress }
 
+      if wait_for_passive
+        yield "pscan", 0
+        drain_passive_scan(poll_interval, deadline) { }
+        yield "pscan", 100
+      end
+
       @client.alert.alerts_summary(target)
     end
 
-    def spider_and_scan(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil) : JSON::Any
-      spider_and_scan(target, context_name, poll_interval, timeout) { |_phase, _progress| }
+    def spider_and_scan(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, wait_for_passive : Bool = true) : JSON::Any
+      spider_and_scan(target, context_name, poll_interval, timeout, wait_for_passive) { |_phase, _progress| }
     end
 
     # Spider only (traditional + ajax)
@@ -73,18 +93,24 @@ module Zap
     end
 
     # Active Scan only
-    def active(target : String, recurse : Bool = true, poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, & : String, Int32 ->) : JSON::Any
+    def active(target : String, recurse : Bool = true, poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, wait_for_passive : Bool = true, & : String, Int32 ->) : JSON::Any
       deadline = deadline_for(timeout)
 
       yield "ascan", 0
       scan_id = start_active_scan(target, recurse)
       wait_for_active_scan(scan_id, poll_interval, deadline) { |progress| yield "ascan", progress }
 
+      if wait_for_passive
+        yield "pscan", 0
+        drain_passive_scan(poll_interval, deadline) { }
+        yield "pscan", 100
+      end
+
       @client.alert.alerts_summary(target)
     end
 
-    def active(target : String, recurse : Bool = true, poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil) : JSON::Any
-      active(target, recurse, poll_interval, timeout) { |_phase, _progress| }
+    def active(target : String, recurse : Bool = true, poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, wait_for_passive : Bool = true) : JSON::Any
+      active(target, recurse, poll_interval, timeout, wait_for_passive) { |_phase, _progress| }
     end
 
     # Spider only (traditional)
@@ -119,7 +145,10 @@ module Zap
 
     # Wait for passive scan to complete
     def wait_for_passive_scan(poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, & : Int32 ->)
-      deadline = deadline_for(timeout)
+      drain_passive_scan(poll_interval, deadline_for(timeout)) { |remaining| yield remaining }
+    end
+
+    private def drain_passive_scan(poll_interval : Time::Span, deadline : Time::Instant?, & : Int32 ->)
       loop do
         result = @client.pscan.records_to_scan
         remaining = parse_int_field(result, "recordsToScan") || 0
@@ -193,7 +222,7 @@ module Zap
     # at 0, and the loop's only exit is `progress >= 100`.
     private def wait_or_timeout(poll_interval : Time::Span, deadline : Time::Instant?, phase : String)
       if deadline && Time.instant + poll_interval > deadline
-        raise Zap::Error.new("Timed out waiting for #{phase} to complete")
+        raise Zap::TimeoutError.new("Timed out waiting for #{phase} to complete")
       end
       sleep poll_interval
     end

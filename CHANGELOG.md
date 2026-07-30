@@ -27,7 +27,23 @@ Bug fixes from auditing every endpoint against the ZAP API.
 - `Scan` workflows accept an optional `timeout`; without one a scan ZAP has
   forgotten polled forever. Progress values that are JSON floats or
   float-shaped strings are parsed instead of reading as 0, and a non-string
-  ajax spider status no longer raises `TypeCastError`.
+  ajax spider status no longer raises `TypeCastError`. A timeout raises
+  `Zap::TimeoutError` (a `Zap::Error`, so existing rescues keep working).
+- A path prefix in `base_url` (e.g. `https://ci.example/zap`, a
+  reverse-proxied daemon) is kept on every request instead of being silently
+  dropped, which previously turned every endpoint into an unexplained 404.
+- `ZAP_URL` / `ZAP_API_KEY` no longer override values passed explicitly to
+  `Client.new`. Both parameters now default to `nil`, so passing a value wins
+  even when it equals the built-in default — previously
+  `Client.new("http://localhost:8080")` could be redirected by `ZAP_URL`, and
+  `Client.new(url, "")` still picked up `ZAP_API_KEY`.
+- `Scan#full` / `#spider_and_scan` / `#active` wait for the passive-scan queue
+  to drain before reading the alerts summary, reported as a final `"pscan"`
+  phase. Passive rules run asynchronously, so the summary previously
+  under-reported findings on every run. Opt out with `wait_for_passive: false`.
+- `Api::Core#alerts` / `#number_of_alerts` accept `Int32` and `Zap::Risk` for
+  `start` / `count` / `risk_id`, matching `Api::Alert` — the enum did not
+  compile against `core` before. The previous `String` form still works.
 
 ### Added
 
@@ -39,6 +55,7 @@ Bug fixes from auditing every endpoint against the ZAP API.
   `charset`; `Api::Replacer#add_rule` gained `url`/`method`;
   `Api::AjaxSpider#add_excluded_element` gained the xpath/text/attribute
   criteria; `Api::Client` gained the passive-scan options.
+- `Zap::TimeoutError` and `Zap::Client::DEFAULT_BASE_URL`.
 
 ## v0.2.0
 
