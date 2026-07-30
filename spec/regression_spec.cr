@@ -250,4 +250,88 @@ describe "regressions" do
       end
     end
   end
+
+  describe "R6: scan workflows can be bounded by a timeout" do
+    it "raises Zap::TimeoutError when an active scan never reaches 100%" do
+      with_mock_zap do |mock, client|
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/ascan/action/scan/" then %({"scan": "0"})
+          when "/JSON/ascan/view/status/" then %({"status": "42"}) # wedged forever
+          else                                 %({"Result": "OK"})
+          end
+        }
+
+        expect_raises(Zap::TimeoutError, /ascan/) do
+          client.scan.active("http://example.com", poll_interval: 1.millisecond, timeout: 20.milliseconds)
+        end
+      end
+    end
+
+    it "raises Zap::TimeoutError when the ajax spider never stops" do
+      with_mock_zap do |mock, client|
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          path == "/JSON/ajaxSpider/view/status/" ? %({"status": "running"}) : %({"Result": "OK"})
+        }
+
+        expect_raises(Zap::TimeoutError, /ajaxSpider/) do
+          client.scan.ajax_spider("http://example.com", poll_interval: 1.millisecond, timeout: 20.milliseconds)
+        end
+      end
+    end
+
+    it "raises Zap::TimeoutError when the passive scan queue never drains" do
+      with_mock_zap do |mock, client|
+        mock.response_handler = ->(_path : String, _params : URI::Params) {
+          %({"recordsToScan": "7"})
+        }
+
+        expect_raises(Zap::TimeoutError, /pscan/) do
+          client.scan.wait_for_passive_scan(poll_interval: 1.millisecond, timeout: 20.milliseconds)
+        end
+      end
+    end
+
+    it "reports a TimeoutError as a Zap::Error so existing rescues still catch it" do
+      Zap::TimeoutError.new("x").should be_a(Zap::Error)
+    end
+
+    it "does not time out a scan that completes within the budget" do
+      with_mock_zap do |mock, client|
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/ascan/action/scan/"        then %({"scan": "0"})
+          when "/JSON/ascan/view/status/"        then %({"status": "100"})
+          when "/JSON/alert/view/alertsSummary/" then %({"alertsSummary": {}})
+          else                                        %({"Result": "OK"})
+          end
+        }
+
+        result = client.scan.active("http://example.com", poll_interval: 0.seconds, timeout: 10.seconds)
+        result["alertsSummary"].should_not be_nil
+      end
+    end
+
+    it "still waits indefinitely when no timeout is given" do
+      with_mock_zap do |mock, client|
+        polls = 0
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/ascan/action/scan/"
+            %({"scan": "0"})
+          when "/JSON/ascan/view/status/"
+            polls += 1
+            polls < 5 ? %({"status": "10"}) : %({"status": "100"})
+          when "/JSON/alert/view/alertsSummary/"
+            %({"alertsSummary": {}})
+          else
+            %({"Result": "OK"})
+          end
+        }
+
+        client.scan.active("http://example.com", poll_interval: 0.seconds)
+        polls.should eq(5)
+      end
+    end
+  end
 end

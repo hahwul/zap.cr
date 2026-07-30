@@ -1,6 +1,12 @@
 module Zap
   class Error < Exception; end
 
+  # Raised by the `Zap::Scan` workflows when a scan does not finish within the
+  # `timeout` the caller asked for. Distinct from the transport-level read
+  # timeout, which surfaces as a `Zap::Error` ("Network error"): this one means
+  # the daemon kept answering, the scan just never reached 100%.
+  class TimeoutError < Error; end
+
   # Raised when ZAP returns a non-2xx response. The exception message
   # deliberately contains only the status code and request path — never
   # the response body. ZAP error bodies frequently echo the offending
