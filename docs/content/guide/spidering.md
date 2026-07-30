@@ -39,7 +39,8 @@ client.spider.scan(
 ### Spider as User
 
 ```crystal
-client.spider.scan_as_user("my-context", "admin",
+# The traditional spider identifies the context and user by id.
+client.spider.scan_as_user(context_id, user_id,
   url: "http://target.com"
 )
 ```

@@ -21,10 +21,15 @@ module Zap
         @client.request("/JSON/spider/action/scan/", params)
       end
 
-      def scan_as_user(context_name : String, user_name : String, url : String = "", subtree_only : Bool = false) : JSON::Any
-        params = {"contextName" => context_name, "userName" => user_name}
+      # Spiders as a configured user. ZAP identifies the context and the user
+      # by their numeric ids here (unlike the AJAX Spider, which takes names),
+      # and accepts the same `recurse` / `maxChildren` knobs as `#scan`.
+      def scan_as_user(context_id : Int32, user_id : Int32, url : String = "", recurse : Bool = true, subtree_only : Bool = false, max_children : Int32 = 0) : JSON::Any
+        params = {"contextId" => context_id.to_s, "userId" => user_id.to_s}
         params["url"] = url unless url.empty?
+        params["recurse"] = recurse.to_s
         params["subtreeOnly"] = subtree_only.to_s
+        params["maxChildren"] = max_children.to_s if max_children > 0
         @client.request("/JSON/spider/action/scanAsUser/", params)
       end
 

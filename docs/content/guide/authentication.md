@@ -48,7 +48,7 @@ client.users.set_auth_credentials(
 client.users.set_enabled(ctx_id, user_id, true)
 
 # 7. Scan as user
-client.spider.scan_as_user("auth-scan", "testuser",
+client.spider.scan_as_user(ctx_id, user_id,
   url: "http://target.com"
 )
 client.ascan.scan_as_user("http://target.com",
