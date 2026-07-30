@@ -154,8 +154,11 @@ module Zap
         @client.request("/JSON/core/action/setOptionTimeoutInSecs/", {"Integer" => timeout.to_s})
       end
 
+      # Note: unlike most core option setters, ZAP names this parameter
+      # `numberOfInstances` rather than the generic `Integer`. A value of zero
+      # means unlimited.
       def set_option_maximum_alert_instances(instances : Int32) : JSON::Any
-        @client.request("/JSON/core/action/setOptionMaximumAlertInstances/", {"Integer" => instances.to_s})
+        @client.request("/JSON/core/action/setOptionMaximumAlertInstances/", {"numberOfInstances" => instances.to_s})
       end
 
       def delete_all_alerts : JSON::Any

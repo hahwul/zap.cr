@@ -21,20 +21,14 @@ module Zap
         @client.request("/JSON/spider/action/scan/", params)
       end
 
-      # Spiders as an authenticated user.
-      #
-      # ZAP's `spider/action/scanAsUser` identifies the user numerically:
-      # `contextId` and `userId` are both mandatory, and it accepts neither
-      # `contextName` nor `userName`. Look the ids up with `Api::Context#context`
-      # and `Api::Users#list`. This mirrors `Api::Ascan#scan_as_user`; the
-      # *ajax* spider is the odd one out and does take names.
-      #
-      # `recurse` and `max_children` behave as in `#scan`.
-      def scan_as_user(context_id : Int32, user_id : Int32, url : String = "", subtree_only : Bool = false, recurse : Bool = true, max_children : Int32 = 0) : JSON::Any
+      # Spiders as a configured user. ZAP identifies the context and the user
+      # by their numeric ids here (unlike the AJAX Spider, which takes names),
+      # and accepts the same `recurse` / `maxChildren` knobs as `#scan`.
+      def scan_as_user(context_id : Int32, user_id : Int32, url : String = "", recurse : Bool = true, subtree_only : Bool = false, max_children : Int32 = 0) : JSON::Any
         params = {"contextId" => context_id.to_s, "userId" => user_id.to_s}
         params["url"] = url unless url.empty?
-        params["subtreeOnly"] = subtree_only.to_s
         params["recurse"] = recurse.to_s
+        params["subtreeOnly"] = subtree_only.to_s
         params["maxChildren"] = max_children.to_s if max_children > 0
         @client.request("/JSON/spider/action/scanAsUser/", params)
       end
@@ -136,18 +130,17 @@ module Zap
         @client.request("/JSON/spider/view/status/", params)
       end
 
-      # URLs found by a spider scan. ZAP's `spider/view/results` takes a single
-      # optional `scanId`; omitting it reports on the most recent scan. It has
-      # no pagination — the `start` / `count` this method used to accept were
-      # simply dropped by the daemon.
+      # The URLs found by a spider scan. ZAP selects the scan by id here; it
+      # has no pagination for this view (unlike the AJAX Spider's `results`).
+      # Omitting the scan id reports on the most recent scan.
       def results(scan_id : Int32 = -1) : JSON::Any
         params = {} of String => String
         params["scanId"] = scan_id.to_s if scan_id >= 0
         @client.request("/JSON/spider/view/results/", params)
       end
 
-      # Full results (in scope, out of scope and errors) for a spider scan.
-      # `scan_id` is mandatory in ZAP's API, so it is required here too.
+      # The full results (URLs in/out of scope, plus those skipped) for a
+      # spider scan. ZAP requires the scan id for this view.
       def full_results(scan_id : Int32) : JSON::Any
         @client.request("/JSON/spider/view/fullResults/", {"scanId" => scan_id.to_s})
       end

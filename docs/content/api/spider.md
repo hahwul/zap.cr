@@ -11,8 +11,8 @@ Traditional HTTP-based web crawler.
 
 | Method | Description |
 |--------|-------------|
-| `scan(url, context_name, subtree_only, in_scope)` | Start spidering |
-| `scan_as_user(context_id, user_id, url, subtree_only, recurse, max_children)` | Spider as user |
+| `scan(url, context_name, subtree_only, recurse, max_children)` | Start spidering |
+| `scan_as_user(context_id, user_id, url, recurse, subtree_only, max_children)` | Spider as user |
 | `pause(scan_id)` | Pause spider |
 | `pause_all` | Pause all spiders |
 | `resume(scan_id)` | Resume spider |
@@ -68,5 +68,5 @@ loop do
   sleep 2.seconds
 end
 
-urls = client.spider.results(scan_id)
+urls = client.spider.results
 ```

@@ -10,6 +10,9 @@ zap.cr talks to a running ZAP daemon over HTTP. Before using the library:
   (or use the official Docker image `zaproxy/zap-stable`).
 - Set the daemon URL and API key via constructor arguments or environment
   variables `ZAP_URL` (default `http://localhost:8080`) and `ZAP_API_KEY`.
+  Constructor arguments always take precedence; the environment is consulted
+  only for arguments you leave out. A `ZAP_URL` may include a path prefix
+  (`https://ci.example/zap`) when the daemon sits behind a reverse proxy.
 
 See [`examples/README.md`](./examples) for runnable scripts that cover spider,
 active scan, alerts, contexts, and report generation.

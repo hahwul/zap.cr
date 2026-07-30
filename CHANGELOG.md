@@ -2,43 +2,60 @@
 
 ## Unreleased
 
+Bug fixes from auditing every endpoint against the ZAP API.
+
 ### Fixed
 
-- `Client#request` / `#request_other` no longer write the API key into the
-  `Hash` the caller passed in, which planted the secret in a caller-owned
-  object and could resend a stale key from a reused hash.
-- `Scan`'s ajax spider poll loop no longer raises `TypeCastError` when
-  `ajaxSpider/view/status` answers anything other than a JSON string — most
-  importantly `null`, which is what ZAP returns before the ajax spider has ever
-  been started.
-- A path prefix in `base_url` (e.g. `https://ci.example/zap`, a reverse-proxied
-  daemon) is now kept on every request instead of being silently dropped.
+- `Client` no longer writes `apikey` into the caller's params hash, which
+  leaked the key into a structure the caller may log and re-sent a stale key
+  after `api_key` was rotated. An explicitly supplied `apikey` now wins.
+- `Client#close` is serialized with in-flight requests, so closing from another
+  fiber can no longer tear down the socket mid-request.
+- `Api::Spider#scan_as_user` sends `contextId`/`userId` (ZAP does not accept
+  names here) and gained `recurse`/`max_children`. **Breaking**: takes ids.
+- `Api::Spider#results` / `#full_results` take a `scan_id`; the previous
+  `start`/`count` were silently ignored by ZAP. **Breaking**.
+- `Api::ForcedUser#enabled?` / `#set_enabled` and `Api::AlertFilter`
+  `#apply_context` / `#test_context` no longer take a context id — all four
+  are global in ZAP. **Breaking**.
+- `Api::Core#set_option_maximum_alert_instances` sends `numberOfInstances`.
+- Endpoints that ZAP requires arguments for now take them (previously every
+  call failed): `Api::RuleConfig`, `Api::Retest#retest`,
+  `Api::Wappalyzer#list_site`, `Api::Revisit`, `Api::CustomPayloads`,
+  `Api::LocalProxies`, `Api::Oast` setters, `Api::Client` report actions,
+  `Api::Pnh`, and `Api::AccessControl#scan` (needs `user_id`). **Breaking**.
+- `Scan` workflows accept an optional `timeout`; without one a scan ZAP has
+  forgotten polled forever. Progress values that are JSON floats or
+  float-shaped strings are parsed instead of reading as 0, and a non-string
+  ajax spider status no longer raises `TypeCastError`. A timeout raises
+  `Zap::TimeoutError` (a `Zap::Error`, so existing rescues keep working).
+- A path prefix in `base_url` (e.g. `https://ci.example/zap`, a
+  reverse-proxied daemon) is kept on every request instead of being silently
+  dropped, which previously turned every endpoint into an unexplained 404.
 - `ZAP_URL` / `ZAP_API_KEY` no longer override values passed explicitly to
-  `Client.new`. Both parameters now default to `nil`; passing a value always
-  wins, even when it equals the built-in default.
-- `Client#close` takes the request lock, so closing from one fiber while
-  another is mid-request no longer tears the socket out from under it.
-- `Scan`'s alert-returning workflows (`full`, `spider_and_scan`, `active`) wait
-  for the passive-scan queue to drain before reading the alerts summary, which
-  previously under-reported passive findings on every run. Opt out with
-  `wait_for_passive: false`.
+  `Client.new`. Both parameters now default to `nil`, so passing a value wins
+  even when it equals the built-in default — previously
+  `Client.new("http://localhost:8080")` could be redirected by `ZAP_URL`, and
+  `Client.new(url, "")` still picked up `ZAP_API_KEY`.
+- `Scan#full` / `#spider_and_scan` / `#active` wait for the passive-scan queue
+  to drain before reading the alerts summary, reported as a final `"pscan"`
+  phase. Passive rules run asynchronously, so the summary previously
+  under-reported findings on every run. Opt out with `wait_for_passive: false`.
 - `Api::Core#alerts` / `#number_of_alerts` accept `Int32` and `Zap::Risk` for
-  the filter parameters, matching `Api::Alert`. The previous `String`-only form
-  still works.
-- `Api::Spider#scan_as_user` sends the `contextId` / `userId` that ZAP's action
-  requires (it accepts no `contextName` / `userName`, so every call previously
-  failed), and forwards `recurse` / `max_children`.
-- `Api::Spider#full_results` sends the mandatory `scanId`; previously it sent
-  none and always failed, which also broke `Scan#spider` and `Scan#spider_full`
-  at their final step. `Api::Spider#results` takes `scan_id` instead of the
-  `start` / `count` pair that ZAP ignores.
+  `start` / `count` / `risk_id`, matching `Api::Alert` — the enum did not
+  compile against `core` before. The previous `String` form still works.
 
 ### Added
 
-- Optional `timeout` on every `Scan` workflow, bounding the poll loops that
-  could otherwise wait forever on a stalled scan. Raises the new
-  `Zap::TimeoutError`.
-- `Zap::Client::DEFAULT_BASE_URL`.
+- `Api::AlertFilter` add/remove gained `parameter_is_regex`, `attack`,
+  `attack_is_regex`, `evidence`, `evidence_is_regex` and `methods`, and
+  `new_level` accepts a `Zap::Risk`.
+- `Api::Alert#alerts` gained the `false_positive` filter.
+- `Api::OpenApi` imports gained `user_id`; `Api::Script#load` gained
+  `charset`; `Api::Replacer#add_rule` gained `url`/`method`;
+  `Api::AjaxSpider#add_excluded_element` gained the xpath/text/attribute
+  criteria; `Api::Client` gained the passive-scan options.
+- `Zap::TimeoutError` and `Zap::Client::DEFAULT_BASE_URL`.
 
 ## v0.2.0
 

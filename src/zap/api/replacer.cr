@@ -8,7 +8,10 @@ module Zap
         @client.request("/JSON/replacer/view/rules/")
       end
 
-      def add_rule(description : String, enabled : Bool, match_type : String, match_regex : Bool, match_string : String, replacement : String = "", initiators : String = "") : JSON::Any
+      # `url` restricts the rule to requests whose URL matches that regex, and
+      # `method` to a single HTTP method; both apply to every request when
+      # left empty.
+      def add_rule(description : String, enabled : Bool, match_type : String, match_regex : Bool, match_string : String, replacement : String = "", initiators : String = "", url : String = "", method : String = "") : JSON::Any
         params = {
           "description" => description, "enabled" => enabled.to_s,
           "matchType" => match_type, "matchRegex" => match_regex.to_s,
@@ -16,6 +19,8 @@ module Zap
         }
         params["replacement"] = replacement unless replacement.empty?
         params["initiators"] = initiators unless initiators.empty?
+        params["url"] = url unless url.empty?
+        params["method"] = method unless method.empty?
         @client.request("/JSON/replacer/action/addRule/", params)
       end
 

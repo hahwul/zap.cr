@@ -1,18 +1,6 @@
 module Zap
   # High-level convenience scanning workflows that combine multiple ZAP API calls.
   #
-  # Every workflow polls ZAP until the scan reports completion. A scan that
-  # stalls — a wedged ajax spider, an active scan parked at 99%, a daemon that
-  # answers but never progresses — would otherwise poll forever with no way for
-  # the caller to regain control. Pass `timeout` to bound that: it is an overall
-  # budget for the whole workflow (not per phase), and exceeding it raises
-  # `Zap::TimeoutError`. The default of `nil` keeps the historical
-  # wait-indefinitely behaviour.
-  #
-  # ```
-  # client.scan.full("https://example.com", timeout: 1.hour)
-  # ```
-  #
   # The workflows that return an alerts summary (`full`, `spider_and_scan`,
   # `active`) drain ZAP's passive-scan queue before reading it, and report that
   # as a final `"pscan"` phase to the progress block. Passive rules run
@@ -28,8 +16,13 @@ module Zap
 
     # Run a full scan: Spider -> Ajax Spider -> Active Scan
     # Returns alerts summary when complete.
+    #
+    # `timeout` bounds the whole workflow: if the phases have not finished by
+    # then, a `Zap::Error` is raised instead of polling forever. It is `nil`
+    # (wait indefinitely) by default.
     def full(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, wait_for_passive : Bool = true, & : String, Int32 ->) : JSON::Any
-      deadline = start_deadline(timeout)
+      deadline = deadline_for(timeout)
+
       yield "spider", 0
       spider_id = start_spider(target, context_name)
       wait_for_spider(spider_id, poll_interval, deadline) { |progress| yield "spider", progress }
@@ -57,7 +50,8 @@ module Zap
 
     # Spider + Active Scan (no Ajax Spider)
     def spider_and_scan(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, wait_for_passive : Bool = true, & : String, Int32 ->) : JSON::Any
-      deadline = start_deadline(timeout)
+      deadline = deadline_for(timeout)
+
       yield "spider", 0
       spider_id = start_spider(target, context_name)
       wait_for_spider(spider_id, poll_interval, deadline) { |progress| yield "spider", progress }
@@ -81,7 +75,8 @@ module Zap
 
     # Spider only (traditional + ajax)
     def spider_full(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, & : String, Int32 ->) : JSON::Any
-      deadline = start_deadline(timeout)
+      deadline = deadline_for(timeout)
+
       yield "spider", 0
       spider_id = start_spider(target, context_name)
       wait_for_spider(spider_id, poll_interval, deadline) { |progress| yield "spider", progress }
@@ -99,7 +94,8 @@ module Zap
 
     # Active Scan only
     def active(target : String, recurse : Bool = true, poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, wait_for_passive : Bool = true, & : String, Int32 ->) : JSON::Any
-      deadline = start_deadline(timeout)
+      deadline = deadline_for(timeout)
+
       yield "ascan", 0
       scan_id = start_active_scan(target, recurse)
       wait_for_active_scan(scan_id, poll_interval, deadline) { |progress| yield "ascan", progress }
@@ -119,7 +115,8 @@ module Zap
 
     # Spider only (traditional)
     def spider(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, & : String, Int32 ->) : JSON::Any
-      deadline = start_deadline(timeout)
+      deadline = deadline_for(timeout)
+
       yield "spider", 0
       spider_id = start_spider(target, context_name)
       wait_for_spider(spider_id, poll_interval, deadline) { |progress| yield "spider", progress }
@@ -133,7 +130,8 @@ module Zap
 
     # Ajax Spider only
     def ajax_spider(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, & : String, Int32 ->) : JSON::Any
-      deadline = start_deadline(timeout)
+      deadline = deadline_for(timeout)
+
       yield "ajaxSpider", 0
       start_ajax_spider(target, context_name)
       wait_for_ajax_spider(poll_interval, deadline) { |progress| yield "ajaxSpider", progress }
@@ -147,11 +145,7 @@ module Zap
 
     # Wait for passive scan to complete
     def wait_for_passive_scan(poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, & : Int32 ->)
-      drain_passive_scan(poll_interval, start_deadline(timeout)) { |remaining| yield remaining }
-    end
-
-    def wait_for_passive_scan(poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil)
-      wait_for_passive_scan(poll_interval, timeout) { |_remaining| }
+      drain_passive_scan(poll_interval, deadline_for(timeout)) { |remaining| yield remaining }
     end
 
     private def drain_passive_scan(poll_interval : Time::Span, deadline : Time::Instant?, & : Int32 ->)
@@ -160,24 +154,12 @@ module Zap
         remaining = parse_int_field(result, "recordsToScan") || 0
         yield remaining
         break if remaining == 0
-        check_deadline!(deadline, "pscan")
-        sleep poll_interval
+        wait_or_timeout(poll_interval, deadline, "passive scan")
       end
     end
 
-    # Converts a caller-supplied `timeout` into an absolute monotonic deadline.
-    # `nil` means "wait indefinitely", which is the historical behaviour.
-    private def start_deadline(timeout : Time::Span?) : Time::Instant?
-      timeout ? Time.instant + timeout : nil
-    end
-
-    # Aborts a poll loop that has outlived its deadline. Checked just before
-    # sleeping, so a workflow always performs at least one poll and a scan that
-    # finishes exactly on the deadline still counts as complete.
-    private def check_deadline!(deadline : Time::Instant?, phase : String)
-      return unless deadline
-      return if Time.instant < deadline
-      raise Zap::TimeoutError.new("Timed out waiting for #{phase} to complete")
+    def wait_for_passive_scan(poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil)
+      wait_for_passive_scan(poll_interval, timeout) { |_remaining| }
     end
 
     private def start_spider(target : String, context_name : String = "") : Int32
@@ -188,14 +170,12 @@ module Zap
     end
 
     private def wait_for_spider(scan_id : Int32, poll_interval : Time::Span, deadline : Time::Instant?, & : Int32 ->)
-      phase = "spider"
       loop do
         result = @client.spider.status(scan_id)
         progress = parse_int_field(result, "status") || 0
         yield progress
         break if progress >= 100
-        check_deadline!(deadline, phase)
-        sleep poll_interval
+        wait_or_timeout(poll_interval, deadline, "spider")
       end
     end
 
@@ -206,11 +186,10 @@ module Zap
     private def wait_for_ajax_spider(poll_interval : Time::Span, deadline : Time::Instant?, & : Int32 ->)
       loop do
         result = @client.ajax_spider.status
-        status = parse_string_field(result, "status") || "stopped"
+        status = result["status"]?.try(&.as_s?) || "stopped"
         yield status == "running" ? 50 : 100
         break if status != "running"
-        check_deadline!(deadline, "ajaxSpider")
-        sleep poll_interval
+        wait_or_timeout(poll_interval, deadline, "ajax spider")
       end
     end
 
@@ -220,24 +199,32 @@ module Zap
     end
 
     private def wait_for_active_scan(scan_id : Int32, poll_interval : Time::Span, deadline : Time::Instant?, & : Int32 ->)
-      phase = "ascan"
       loop do
         result = @client.ascan.status(scan_id)
         progress = parse_int_field(result, "status") || 0
         yield progress
         break if progress >= 100
-        check_deadline!(deadline, phase)
-        sleep poll_interval
+        wait_or_timeout(poll_interval, deadline, "active scan")
       end
     end
 
-    # Reads a string-valued field without assuming ZAP actually sent a JSON
-    # string. `JSON::Any#as_s` raises `TypeCastError` for any other type — most
-    # importantly for `null`, which is what the ajax spider's `status` view
-    # returns before the spider has ever been started. Returning nil lets the
-    # caller apply its documented fallback instead of crashing the poll loop.
-    private def parse_string_field(json : JSON::Any, field : String) : String?
-      json[field]?.try(&.as_s?)
+    # Converts a caller-supplied timeout into a monotonic deadline. Monotonic
+    # time is used so a wall-clock adjustment (NTP step, DST) cannot make a
+    # long scan appear to have timed out — or hang past its budget.
+    private def deadline_for(timeout : Time::Span?) : Time::Instant?
+      timeout ? Time.instant + timeout : nil
+    end
+
+    # Sleeps until the next poll, unless that would run past `deadline`.
+    #
+    # Without this every wait loop ran forever: a scan ZAP has forgotten (or
+    # one whose status it reports as a value we cannot parse) pins `progress`
+    # at 0, and the loop's only exit is `progress >= 100`.
+    private def wait_or_timeout(poll_interval : Time::Span, deadline : Time::Instant?, phase : String)
+      if deadline && Time.instant + poll_interval > deadline
+        raise Zap::TimeoutError.new("Timed out waiting for #{phase} to complete")
+      end
+      sleep poll_interval
     end
 
     private def parse_int_field(json : JSON::Any, field : String) : Int32?
@@ -250,8 +237,17 @@ module Zap
         # return nil (so callers fall back to `0`) instead of crashing.
         # `Int64#to_i32?` is not available on the Crystal versions CI targets.
         Int32::MIN <= raw <= Int32::MAX ? raw.to_i32 : nil
+      when Float64
+        # ZAP normally reports progress as a string, but a JSON number with a
+        # fractional part (e.g. `100.0`) decodes as Float64. Truncating keeps
+        # the wait loops progressing instead of reading every poll as 0.
+        Int32::MIN <= raw <= Int32::MAX ? raw.to_i32 : nil
       when String
-        raw.to_i32?
+        # Accept "100" as well as "100.0" / " 100 "; anything else is nil.
+        stripped = raw.strip
+        stripped.to_i32? || stripped.to_f64?.try do |f|
+          Int32::MIN <= f <= Int32::MAX ? f.to_i32 : nil
+        end
       end
     end
   end
