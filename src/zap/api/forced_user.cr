@@ -8,16 +8,19 @@ module Zap
         @client.request("/JSON/forcedUser/view/getForcedUser/", {"contextId" => context_id.to_s})
       end
 
-      def enabled?(context_id : Int32) : JSON::Any
-        @client.request("/JSON/forcedUser/view/isForcedUserModeEnabled/", {"contextId" => context_id.to_s})
+      # "Forced user" mode is a global toggle in ZAP, not a per-context one:
+      # the forced *user* is configured per context (see `#set`), but turning
+      # the mode on or off applies to the whole session.
+      def enabled? : JSON::Any
+        @client.request("/JSON/forcedUser/view/isForcedUserModeEnabled/")
       end
 
       def set(context_id : Int32, user_id : Int32) : JSON::Any
         @client.request("/JSON/forcedUser/action/setForcedUser/", {"contextId" => context_id.to_s, "userId" => user_id.to_s})
       end
 
-      def set_enabled(context_id : Int32, enabled : Bool) : JSON::Any
-        @client.request("/JSON/forcedUser/action/setForcedUserModeEnabled/", {"contextId" => context_id.to_s, "boolean" => enabled.to_s})
+      def set_enabled(enabled : Bool) : JSON::Any
+        @client.request("/JSON/forcedUser/action/setForcedUserModeEnabled/", {"boolean" => enabled.to_s})
       end
     end
   end

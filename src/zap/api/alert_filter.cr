@@ -48,8 +48,11 @@ module Zap
         @client.request("/JSON/alertFilter/action/applyAll/")
       end
 
-      def apply_context(context_id : Int32) : JSON::Any
-        @client.request("/JSON/alertFilter/action/applyContext/", {"contextId" => context_id.to_s})
+      # Applies / tests every currently enabled context alert filter. ZAP has
+      # no per-context variant of these actions — they operate on all
+      # contexts at once.
+      def apply_context : JSON::Any
+        @client.request("/JSON/alertFilter/action/applyContext/")
       end
 
       def apply_global : JSON::Any
@@ -60,8 +63,8 @@ module Zap
         @client.request("/JSON/alertFilter/action/testAll/")
       end
 
-      def test_context(context_id : Int32) : JSON::Any
-        @client.request("/JSON/alertFilter/action/testContext/", {"contextId" => context_id.to_s})
+      def test_context : JSON::Any
+        @client.request("/JSON/alertFilter/action/testContext/")
       end
 
       def test_global : JSON::Any

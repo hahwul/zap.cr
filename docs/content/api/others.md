@@ -50,9 +50,9 @@ Additional API modules for specialized functionality.
 | Method | Description |
 |--------|-------------|
 | `get(context_id)` | Get forced user |
-| `enabled?(context_id)` | Check if enabled |
+| `enabled?` | Check if forced-user mode is enabled (global) |
 | `set(context_id, user_id)` | Set forced user |
-| `set_enabled(context_id, enabled)` | Enable/disable |
+| `set_enabled(enabled)` | Enable/disable forced-user mode (global) |
 
 ## HTTP Sessions (`client.http_sessions`)
 
