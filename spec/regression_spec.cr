@@ -334,4 +334,122 @@ describe "regressions" do
       end
     end
   end
+
+  describe "R7: alerts are read only after the passive queue drains" do
+    it "waits for recordsToScan to reach zero before fetching the summary" do
+      with_mock_zap do |mock, client|
+        order = [] of String
+        records = 3
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/ascan/action/scan/"
+            %({"scan": "0"})
+          when "/JSON/ascan/view/status/"
+            %({"status": "100"})
+          when "/JSON/pscan/view/recordsToScan/"
+            order << "pscan"
+            records -= 1
+            %({"recordsToScan": "#{records}"})
+          when "/JSON/alert/view/alertsSummary/"
+            order << "summary"
+            %({"alertsSummary": {"High": 1}})
+          else
+            %({"Result": "OK"})
+          end
+        }
+
+        phases = [] of String
+        client.scan.active("http://example.com", poll_interval: 0.seconds) do |phase, _progress|
+          phases << phase
+        end
+
+        # The summary must come last, after the queue reported zero.
+        order.should eq(["pscan", "pscan", "pscan", "summary"])
+        phases.should contain("pscan")
+      end
+    end
+
+    it "reports the pscan phase as 0 then 100" do
+      with_mock_zap do |mock, client|
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/ascan/action/scan/"        then %({"scan": "0"})
+          when "/JSON/ascan/view/status/"        then %({"status": "100"})
+          when "/JSON/pscan/view/recordsToScan/" then %({"recordsToScan": "0"})
+          when "/JSON/alert/view/alertsSummary/" then %({"alertsSummary": {}})
+          else                                        %({"Result": "OK"})
+          end
+        }
+
+        pscan = [] of Int32
+        client.scan.active("http://example.com", poll_interval: 0.seconds) do |phase, progress|
+          pscan << progress if phase == "pscan"
+        end
+        pscan.should eq([0, 100])
+      end
+    end
+
+    it "skips the wait when wait_for_passive is false" do
+      with_mock_zap do |mock, client|
+        pscan_calls = 0
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/ascan/action/scan/"
+            %({"scan": "0"})
+          when "/JSON/ascan/view/status/"
+            %({"status": "100"})
+          when "/JSON/pscan/view/recordsToScan/"
+            pscan_calls += 1
+            %({"recordsToScan": "0"})
+          when "/JSON/alert/view/alertsSummary/"
+            %({"alertsSummary": {}})
+          else
+            %({"Result": "OK"})
+          end
+        }
+
+        client.scan.active("http://example.com", poll_interval: 0.seconds, wait_for_passive: false)
+        pscan_calls.should eq(0)
+      end
+    end
+
+    it "applies the workflow timeout to the passive wait too" do
+      with_mock_zap do |mock, client|
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/ascan/action/scan/"        then %({"scan": "0"})
+          when "/JSON/ascan/view/status/"        then %({"status": "100"})
+          when "/JSON/pscan/view/recordsToScan/" then %({"recordsToScan": "9"}) # never drains
+          else                                        %({"Result": "OK"})
+          end
+        }
+
+        expect_raises(Zap::TimeoutError, /pscan/) do
+          client.scan.active("http://example.com", poll_interval: 1.millisecond, timeout: 20.milliseconds)
+        end
+      end
+    end
+
+    it "leaves spider-only workflows untouched" do
+      with_mock_zap do |mock, client|
+        pscan_calls = 0
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/spider/action/scan/"
+            %({"scan": "0"})
+          when "/JSON/spider/view/status/"
+            %({"status": "100"})
+          when "/JSON/pscan/view/recordsToScan/"
+            pscan_calls += 1
+            %({"recordsToScan": "0"})
+          else
+            %({"Result": "OK"})
+          end
+        }
+
+        client.scan.spider("http://example.com", poll_interval: 0.seconds)
+        pscan_calls.should eq(0)
+      end
+    end
+  end
 end
