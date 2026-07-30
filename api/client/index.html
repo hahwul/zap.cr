@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Crystal client library for ZAP API">
+  <title>Client - Zap.cr</title>
+  <script>(function(){try{var t=localStorage.getItem("hwaro-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t)}}catch(e){}})()</script>
+  <meta property="og:title" content="Client">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://zap.cr.hahwul.com/api/client/">
+  <meta property="og:description" content="Crystal client library for ZAP API">
+  <meta property="og:image" content="https://zap.cr.hahwul.com/og-images/api-client.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Client">
+  <meta name="twitter:description" content="Crystal client library for ZAP API">
+  <meta name="twitter:image" content="https://zap.cr.hahwul.com/og-images/api-client.png">
+  <link rel="canonical" href="https://zap.cr.hahwul.com/api/client/">
+  <link rel="stylesheet" href="https://zap.cr.hahwul.com/css/style.css">
+  
+  <meta name="apple-mobile-web-app-title" content="Zap.cr">
+
+</head>
+<body data-section="api">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="docs-header">
+  <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="sidebar">
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4.5h12M2 8h12M2 11.5h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+  </button>
+  <a href="https://zap.cr.hahwul.com/" class="logo">zap.cr <span>Documentation</span></a>
+  <nav class="header-nav" aria-label="Sections">
+    <a href="https://zap.cr.hahwul.com/getting-started/">Getting Started</a><a href="https://zap.cr.hahwul.com/guide/">Guide</a><a href="https://zap.cr.hahwul.com/api/" class="active">API Reference</a>
+  </nav>
+  <div class="header-right">
+    <button class="search-trigger" type="button" onclick="openSearch()" title="Search (⌘K)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Search</span>
+      <kbd>&#8984;K</kbd>
+    </button>
+    <button class="theme-toggle" type="button" data-mode="auto" aria-label="Theme: auto" title="Theme: auto">
+      <svg class="tt-auto" width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.75a6.25 6.25 0 0 1 0 12.5z" fill="currentColor"/></svg>
+      <svg class="tt-light" width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 .9v2M8 13.1v2M.9 8h2M13.1 8h2M2.98 2.98l1.42 1.42M11.6 11.6l1.42 1.42M13.02 2.98L11.6 4.4M4.4 11.6l-1.42 1.42" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <svg class="tt-dark" width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.4 9.9A5.8 5.8 0 0 1 6.1 2.6a5.8 5.8 0 1 0 7.3 7.3z" fill="currentColor"/></svg>
+    </button>
+    <a class="gh-link" href="https://github.com/hahwul/zap.cr" aria-label="GitHub repository">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+    </a>
+  </div>
+</header>
+<div class="search-overlay" id="searchOverlay" onclick="if(event.target===this)closeSearch()">
+  <div class="search-modal">
+    <div class="search-input-wrap">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" id="searchInput" aria-label="Search" placeholder="Search documentation..." autocomplete="off">
+      <kbd onclick="closeSearch()">ESC</kbd>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+<div class="docs-container">
+<aside class="docs-sidebar" id="sidebar">
+
+  
+  <div class="sidebar-section">
+    <div class="sidebar-title">Getting Started</div>
+    <ul class="sidebar-links">
+      <li><a href="https://zap.cr.hahwul.com/getting-started/">Overview</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/getting-started/installation/">Installation</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/getting-started/quick-start/">Quick Start</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/getting-started/configuration/">Configuration</a></li>
+      
+    </ul>
+  </div>
+  
+  <div class="sidebar-section">
+    <div class="sidebar-title">Guide</div>
+    <ul class="sidebar-links">
+      <li><a href="https://zap.cr.hahwul.com/guide/">Overview</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/guide/scanning/">Scanning</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/guide/spidering/">Spidering</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/guide/authentication/">Authentication</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/guide/context/">Context Management</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/guide/alerts/">Alerts</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/guide/reporting/">Reporting</a></li>
+      
+    </ul>
+  </div>
+  
+  <div class="sidebar-section">
+    <div class="sidebar-title">API Reference</div>
+    <ul class="sidebar-links">
+      <li><a href="https://zap.cr.hahwul.com/api/">Overview</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/client/" class="active" aria-current="page">Client</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/core/">Core</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/spider/">Spider</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/ajax-spider/">Ajax Spider</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/ascan/">Active Scan</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/pscan/">Passive Scan</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/alert/">Alert</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/context/">Context</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/search/">Search</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/network/">Network</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/scripts/">Script</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/others/">Others</a></li>
+      
+    </ul>
+  </div>
+  
+</aside>
+<div class="sidebar-scrim"></div>
+  <main id="main" class="docs-main">
+    <h1>Client</h1>
+    
+    <p>The main entry point for interacting with ZAP.</p>
+<h2 id="constructor">Constructor</h2>
+<pre><code class="language-crystal hljs">client <span class="hljs-operator">=</span> <span class="hljs-variable constant_">Zap</span><span class="hljs-variable constant_">::</span><span class="hljs-variable constant_">Client</span>.new(base_url : <span class="hljs-variable constant_">String</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;</span><span class="hljs-string">http://localhost:8080</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>, api_key : <span class="hljs-variable constant_">String</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>base_url</code></td>
+<td><code>String</code></td>
+<td><code>&quot;http://localhost:8080&quot;</code></td>
+<td>ZAP API base URL</td>
+</tr>
+<tr>
+<td><code>api_key</code></td>
+<td><code>String</code></td>
+<td><code>&quot;&quot;</code></td>
+<td>API key for authentication</td>
+</tr>
+</tbody>
+</table>
+<h2 id="properties">Properties</h2>
+<pre><code class="language-crystal hljs">client.base_url : <span class="hljs-variable constant_">String</span>   <span class="hljs-comment"># get/set</span>
+client.api_key : <span class="hljs-variable constant_">String</span>    <span class="hljs-comment"># get/set</span>
+</code></pre>
+<h2 id="api-module-accessors">API Module Accessors</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Returns</th>
+<th>ZAP Component</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>client.core</code></td>
+<td><code>Api::Core</code></td>
+<td>core</td>
+</tr>
+<tr>
+<td><code>client.spider</code></td>
+<td><code>Api::Spider</code></td>
+<td>spider</td>
+</tr>
+<tr>
+<td><code>client.ajax_spider</code></td>
+<td><code>Api::AjaxSpider</code></td>
+<td>ajaxSpider</td>
+</tr>
+<tr>
+<td><code>client.ascan</code></td>
+<td><code>Api::Ascan</code></td>
+<td>ascan</td>
+</tr>
+<tr>
+<td><code>client.pscan</code></td>
+<td><code>Api::Pscan</code></td>
+<td>pscan</td>
+</tr>
+<tr>
+<td><code>client.alert</code></td>
+<td><code>Api::Alert</code></td>
+<td>alert</td>
+</tr>
+<tr>
+<td><code>client.alert_filter</code></td>
+<td><code>Api::AlertFilter</code></td>
+<td>alertFilter</td>
+</tr>
+<tr>
+<td><code>client.context</code></td>
+<td><code>Api::Context</code></td>
+<td>context</td>
+</tr>
+<tr>
+<td><code>client.authentication</code></td>
+<td><code>Api::Authentication</code></td>
+<td>authentication</td>
+</tr>
+<tr>
+<td><code>client.authorization</code></td>
+<td><code>Api::Authorization</code></td>
+<td>authorization</td>
+</tr>
+<tr>
+<td><code>client.forced_user</code></td>
+<td><code>Api::ForcedUser</code></td>
+<td>forcedUser</td>
+</tr>
+<tr>
+<td><code>client.http_sessions</code></td>
+<td><code>Api::HttpSessions</code></td>
+<td>httpSessions</td>
+</tr>
+<tr>
+<td><code>client.users</code></td>
+<td><code>Api::Users</code></td>
+<td>users</td>
+</tr>
+<tr>
+<td><code>client.script</code></td>
+<td><code>Api::Script</code></td>
+<td>script</td>
+</tr>
+<tr>
+<td><code>client.network</code></td>
+<td><code>Api::Network</code></td>
+<td>network</td>
+</tr>
+<tr>
+<td><code>client.openapi</code></td>
+<td><code>Api::OpenApi</code></td>
+<td>openapi</td>
+</tr>
+<tr>
+<td><code>client.graphql</code></td>
+<td><code>Api::Graphql</code></td>
+<td>graphql</td>
+</tr>
+<tr>
+<td><code>client.soap</code></td>
+<td><code>Api::Soap</code></td>
+<td>soap</td>
+</tr>
+<tr>
+<td><code>client.exim</code></td>
+<td><code>Api::Exim</code></td>
+<td>exim</td>
+</tr>
+<tr>
+<td><code>client.reports</code></td>
+<td><code>Api::Reports</code></td>
+<td>reports</td>
+</tr>
+<tr>
+<td><code>client.search</code></td>
+<td><code>Api::Search</code></td>
+<td>search</td>
+</tr>
+<tr>
+<td><code>client.stats</code></td>
+<td><code>Api::Stats</code></td>
+<td>stats</td>
+</tr>
+<tr>
+<td><code>client.session_management</code></td>
+<td><code>Api::SessionManagement</code></td>
+<td>sessionManagement</td>
+</tr>
+<tr>
+<td><code>client.autoupdate</code></td>
+<td><code>Api::Autoupdate</code></td>
+<td>autoupdate</td>
+</tr>
+<tr>
+<td><code>client.selenium</code></td>
+<td><code>Api::Selenium</code></td>
+<td>selenium</td>
+</tr>
+<tr>
+<td><code>client.replacer</code></td>
+<td><code>Api::Replacer</code></td>
+<td>replacer</td>
+</tr>
+<tr>
+<td><code>client.reveal</code></td>
+<td><code>Api::Reveal</code></td>
+<td>reveal</td>
+</tr>
+<tr>
+<td><code>client.params</code></td>
+<td><code>Api::Params</code></td>
+<td>params</td>
+</tr>
+<tr>
+<td><code>client.acsrf</code></td>
+<td><code>Api::Acsrf</code></td>
+<td>acsrf</td>
+</tr>
+<tr>
+<td><code>client.access_control</code></td>
+<td><code>Api::AccessControl</code></td>
+<td>accessControl</td>
+</tr>
+<tr>
+<td><code>client.automation</code></td>
+<td><code>Api::Automation</code></td>
+<td>automation</td>
+</tr>
+<tr>
+<td><code>client.breakpoints</code></td>
+<td><code>Api::Breakpoints</code></td>
+<td>break</td>
+</tr>
+<tr>
+<td><code>client.websocket</code></td>
+<td><code>Api::Websocket</code></td>
+<td>websocket</td>
+</tr>
+</tbody>
+</table>
+<h2 id="convenience">Convenience</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Returns</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>client.scan</code></td>
+<td><code>Zap::Scan</code></td>
+<td>High-level scanning workflows</td>
+</tr>
+</tbody>
+</table>
+<h2 id="low-level-methods">Low-Level Methods</h2>
+<pre><code class="language-crystal hljs"><span class="hljs-comment"># JSON response</span>
+client.request(path : <span class="hljs-variable constant_">String</span>, params : <span class="hljs-variable constant_">Hash</span>(<span class="hljs-variable constant_">String</span>, <span class="hljs-variable constant_">String</span>) <span class="hljs-operator">=</span> {}) : <span class="hljs-variable constant_">JSON</span><span class="hljs-variable constant_">::</span><span class="hljs-variable constant_">Any</span>
+
+<span class="hljs-comment"># Raw string response</span>
+client.request_other(path : <span class="hljs-variable constant_">String</span>, params : <span class="hljs-variable constant_">Hash</span>(<span class="hljs-variable constant_">String</span>, <span class="hljs-variable constant_">String</span>) <span class="hljs-operator">=</span> {}) : <span class="hljs-variable constant_">String</span>
+</code></pre>
+<p>These are used internally by all API modules. You can use them for endpoints not yet wrapped:</p>
+<pre><code class="language-crystal hljs">result <span class="hljs-operator">=</span> client.request(<span class="hljs-string">&quot;</span><span class="hljs-string">/JSON/core/view/getVersion/</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>)
+</code></pre>
+
+    
+    <nav class="page-nav" aria-label="Adjacent pages">
+      
+      <a class="page-nav-link page-nav-prev" href="https://zap.cr.hahwul.com/api/" rel="prev">
+        <span class="page-nav-label">Previous</span>
+        <span class="page-nav-title">API Reference</span>
+      </a>
+      
+      
+      <a class="page-nav-link page-nav-next" href="https://zap.cr.hahwul.com/api/core/" rel="next">
+        <span class="page-nav-label">Next</span>
+        <span class="page-nav-title">Core</span>
+      </a>
+      
+    </nav>
+    
+    <div class="docs-footer">
+      <p>zap.cr documentation</p>
+      <div class="docs-footer-links">
+        <a href="https://github.com/hahwul/zap.cr">GitHub</a>
+        <a href="https://github.com/hahwul/hwaro">Built with Hwaro</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://zap.cr.hahwul.com/js/search.js"></script>
+<script>
+(function () {
+  var KEY = "hwaro-theme";
+  var MODES = ["auto", "light", "dark"];
+  var root = document.documentElement;
+  var btn = document.querySelector(".theme-toggle");
+  if (!btn) return;
+  function apply(mode) {
+    if (mode === "auto") {
+      root.removeAttribute("data-theme");
+      try { localStorage.removeItem(KEY); } catch (e) {}
+    } else {
+      root.setAttribute("data-theme", mode);
+      try { localStorage.setItem(KEY, mode); } catch (e) {}
+    }
+    btn.setAttribute("data-mode", mode);
+    btn.setAttribute("aria-label", "Theme: " + mode);
+    btn.title = "Theme: " + mode;
+  }
+  var stored = "auto";
+  try { var t = localStorage.getItem(KEY); if (t === "light" || t === "dark") stored = t; } catch (e) {}
+  btn.addEventListener("click", function () {
+    apply(MODES[(MODES.indexOf(btn.getAttribute("data-mode")) + 1) % MODES.length]);
+  });
+  apply(stored);
+})();
+(function () {
+  var btn = document.querySelector(".nav-toggle");
+  var scrim = document.querySelector(".sidebar-scrim");
+  var sidebar = document.getElementById("sidebar");
+  if (!btn) return;
+  function set(open) {
+    document.body.classList.toggle("nav-open", open);
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  btn.addEventListener("click", function () {
+    set(!document.body.classList.contains("nav-open"));
+  });
+  if (scrim) scrim.addEventListener("click", function () { set(false); });
+  if (sidebar) sidebar.addEventListener("click", function (e) {
+    if (e.target.closest("a")) set(false);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") set(false);
+  });
+})();
+</script>
+
+</body>
+</html>

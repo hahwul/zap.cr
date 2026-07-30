@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Crystal client library for ZAP API">
+  <title>Alerts - Zap.cr</title>
+  <script>(function(){try{var t=localStorage.getItem("hwaro-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t)}}catch(e){}})()</script>
+  <meta property="og:title" content="Alerts">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://zap.cr.hahwul.com/guide/alerts/">
+  <meta property="og:description" content="Crystal client library for ZAP API">
+  <meta property="og:image" content="https://zap.cr.hahwul.com/og-images/guide-alerts.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Alerts">
+  <meta name="twitter:description" content="Crystal client library for ZAP API">
+  <meta name="twitter:image" content="https://zap.cr.hahwul.com/og-images/guide-alerts.png">
+  <link rel="canonical" href="https://zap.cr.hahwul.com/guide/alerts/">
+  <link rel="stylesheet" href="https://zap.cr.hahwul.com/css/style.css">
+  
+  <meta name="apple-mobile-web-app-title" content="Zap.cr">
+
+</head>
+<body data-section="guide">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="docs-header">
+  <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="sidebar">
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4.5h12M2 8h12M2 11.5h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+  </button>
+  <a href="https://zap.cr.hahwul.com/" class="logo">zap.cr <span>Documentation</span></a>
+  <nav class="header-nav" aria-label="Sections">
+    <a href="https://zap.cr.hahwul.com/getting-started/">Getting Started</a><a href="https://zap.cr.hahwul.com/guide/" class="active">Guide</a><a href="https://zap.cr.hahwul.com/api/">API Reference</a>
+  </nav>
+  <div class="header-right">
+    <button class="search-trigger" type="button" onclick="openSearch()" title="Search (⌘K)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Search</span>
+      <kbd>&#8984;K</kbd>
+    </button>
+    <button class="theme-toggle" type="button" data-mode="auto" aria-label="Theme: auto" title="Theme: auto">
+      <svg class="tt-auto" width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.75a6.25 6.25 0 0 1 0 12.5z" fill="currentColor"/></svg>
+      <svg class="tt-light" width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 .9v2M8 13.1v2M.9 8h2M13.1 8h2M2.98 2.98l1.42 1.42M11.6 11.6l1.42 1.42M13.02 2.98L11.6 4.4M4.4 11.6l-1.42 1.42" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <svg class="tt-dark" width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.4 9.9A5.8 5.8 0 0 1 6.1 2.6a5.8 5.8 0 1 0 7.3 7.3z" fill="currentColor"/></svg>
+    </button>
+    <a class="gh-link" href="https://github.com/hahwul/zap.cr" aria-label="GitHub repository">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+    </a>
+  </div>
+</header>
+<div class="search-overlay" id="searchOverlay" onclick="if(event.target===this)closeSearch()">
+  <div class="search-modal">
+    <div class="search-input-wrap">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" id="searchInput" aria-label="Search" placeholder="Search documentation..." autocomplete="off">
+      <kbd onclick="closeSearch()">ESC</kbd>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+<div class="docs-container">
+<aside class="docs-sidebar" id="sidebar">
+
+  
+  <div class="sidebar-section">
+    <div class="sidebar-title">Getting Started</div>
+    <ul class="sidebar-links">
+      <li><a href="https://zap.cr.hahwul.com/getting-started/">Overview</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/getting-started/installation/">Installation</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/getting-started/quick-start/">Quick Start</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/getting-started/configuration/">Configuration</a></li>
+      
+    </ul>
+  </div>
+  
+  <div class="sidebar-section">
+    <div class="sidebar-title">Guide</div>
+    <ul class="sidebar-links">
+      <li><a href="https://zap.cr.hahwul.com/guide/">Overview</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/guide/scanning/">Scanning</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/guide/spidering/">Spidering</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/guide/authentication/">Authentication</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/guide/context/">Context Management</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/guide/alerts/" class="active" aria-current="page">Alerts</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/guide/reporting/">Reporting</a></li>
+      
+    </ul>
+  </div>
+  
+  <div class="sidebar-section">
+    <div class="sidebar-title">API Reference</div>
+    <ul class="sidebar-links">
+      <li><a href="https://zap.cr.hahwul.com/api/">Overview</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/client/">Client</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/core/">Core</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/spider/">Spider</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/ajax-spider/">Ajax Spider</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/ascan/">Active Scan</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/pscan/">Passive Scan</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/alert/">Alert</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/context/">Context</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/search/">Search</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/network/">Network</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/scripts/">Script</a></li>
+      
+      <li><a href="https://zap.cr.hahwul.com/api/others/">Others</a></li>
+      
+    </ul>
+  </div>
+  
+</aside>
+<div class="sidebar-scrim"></div>
+  <main id="main" class="docs-main">
+    <h1>Alerts</h1>
+    
+    <p>Alerts represent security findings discovered during scanning.</p>
+<h2 id="listing-alerts">Listing Alerts</h2>
+<pre><code class="language-crystal hljs"><span class="hljs-comment"># All alerts</span>
+alerts <span class="hljs-operator">=</span> client.alert.alerts
+
+<span class="hljs-comment"># Alerts for a specific URL</span>
+alerts <span class="hljs-operator">=</span> client.alert.alerts(base_url: <span class="hljs-string">&quot;</span><span class="hljs-string">http://target.com</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>)
+
+<span class="hljs-comment"># Paginated</span>
+alerts <span class="hljs-operator">=</span> client.alert.alerts(start: <span class="hljs-number">0</span>, count: <span class="hljs-number">50</span>)
+
+<span class="hljs-comment"># By risk level (0=Info, 1=Low, 2=Medium, 3=High)</span>
+alerts <span class="hljs-operator">=</span> client.alert.alerts(risk_id: <span class="hljs-number">3</span>)  <span class="hljs-comment"># High only</span>
+</code></pre>
+<h2 id="alert-summary">Alert Summary</h2>
+<pre><code class="language-crystal hljs">summary <span class="hljs-operator">=</span> client.alert.alerts_summary(<span class="hljs-string">&quot;</span><span class="hljs-string">http://target.com</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>)
+<span class="hljs-comment"># =&gt; {&quot;alertsSummary&quot;: {&quot;High&quot;: 2, &quot;Medium&quot;: 5, &quot;Low&quot;: 8, &quot;Informational&quot;: 3}}</span>
+
+counts <span class="hljs-operator">=</span> client.alert.alert_counts_by_risk(<span class="hljs-string">&quot;</span><span class="hljs-string">http://target.com</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>)
+</code></pre>
+<h2 id="single-alert">Single Alert</h2>
+<pre><code class="language-crystal hljs">alert <span class="hljs-operator">=</span> client.alert.get(<span class="hljs-number">42</span>)
+</code></pre>
+<h2 id="iterating-alerts">Iterating Alerts</h2>
+<pre><code class="language-crystal hljs">alerts <span class="hljs-operator">=</span> client.alert.alerts(base_url: <span class="hljs-string">&quot;</span><span class="hljs-string">http://target.com</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>)
+alerts[<span class="hljs-string">&quot;</span><span class="hljs-string">alerts</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>].as_a.each <span class="hljs-keyword">do</span> <span class="hljs-operator">|</span>alert<span class="hljs-operator">|</span>
+  puts <span class="hljs-string">&quot;</span><span class="hljs-subst">#{</span>alert[<span class="hljs-string">&quot;</span><span class="hljs-string">risk</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>]<span class="hljs-subst">}</span><span class="hljs-string"> | </span><span class="hljs-subst">#{</span>alert[<span class="hljs-string">&quot;</span><span class="hljs-string">name</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>]<span class="hljs-subst">}</span><span class="hljs-string"> | </span><span class="hljs-subst">#{</span>alert[<span class="hljs-string">&quot;</span><span class="hljs-string">url</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>]<span class="hljs-subst">}</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>
+  puts <span class="hljs-string">&quot;</span><span class="hljs-string">  CWE: </span><span class="hljs-subst">#{</span>alert[<span class="hljs-string">&quot;</span><span class="hljs-string">cweid</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>]<span class="hljs-subst">}</span><span class="hljs-string">, WASC: </span><span class="hljs-subst">#{</span>alert[<span class="hljs-string">&quot;</span><span class="hljs-string">wascid</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>]<span class="hljs-subst">}</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>
+  puts <span class="hljs-string">&quot;</span><span class="hljs-string">  </span><span class="hljs-subst">#{</span>alert[<span class="hljs-string">&quot;</span><span class="hljs-string">description</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>]<span class="hljs-subst">}</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>
+  puts
+<span class="hljs-keyword">end</span>
+</code></pre>
+<h2 id="grouped-by-risk">Grouped by Risk</h2>
+<pre><code class="language-crystal hljs">by_risk <span class="hljs-operator">=</span> client.alert.alerts_by_risk(url: <span class="hljs-string">&quot;</span><span class="hljs-string">http://target.com</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>)
+</code></pre>
+<h2 id="managing-alerts">Managing Alerts</h2>
+<h3 id="delete">Delete</h3>
+<pre><code class="language-crystal hljs"><span class="hljs-comment"># Delete single alert</span>
+client.alert.delete_alert(<span class="hljs-number">42</span>)
+
+<span class="hljs-comment"># Delete by criteria</span>
+client.alert.delete_alerts(
+  base_url: <span class="hljs-string">&quot;</span><span class="hljs-string">http://target.com</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>,
+  risk_id: <span class="hljs-number">0</span>  <span class="hljs-comment"># delete Informational</span>
+)
+
+<span class="hljs-comment"># Delete all</span>
+client.alert.delete_all_alerts
+</code></pre>
+<h3 id="update">Update</h3>
+<pre><code class="language-crystal hljs">client.alert.update_alerts_risk(<span class="hljs-string">&quot;</span><span class="hljs-string">1,2,3</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>, risk_id: <span class="hljs-number">2</span>)     <span class="hljs-comment"># set to Medium</span>
+client.alert.update_alerts_confidence(<span class="hljs-string">&quot;</span><span class="hljs-string">1,2,3</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>, confidence_id: <span class="hljs-number">3</span>)
+</code></pre>
+<h2 id="alert-filters">Alert Filters</h2>
+<p>Suppress or change alert risk levels based on rules:</p>
+<pre><code class="language-crystal hljs"><span class="hljs-comment"># Add global filter (suppress false positive)</span>
+client.alert_filter.add_global_alert_filter(
+  rule_id: <span class="hljs-number">10016</span>,
+  new_level: <span class="hljs-number">-1</span>,  <span class="hljs-comment"># -1 = False Positive</span>
+  url: <span class="hljs-string">&quot;</span><span class="hljs-string">.*</span><span class="hljs-string">\\</span><span class="hljs-string">.css$</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>
+)
+
+<span class="hljs-comment"># Context-specific filter, narrowed by attack/evidence and HTTP method</span>
+client.alert_filter.add_alert_filter(
+  context_id: <span class="hljs-number">1</span>,
+  rule_id: <span class="hljs-number">10016</span>,
+  new_level: <span class="hljs-number">-1</span>,
+  evidence: <span class="hljs-string">&quot;</span><span class="hljs-string">X-Frame-Options</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>,
+  methods: <span class="hljs-string">&quot;</span><span class="hljs-string">GET,POST</span><span class="hljs-string">&quot;</span><span class="hljs-string"></span>
+)
+
+<span class="hljs-comment"># Apply filters</span>
+client.alert_filter.apply_all
+
+<span class="hljs-comment"># List filters</span>
+client.alert_filter.global_alert_filter_list
+client.alert_filter.alert_filter_list(<span class="hljs-number">1</span>)
+</code></pre>
+
+    
+    <nav class="page-nav" aria-label="Adjacent pages">
+      
+      <a class="page-nav-link page-nav-prev" href="https://zap.cr.hahwul.com/guide/context/" rel="prev">
+        <span class="page-nav-label">Previous</span>
+        <span class="page-nav-title">Context Management</span>
+      </a>
+      
+      
+      <a class="page-nav-link page-nav-next" href="https://zap.cr.hahwul.com/guide/reporting/" rel="next">
+        <span class="page-nav-label">Next</span>
+        <span class="page-nav-title">Reporting</span>
+      </a>
+      
+    </nav>
+    
+    <div class="docs-footer">
+      <p>zap.cr documentation</p>
+      <div class="docs-footer-links">
+        <a href="https://github.com/hahwul/zap.cr">GitHub</a>
+        <a href="https://github.com/hahwul/hwaro">Built with Hwaro</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://zap.cr.hahwul.com/js/search.js"></script>
+<script>
+(function () {
+  var KEY = "hwaro-theme";
+  var MODES = ["auto", "light", "dark"];
+  var root = document.documentElement;
+  var btn = document.querySelector(".theme-toggle");
+  if (!btn) return;
+  function apply(mode) {
+    if (mode === "auto") {
+      root.removeAttribute("data-theme");
+      try { localStorage.removeItem(KEY); } catch (e) {}
+    } else {
+      root.setAttribute("data-theme", mode);
+      try { localStorage.setItem(KEY, mode); } catch (e) {}
+    }
+    btn.setAttribute("data-mode", mode);
+    btn.setAttribute("aria-label", "Theme: " + mode);
+    btn.title = "Theme: " + mode;
+  }
+  var stored = "auto";
+  try { var t = localStorage.getItem(KEY); if (t === "light" || t === "dark") stored = t; } catch (e) {}
+  btn.addEventListener("click", function () {
+    apply(MODES[(MODES.indexOf(btn.getAttribute("data-mode")) + 1) % MODES.length]);
+  });
+  apply(stored);
+})();
+(function () {
+  var btn = document.querySelector(".nav-toggle");
+  var scrim = document.querySelector(".sidebar-scrim");
+  var sidebar = document.getElementById("sidebar");
+  if (!btn) return;
+  function set(open) {
+    document.body.classList.toggle("nav-open", open);
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  btn.addEventListener("click", function () {
+    set(!document.body.classList.contains("nav-open"));
+  });
+  if (scrim) scrim.addEventListener("click", function () { set(false); });
+  if (sidebar) sidebar.addEventListener("click", function (e) {
+    if (e.target.closest("a")) set(false);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") set(false);
+  });
+})();
+</script>
+
+</body>
+</html>
