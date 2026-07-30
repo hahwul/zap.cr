@@ -146,9 +146,7 @@ module Zap
     end
 
     private def perform_request(path : String, params : Hash(String, String)) : HTTP::Client::Response
-      params["apikey"] = @api_key unless @api_key.empty?
-
-      query = URI::Params.encode(params)
+      query = URI::Params.encode(with_api_key(params))
       full_path = query.empty? ? path : "#{path}?#{query}"
 
       # Serialize use of the shared HTTP::Client. Crystal's HTTP::Client cannot
@@ -182,6 +180,17 @@ module Zap
       end
 
       response
+    end
+
+    # Returns the params to send, with `apikey` appended when one is
+    # configured. `params` is never modified: `#request` / `#request_other` are
+    # public, so the hash can belong to the caller, and writing the API key
+    # into it would both leak the secret into a structure the caller may log or
+    # reuse and make a second call with a different `api_key` send the stale
+    # one. An `apikey` the caller supplied explicitly wins over `@api_key`.
+    private def with_api_key(params : Hash(String, String)) : Hash(String, String)
+      return params if @api_key.empty? || params.has_key?("apikey")
+      params.merge({"apikey" => @api_key})
     end
 
     private def http_client : HTTP::Client
