@@ -4,20 +4,20 @@ module Zap
       def initialize(@client : Zap::Client)
       end
 
-      def monitor : JSON::Any
-        @client.request("/JSON/pnh/action/monitor/")
+      def monitor(id : String, message : String) : JSON::Any
+        @client.request("/JSON/pnh/action/monitor/", {"id" => id, "message" => message})
       end
 
-      def oracle : JSON::Any
-        @client.request("/JSON/pnh/action/oracle/")
+      def oracle(id : String) : JSON::Any
+        @client.request("/JSON/pnh/action/oracle/", {"id" => id})
       end
 
-      def start_monitoring : JSON::Any
-        @client.request("/JSON/pnh/action/startMonitoring/")
+      def start_monitoring(url : String) : JSON::Any
+        @client.request("/JSON/pnh/action/startMonitoring/", {"url" => url})
       end
 
-      def stop_monitoring : JSON::Any
-        @client.request("/JSON/pnh/action/stopMonitoring/")
+      def stop_monitoring(id : String) : JSON::Any
+        @client.request("/JSON/pnh/action/stopMonitoring/", {"id" => id})
       end
 
       def fx_pnh_xpi : String

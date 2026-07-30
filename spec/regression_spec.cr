@@ -145,5 +145,72 @@ describe "regressions" do
         mock.last_params["site"].should eq("http://example.com")
       end
     end
+
+    it "custompayloads sends category and payload" do
+      with_mock_zap do |mock, client|
+        client.custom_payloads.add_custom_payload("sql-injection", "' OR 1=1--")
+        mock.last_params["category"].should eq("sql-injection")
+        mock.last_params["payload"].should eq("' OR 1=1--")
+
+        client.custom_payloads.enable_custom_payloads("sql-injection")
+        mock.last_params["category"].should eq("sql-injection")
+
+        client.custom_payloads.custom_payloads
+        mock.last_params.has_key?("category").should be_false
+      end
+    end
+
+    it "localProxies sends address and port" do
+      with_mock_zap do |mock, client|
+        client.local_proxies.add_additional_proxy("127.0.0.1", 8090, behind_nat: true)
+        mock.last_params["address"].should eq("127.0.0.1")
+        mock.last_params["port"].should eq("8090")
+        mock.last_params["behindNat"].should eq("true")
+        mock.last_params.has_key?("alwaysDecodeZip").should be_false
+
+        client.local_proxies.remove_additional_proxy("127.0.0.1", 8090)
+        mock.last_params["port"].should eq("8090")
+      end
+    end
+
+    it "oast setters send their required options" do
+      with_mock_zap do |mock, client|
+        client.oast.set_active_scan_service("BOAST")
+        mock.last_params["name"].should eq("BOAST")
+
+        client.oast.set_boast_options("odiss.eu", 60)
+        mock.last_params["server"].should eq("odiss.eu")
+        mock.last_params["pollInSecs"].should eq("60")
+
+        client.oast.set_callback_options("0.0.0.0", "example.com", 9090)
+        mock.last_params["localAddress"].should eq("0.0.0.0")
+        mock.last_params["remoteAddress"].should eq("example.com")
+        mock.last_params["port"].should eq("9090")
+
+        client.oast.set_days_to_keep_records(7)
+        mock.last_params["days"].should eq("7")
+      end
+    end
+
+    it "client add-on report actions send their JSON payload" do
+      with_mock_zap do |mock, client|
+        client.client.report_event(%({"eventName":"pageLoad"}))
+        mock.last_params["eventJson"].should eq(%({"eventName":"pageLoad"}))
+
+        client.client.export_client_map("/tmp/map.yaml")
+        mock.last_params["pathYaml"].should eq("/tmp/map.yaml")
+      end
+    end
+
+    it "pnh sends its identifiers" do
+      with_mock_zap do |mock, client|
+        client.pnh.start_monitoring("http://example.com")
+        mock.last_params["url"].should eq("http://example.com")
+
+        client.pnh.monitor("7", "hello")
+        mock.last_params["id"].should eq("7")
+        mock.last_params["message"].should eq("hello")
+      end
+    end
   end
 end
