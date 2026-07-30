@@ -452,4 +452,54 @@ describe "regressions" do
       end
     end
   end
+
+  describe "R8: core alert filters accept the same types as Api::Alert" do
+    it "accepts a Zap::Risk enum for risk_id" do
+      with_mock_zap do |mock, client|
+        client.core.alerts(risk_id: Zap::Risk::High)
+        mock.last_params["riskId"].should eq("3")
+
+        client.core.number_of_alerts(risk_id: Zap::Risk::Medium)
+        mock.last_params["riskId"].should eq("2")
+      end
+    end
+
+    it "accepts Int32 start / count / risk_id and omits negatives" do
+      with_mock_zap do |mock, client|
+        client.core.alerts(start: 0, count: 10, risk_id: 1)
+        mock.last_params["start"].should eq("0")
+        mock.last_params["count"].should eq("10")
+        mock.last_params["riskId"].should eq("1")
+
+        client.core.alerts(start: -1, count: -1, risk_id: -1)
+        mock.last_params["start"]?.should be_nil
+        mock.last_params["count"]?.should be_nil
+        mock.last_params["riskId"]?.should be_nil
+      end
+    end
+
+    it "still accepts the historical String form" do
+      with_mock_zap do |mock, client|
+        client.core.alerts(base_url: "http://example.com", start: "0", count: "10", risk_id: "3")
+        mock.last_params["start"].should eq("0")
+        mock.last_params["count"].should eq("10")
+        mock.last_params["riskId"].should eq("3")
+
+        client.core.alerts(start: "", count: "", risk_id: "")
+        mock.last_params["start"]?.should be_nil
+        mock.last_params["count"]?.should be_nil
+        mock.last_params["riskId"]?.should be_nil
+      end
+    end
+
+    it "agrees with Api::Alert on the wire for the same enum" do
+      with_mock_zap do |mock, client|
+        client.core.number_of_alerts(base_url: "http://example.com", risk_id: Zap::Risk::High)
+        core_risk = mock.last_params["riskId"]
+
+        client.alert.number_of_alerts(base_url: "http://example.com", risk_id: Zap::Risk::High)
+        mock.last_params["riskId"].should eq(core_risk)
+      end
+    end
+  end
 end

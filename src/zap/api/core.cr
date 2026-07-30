@@ -9,12 +9,22 @@ module Zap
         @client.request("/JSON/core/view/version/")
       end
 
-      def alerts(base_url : String = "", start : String = "", count : String = "", risk_id : String = "") : JSON::Any
+      # `start` / `count` / `risk_id` accept the same forms as the equivalents
+      # on `Api::Alert`: an `Int32` (negative means "omit"), or — for `risk_id`
+      # — a `Zap::Risk` enum. The historical `String` form is still accepted,
+      # with `""` meaning "omit".
+      def alerts(base_url : String = "", start : Int32 | String = -1, count : Int32 | String = -1, risk_id : Int32 | String | Zap::Risk = -1) : JSON::Any
         params = {} of String => String
         params["baseurl"] = base_url unless base_url.empty?
-        params["start"] = start unless start.empty?
-        params["count"] = count unless count.empty?
-        params["riskId"] = risk_id unless risk_id.empty?
+        if value = optional_param(start)
+          params["start"] = value
+        end
+        if value = optional_param(count)
+          params["count"] = value
+        end
+        if value = optional_risk_param(risk_id)
+          params["riskId"] = value
+        end
         @client.request("/JSON/core/view/alerts/", params)
       end
 
@@ -24,10 +34,14 @@ module Zap
         @client.request("/JSON/core/view/alertsSummary/", params)
       end
 
-      def number_of_alerts(base_url : String = "", risk_id : String = "") : JSON::Any
+      # `risk_id` accepts an `Int32` (negative means "omit"), a `Zap::Risk`
+      # enum, or the historical `String` form (`""` meaning "omit").
+      def number_of_alerts(base_url : String = "", risk_id : Int32 | String | Zap::Risk = -1) : JSON::Any
         params = {} of String => String
         params["baseurl"] = base_url unless base_url.empty?
-        params["riskId"] = risk_id unless risk_id.empty?
+        if value = optional_risk_param(risk_id)
+          params["riskId"] = value
+        end
         @client.request("/JSON/core/view/numberOfAlerts/", params)
       end
 
@@ -515,6 +529,25 @@ module Zap
 
       def zap_home_path : JSON::Any
         @client.request("/JSON/core/view/zapHomePath/")
+      end
+
+      # Normalizes an optional numeric query parameter. Returns nil when the
+      # parameter should be left off the request entirely: an empty `String`
+      # (the historical "unset" marker) or a negative `Int32` (the marker used
+      # by `Api::Alert` and the rest of the library).
+      private def optional_param(value : Int32 | String) : String?
+        case value
+        in String then value.empty? ? nil : value
+        in Int32  then value < 0 ? nil : value.to_s
+        end
+      end
+
+      private def optional_risk_param(value : Int32 | String | Zap::Risk) : String?
+        case value
+        in String    then value.empty? ? nil : value
+        in Int32     then value < 0 ? nil : value.to_s
+        in Zap::Risk then value.to_param
+        end
       end
     end
   end
