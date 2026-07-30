@@ -50,17 +50,30 @@ module Zap
     # and corrupt responses. Single-fiber behavior is unchanged.
     @request_mutex = Mutex.new
 
+    # Daemon URL used when neither an argument nor `ZAP_URL` supplies one.
+    DEFAULT_BASE_URL = "http://localhost:8080"
+
+    # `base_url` / `api_key` default to `nil`, meaning "not supplied" — that is
+    # the only state in which the `ZAP_URL` / `ZAP_API_KEY` environment
+    # fallbacks apply. Passing a value always wins, even when it happens to
+    # equal the built-in default.
     def initialize(
-      @base_url : String = "http://localhost:8080",
-      @api_key : String = "",
+      base_url : String? = nil,
+      api_key : String? = nil,
       @connect_timeout : Time::Span = 30.seconds,
       @read_timeout : Time::Span = 300.seconds,
     )
       # ENV fallback: when an explicit value is not supplied, fall back to
       # ZAP_URL / ZAP_API_KEY so the daemon location can be configured from the
-      # environment (as documented in the README).
-      @base_url = ENV["ZAP_URL"] if @base_url == "http://localhost:8080" && ENV.has_key?("ZAP_URL") && !ENV["ZAP_URL"].empty?
-      @api_key = ENV["ZAP_API_KEY"] if @api_key.empty? && ENV.has_key?("ZAP_API_KEY") && !ENV["ZAP_API_KEY"].empty?
+      # environment (as documented in the README). An env var set to the empty
+      # string counts as unset.
+      @base_url = base_url || env_value("ZAP_URL") || DEFAULT_BASE_URL
+      @api_key = api_key || env_value("ZAP_API_KEY") || ""
+    end
+
+    private def env_value(name : String) : String?
+      value = ENV[name]?
+      value unless value.nil? || value.empty?
     end
 
     # API components (lazily cached)

@@ -1,5 +1,20 @@
 require "./spec_helper"
 
+# Runs the block with ZAP_URL / ZAP_API_KEY set to the given values (nil
+# deletes the variable) and restores the previous environment afterwards.
+def with_zap_env(url : String?, key : String?, &)
+  prev_url = ENV["ZAP_URL"]?
+  prev_key = ENV["ZAP_API_KEY"]?
+  begin
+    url ? (ENV["ZAP_URL"] = url) : ENV.delete("ZAP_URL")
+    key ? (ENV["ZAP_API_KEY"] = key) : ENV.delete("ZAP_API_KEY")
+    yield
+  ensure
+    prev_url ? (ENV["ZAP_URL"] = prev_url) : ENV.delete("ZAP_URL")
+    prev_key ? (ENV["ZAP_API_KEY"] = prev_key) : ENV.delete("ZAP_API_KEY")
+  end
+end
+
 # Regression specs for bugs found during the bug-hunting rounds. Each block is
 # named after the round that introduced the fix.
 describe "regressions" do
@@ -144,6 +159,38 @@ describe "regressions" do
       ensure
         client.close
         mock.stop
+      end
+    end
+  end
+
+  describe "R4: explicit constructor args always beat ENV" do
+    it "does not let ZAP_URL hijack a base_url that equals the built-in default" do
+      with_zap_env("http://someone-elses-zap:9999", nil) do
+        client = Zap::Client.new("http://localhost:8080")
+        client.base_url.should eq("http://localhost:8080")
+      end
+    end
+
+    it "does not let ZAP_API_KEY override an explicitly empty api_key" do
+      with_zap_env(nil, "env-secret") do
+        client = Zap::Client.new("http://localhost:8080", "")
+        client.api_key.should eq("")
+      end
+    end
+
+    it "still falls back to ENV when no arguments are given" do
+      with_zap_env("http://env-host:7070", "env-secret") do
+        client = Zap::Client.new
+        client.base_url.should eq("http://env-host:7070")
+        client.api_key.should eq("env-secret")
+      end
+    end
+
+    it "treats an empty env var as unset" do
+      with_zap_env("", "") do
+        client = Zap::Client.new
+        client.base_url.should eq(Zap::Client::DEFAULT_BASE_URL)
+        client.api_key.should eq("")
       end
     end
   end
