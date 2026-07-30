@@ -136,15 +136,20 @@ module Zap
         @client.request("/JSON/spider/view/status/", params)
       end
 
-      def results(start : Int32 = -1, count : Int32 = -1) : JSON::Any
+      # URLs found by a spider scan. ZAP's `spider/view/results` takes a single
+      # optional `scanId`; omitting it reports on the most recent scan. It has
+      # no pagination — the `start` / `count` this method used to accept were
+      # simply dropped by the daemon.
+      def results(scan_id : Int32 = -1) : JSON::Any
         params = {} of String => String
-        params["start"] = start.to_s if start >= 0
-        params["count"] = count.to_s if count >= 0
+        params["scanId"] = scan_id.to_s if scan_id >= 0
         @client.request("/JSON/spider/view/results/", params)
       end
 
-      def full_results : JSON::Any
-        @client.request("/JSON/spider/view/fullResults/")
+      # Full results (in scope, out of scope and errors) for a spider scan.
+      # `scan_id` is mandatory in ZAP's API, so it is required here too.
+      def full_results(scan_id : Int32) : JSON::Any
+        @client.request("/JSON/spider/view/fullResults/", {"scanId" => scan_id.to_s})
       end
 
       def number_of_results : JSON::Any

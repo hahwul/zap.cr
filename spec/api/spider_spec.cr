@@ -94,9 +94,16 @@ describe Zap::Api::Spider do
   it "#results" do
     with_mock_zap do |mock, client|
       mock.response_body = %({"results": ["http://example.com/a", "http://example.com/b"]})
-      client.spider.results(start: 0, count: 10)
-      mock.last_params["start"].should eq("0")
-      mock.last_params["count"].should eq("10")
+      client.spider.results(scan_id: 3)
+      mock.last_params["scanId"].should eq("3")
+    end
+  end
+
+  it "#results omits scanId when not given" do
+    with_mock_zap do |mock, client|
+      client.spider.results
+      mock.last_path.should eq("/JSON/spider/view/results/")
+      mock.last_params["scanId"]?.should be_nil
     end
   end
 
@@ -139,8 +146,10 @@ describe Zap::Api::Spider do
 
   it "#full_results" do
     with_mock_zap do |mock, client|
-      client.spider.full_results
+      client.spider.full_results(3)
       mock.last_path.should eq("/JSON/spider/view/fullResults/")
+      # scanId is mandatory in ZAP's API; omitting it made the view fail.
+      mock.last_params["scanId"].should eq("3")
     end
   end
 

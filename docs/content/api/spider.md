@@ -46,8 +46,8 @@ Traditional HTTP-based web crawler.
 | Method | Description |
 |--------|-------------|
 | `status(scan_id)` | Spider progress (0-100) |
-| `results(start, count)` | Discovered URLs |
-| `full_results` | Complete results |
+| `results(scan_id)` | Discovered URLs |
+| `full_results(scan_id)` | Complete results |
 | `number_of_results` | URL count |
 | `excluded_from_scan` | Exclusion list |
 | `allowed_resources` | Allowed resources |
@@ -68,5 +68,5 @@ loop do
   sleep 2.seconds
 end
 
-urls = client.spider.results
+urls = client.spider.results(scan_id)
 ```

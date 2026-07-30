@@ -502,4 +502,52 @@ describe "regressions" do
       end
     end
   end
+
+  describe "R10: spider fullResults carries the mandatory scanId" do
+    it "passes the spider's own scan id through from Scan#spider" do
+      with_mock_zap do |mock, client|
+        seen_scan_id = nil.as(String?)
+        mock.response_handler = ->(path : String, params : URI::Params) {
+          case path
+          when "/JSON/spider/action/scan/"
+            %({"scan": "12"})
+          when "/JSON/spider/view/status/"
+            %({"status": "100"})
+          when "/JSON/spider/view/fullResults/"
+            seen_scan_id = params["scanId"]?
+            %({"fullResults": []})
+          else
+            %({"Result": "OK"})
+          end
+        }
+
+        client.scan.spider("http://example.com", poll_interval: 0.seconds)
+        seen_scan_id.should eq("12")
+      end
+    end
+
+    it "passes the spider's scan id through from Scan#spider_full" do
+      with_mock_zap do |mock, client|
+        seen_scan_id = nil.as(String?)
+        mock.response_handler = ->(path : String, params : URI::Params) {
+          case path
+          when "/JSON/spider/action/scan/"
+            %({"scan": "34"})
+          when "/JSON/spider/view/status/"
+            %({"status": "100"})
+          when "/JSON/ajaxSpider/view/status/"
+            %({"status": "stopped"})
+          when "/JSON/spider/view/fullResults/"
+            seen_scan_id = params["scanId"]?
+            %({"fullResults": []})
+          else
+            %({"Result": "OK"})
+          end
+        }
+
+        client.scan.spider_full("http://example.com", poll_interval: 0.seconds)
+        seen_scan_id.should eq("34")
+      end
+    end
+  end
 end
