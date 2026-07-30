@@ -140,7 +140,7 @@ module Zap
     private def wait_for_ajax_spider(poll_interval : Time::Span, & : Int32 ->)
       loop do
         result = @client.ajax_spider.status
-        status = result["status"]?.try(&.as_s) || "stopped"
+        status = parse_string_field(result, "status") || "stopped"
         yield status == "running" ? 50 : 100
         break if status != "running"
         sleep poll_interval
@@ -160,6 +160,15 @@ module Zap
         break if progress >= 100
         sleep poll_interval
       end
+    end
+
+    # Reads a string-valued field without assuming ZAP actually sent a JSON
+    # string. `JSON::Any#as_s` raises `TypeCastError` for any other type — most
+    # importantly for `null`, which is what the ajax spider's `status` view
+    # returns before the spider has ever been started. Returning nil lets the
+    # caller apply its documented fallback instead of crashing the poll loop.
+    private def parse_string_field(json : JSON::Any, field : String) : String?
+      json[field]?.try(&.as_s?)
     end
 
     private def parse_int_field(json : JSON::Any, field : String) : Int32?
