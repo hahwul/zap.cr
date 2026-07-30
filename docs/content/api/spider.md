@@ -11,8 +11,8 @@ Traditional HTTP-based web crawler.
 
 | Method | Description |
 |--------|-------------|
-| `scan(url, context_name, subtree_only, in_scope)` | Start spidering |
-| `scan_as_user(context_name, user_name, url, subtree_only)` | Spider as user |
+| `scan(url, context_name, subtree_only, recurse, max_children)` | Start spidering |
+| `scan_as_user(context_id, user_id, url, recurse, subtree_only, max_children)` | Spider as user |
 | `pause(scan_id)` | Pause spider |
 | `pause_all` | Pause all spiders |
 | `resume(scan_id)` | Resume spider |
@@ -46,8 +46,8 @@ Traditional HTTP-based web crawler.
 | Method | Description |
 |--------|-------------|
 | `status(scan_id)` | Spider progress (0-100) |
-| `results(start, count)` | Discovered URLs |
-| `full_results` | Complete results |
+| `results(scan_id)` | Discovered URLs |
+| `full_results(scan_id)` | Complete results |
 | `number_of_results` | URL count |
 | `excluded_from_scan` | Exclusion list |
 | `allowed_resources` | Allowed resources |

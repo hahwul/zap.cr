@@ -125,9 +125,20 @@ module Zap
     end
 
     # Close the underlying HTTP connection and release resources.
+    #
+    # Serialized through the same mutex as `#perform_request`: without it,
+    # closing from one fiber could tear down the socket while another fiber was
+    # mid-request on it, surfacing as a spurious `IO::Error` or a truncated
+    # response. Waiting for the in-flight request to finish costs nothing in
+    # the common single-fiber case.
+    #
+    # Closing is idempotent, and the client stays usable afterwards — the next
+    # request lazily reconnects.
     def close
-      @http.try(&.close)
-      @http = nil
+      @request_mutex.synchronize do
+        @http.try(&.close)
+        @http = nil
+      end
     end
 
     # Low-level request methods
@@ -146,9 +157,7 @@ module Zap
     end
 
     private def perform_request(path : String, params : Hash(String, String)) : HTTP::Client::Response
-      params["apikey"] = @api_key unless @api_key.empty?
-
-      query = URI::Params.encode(params)
+      query = URI::Params.encode(with_api_key(params))
       full_path = query.empty? ? path : "#{path}?#{query}"
 
       # Serialize use of the shared HTTP::Client. Crystal's HTTP::Client cannot
@@ -158,15 +167,13 @@ module Zap
       # the lazy construction of `@http`, preventing a race that builds two
       # clients. For the common single-fiber case this is an uncontended lock.
       response = @request_mutex.synchronize do
-        begin
-          http_client.get(full_path)
-        rescue ex : IO::Error
-          # IO::Error is the common ancestor of the socket / TCP, timeout
-          # (IO::TimeoutError) and OpenSSL transport failures raised by
-          # HTTP::Client. Surface them as the library's error type instead of
-          # leaking a raw IO/Socket/OpenSSL exception to callers.
-          raise Zap::Error.new("Network error: #{ex.message}")
-        end
+        http_client.get(full_path)
+      rescue ex : IO::Error
+        # IO::Error is the common ancestor of the socket / TCP, timeout
+        # (IO::TimeoutError) and OpenSSL transport failures raised by
+        # HTTP::Client. Surface them as the library's error type instead of
+        # leaking a raw IO/Socket/OpenSSL exception to callers.
+        raise Zap::Error.new("Network error: #{ex.message}")
       end
 
       unless response.success?
@@ -182,6 +189,17 @@ module Zap
       end
 
       response
+    end
+
+    # Returns the params to send, with `apikey` appended when one is
+    # configured. `params` is never modified: `#request` / `#request_other` are
+    # public, so the hash can belong to the caller, and writing the API key
+    # into it would both leak the secret into a structure the caller may log or
+    # reuse and make a second call with a different `api_key` send the stale
+    # one. An `apikey` the caller supplied explicitly wins over `@api_key`.
+    private def with_api_key(params : Hash(String, String)) : Hash(String, String)
+      return params if @api_key.empty? || params.has_key?("apikey")
+      params.merge({"apikey" => @api_key})
     end
 
     private def http_client : HTTP::Client

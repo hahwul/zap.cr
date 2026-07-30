@@ -62,9 +62,23 @@ describe Zap::Api::Spider do
   it "#scan_as_user" do
     with_mock_zap do |mock, client|
       mock.response_body = %({"scan": "3"})
-      client.spider.scan_as_user("ctx", "admin", url: "http://example.com")
-      mock.last_params["contextName"].should eq("ctx")
-      mock.last_params["userName"].should eq("admin")
+      client.spider.scan_as_user(1, 2, url: "http://example.com")
+      # ZAP's spider scanAsUser identifies context/user by id, not by name.
+      mock.last_params["contextId"].should eq("1")
+      mock.last_params["userId"].should eq("2")
+      mock.last_params["url"].should eq("http://example.com")
+      mock.last_params["recurse"].should eq("true")
+      mock.last_params.has_key?("contextName").should be_false
+      mock.last_params.has_key?("userName").should be_false
+    end
+  end
+
+  it "#scan_as_user honours recurse and maxChildren" do
+    with_mock_zap do |mock, client|
+      mock.response_body = %({"scan": "3"})
+      client.spider.scan_as_user(1, 2, url: "http://example.com", recurse: false, max_children: 7)
+      mock.last_params["recurse"].should eq("false")
+      mock.last_params["maxChildren"].should eq("7")
     end
   end
 
@@ -80,9 +94,28 @@ describe Zap::Api::Spider do
   it "#results" do
     with_mock_zap do |mock, client|
       mock.response_body = %({"results": ["http://example.com/a", "http://example.com/b"]})
-      client.spider.results(start: 0, count: 10)
-      mock.last_params["start"].should eq("0")
-      mock.last_params["count"].should eq("10")
+      client.spider.results(3)
+      # ZAP's spider results view selects a scan by id; it has no start/count.
+      mock.last_params["scanId"].should eq("3")
+      mock.last_params.has_key?("start").should be_false
+      mock.last_params.has_key?("count").should be_false
+    end
+  end
+
+  it "#results omits scanId when not given" do
+    with_mock_zap do |mock, client|
+      mock.response_body = %({"results": []})
+      client.spider.results
+      mock.last_params.has_key?("scanId").should be_false
+    end
+  end
+
+  it "#full_results selects the scan by id" do
+    with_mock_zap do |mock, client|
+      mock.response_body = %({"fullResults": []})
+      client.spider.full_results(4)
+      mock.last_path.should eq("/JSON/spider/view/fullResults/")
+      mock.last_params["scanId"].should eq("4")
     end
   end
 
@@ -120,13 +153,6 @@ describe Zap::Api::Spider do
     with_mock_zap do |mock, client|
       client.spider.set_option_max_depth(5)
       mock.last_params["Integer"].should eq("5")
-    end
-  end
-
-  it "#full_results" do
-    with_mock_zap do |mock, client|
-      client.spider.full_results
-      mock.last_path.should eq("/JSON/spider/view/fullResults/")
     end
   end
 

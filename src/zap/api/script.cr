@@ -34,9 +34,12 @@ module Zap
       end
 
       # Actions
-      def load(name : String, script_type : String, engine : String, file_name : String, description : String = "") : JSON::Any
+      # `charset` names the encoding ZAP should read the file with. It is
+      # required for scripts that are not UTF-8 (e.g. ISO-8859-1).
+      def load(name : String, script_type : String, engine : String, file_name : String, description : String = "", charset : String = "") : JSON::Any
         params = {"scriptName" => name, "scriptType" => script_type, "scriptEngine" => engine, "fileName" => file_name}
         params["scriptDescription"] = description unless description.empty?
+        params["charset"] = charset unless charset.empty?
         @client.request("/JSON/script/action/load/", params)
       end
 

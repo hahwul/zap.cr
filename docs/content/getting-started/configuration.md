@@ -28,13 +28,22 @@ The client uses the following timeouts:
 - **Connect timeout**: 30 seconds
 - **Read timeout**: 300 seconds (5 minutes, suitable for long scans)
 
-## Poll Interval
+## Poll Interval and Timeout
 
 Convenience scan methods accept a `poll_interval` parameter:
 
 ```crystal
 # Default: 5 seconds
 client.scan.full("http://target.com", poll_interval: 10.seconds)
+```
+
+They also accept an optional `timeout` that bounds the whole workflow. Without
+it the client polls until ZAP reports 100%, which never happens if the scan is
+removed or wedged:
+
+```crystal
+# Raises Zap::Error if the scan has not finished within an hour
+client.scan.full("http://target.com", timeout: 1.hour)
 ```
 
 ## ZAP Configuration

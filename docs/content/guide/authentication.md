@@ -48,7 +48,7 @@ client.users.set_auth_credentials(
 client.users.set_enabled(ctx_id, user_id, true)
 
 # 7. Scan as user
-client.spider.scan_as_user("auth-scan", "testuser",
+client.spider.scan_as_user(ctx_id, user_id,
   url: "http://target.com"
 )
 client.ascan.scan_as_user("http://target.com",
@@ -80,9 +80,10 @@ Force all requests through a specific user:
 
 ```crystal
 client.forced_user.set(ctx_id, user_id)
-client.forced_user.set_enabled(ctx_id, true)
+# Forced-user mode itself is a global toggle.
+client.forced_user.set_enabled(true)
 
 # Check status
-client.forced_user.enabled?(ctx_id)
+client.forced_user.enabled?
 client.forced_user.get(ctx_id)
 ```
