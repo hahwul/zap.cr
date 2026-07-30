@@ -125,9 +125,20 @@ module Zap
     end
 
     # Close the underlying HTTP connection and release resources.
+    #
+    # Serialized through the same mutex as `#perform_request`: without it,
+    # closing from one fiber could tear down the socket while another fiber was
+    # mid-request on it, surfacing as a spurious `IO::Error` or a truncated
+    # response. Waiting for the in-flight request to finish costs nothing in
+    # the common single-fiber case.
+    #
+    # Closing is idempotent, and the client stays usable afterwards — the next
+    # request lazily reconnects.
     def close
-      @http.try(&.close)
-      @http = nil
+      @request_mutex.synchronize do
+        @http.try(&.close)
+        @http = nil
+      end
     end
 
     # Low-level request methods

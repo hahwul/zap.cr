@@ -44,4 +44,45 @@ describe "regressions" do
       end
     end
   end
+
+  describe "Client#close" do
+    it "waits for an in-flight request instead of closing the socket underneath it" do
+      srv = HTTP::Server.new do |ctx|
+        # Widen the window in which a concurrent #close could tear the
+        # connection down mid-response.
+        Fiber.yield
+        ctx.response.content_type = "application/json"
+        ctx.response.print %({"version": "2.16.0"})
+      end
+      address = srv.bind_tcp("127.0.0.1", 0)
+      spawn { srv.listen }
+      Fiber.yield
+
+      client = Zap::Client.new("http://127.0.0.1:#{address.port}")
+      done = Channel(Exception?).new
+      begin
+        spawn do
+          client.core.version
+          done.send(nil)
+        rescue ex
+          done.send(ex)
+        end
+        Fiber.yield
+        client.close
+        done.receive.should be_nil
+      ensure
+        client.close
+        srv.close
+      end
+    end
+
+    it "is idempotent and leaves the client usable" do
+      with_mock_zap do |_mock, client|
+        client.core.version
+        client.close
+        client.close
+        client.core.version["Result"].should eq("OK")
+      end
+    end
+  end
 end
