@@ -97,4 +97,54 @@ describe "regressions" do
       end
     end
   end
+
+  describe "R3: base_url path prefix" do
+    it "keeps a path prefix from base_url on every request" do
+      mock = MockZapServer.new
+      port = mock.start
+      client = Zap::Client.new("http://127.0.0.1:#{port}/zap", "test-api-key")
+      begin
+        client.core.version
+        mock.last_path.should eq("/zap/JSON/core/view/version/")
+      ensure
+        client.close
+        mock.stop
+      end
+    end
+
+    it "does not produce a double slash when base_url ends with one" do
+      mock = MockZapServer.new
+      port = mock.start
+      client = Zap::Client.new("http://127.0.0.1:#{port}/zap/", "test-api-key")
+      begin
+        client.core.version
+        mock.last_path.should eq("/zap/JSON/core/view/version/")
+      ensure
+        client.close
+        mock.stop
+      end
+    end
+
+    it "leaves paths unchanged for a root-mounted daemon" do
+      with_mock_zap do |mock, client|
+        client.core.version
+        mock.last_path.should eq("/JSON/core/view/version/")
+      end
+    end
+
+    it "applies the prefix to OTHER endpoints and keeps the query string" do
+      mock = MockZapServer.new
+      port = mock.start
+      client = Zap::Client.new("http://127.0.0.1:#{port}/zap", "test-api-key")
+      begin
+        client.core.message_har("7")
+        mock.last_path.should eq("/zap/OTHER/core/other/messageHar/")
+        mock.last_params["id"].should eq("7")
+        mock.last_params["apikey"].should eq("test-api-key")
+      ensure
+        client.close
+        mock.stop
+      end
+    end
+  end
 end

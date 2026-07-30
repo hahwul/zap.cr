@@ -40,6 +40,9 @@ module Zap
     getter read_timeout : Time::Span
 
     @http : HTTP::Client?
+    # Path prefix taken from `base_url`, resolved alongside `@http`. Empty for
+    # the usual root-mounted daemon.
+    @base_path : String = ""
     # Serializes request execution through the shared `HTTP::Client`. Crystal's
     # HTTP::Client is not safe for overlapping use from multiple fibers, and a
     # single memoized instance is shared by every API component, so concurrent
@@ -155,7 +158,6 @@ module Zap
       query_params["apikey"] = @api_key unless @api_key.empty?
 
       query = URI::Params.encode(query_params)
-      full_path = query.empty? ? path : "#{path}?#{query}"
 
       # Serialize use of the shared HTTP::Client. Crystal's HTTP::Client cannot
       # be used from multiple fibers concurrently, and the same memoized
@@ -165,7 +167,10 @@ module Zap
       # clients. For the common single-fiber case this is an uncontended lock.
       response = @request_mutex.synchronize do
         begin
-          http_client.get(full_path)
+          # `http_client` also resolves `@base_path`, so it has to run first.
+          client = http_client
+          request_path = "#{@base_path}#{path}"
+          client.get(query.empty? ? request_path : "#{request_path}?#{query}")
         rescue ex : IO::Error
           # IO::Error is the common ancestor of the socket / TCP, timeout
           # (IO::TimeoutError) and OpenSSL transport failures raised by
@@ -203,6 +208,14 @@ module Zap
         rescue ex : URI::Error | ArgumentError
           raise Zap::Error.new("Invalid base_url: #{ex.message}")
         end
+        # `HTTP::Client.new(uri)` keeps only scheme/host/port — the URI's path
+        # is discarded. A `base_url` that mounts ZAP under a prefix (say
+        # `https://ci.example/zap`, a common reverse-proxy setup) would
+        # therefore send every request to `/JSON/...` at the server root and
+        # get an unexplained 404. Remember the prefix and re-apply it to each
+        # request path. Endpoint paths always start with "/", so a trailing
+        # slash on the prefix is dropped to avoid an empty "//" segment.
+        @base_path = uri.path.chomp("/")
         client.connect_timeout = @connect_timeout
         client.read_timeout = @read_timeout
         client
