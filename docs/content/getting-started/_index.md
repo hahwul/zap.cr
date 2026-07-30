@@ -1,5 +1,7 @@
 +++
 title = "Getting Started"
+sort_by = "weight"
+weight = 1
 +++
 
 Get up and running with zap.cr in minutes.

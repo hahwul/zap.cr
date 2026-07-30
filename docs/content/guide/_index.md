@@ -1,5 +1,7 @@
 +++
 title = "Guide"
+sort_by = "weight"
+weight = 2
 +++
 
 In-depth guides for common security testing workflows with zap.cr.

@@ -1,65 +1,87 @@
-# AGENTS.md - AI Agent Instructions for Zap.cr Docs
+# AGENTS.md - AI Agent Instructions for the zap.cr Documentation Site
 
-This document provides instructions for AI agents working on the zap.cr documentation site.
+This document is for AI agents editing the zap.cr documentation site under `docs/`.
 
 ## Project Overview
 
-This is the documentation site for [zap.cr](https://github.com/hahwul/zap.cr), a Crystal client library for the ZAP (Zed Attack Proxy) API. Built with [Hwaro](https://github.com/hahwul/hwaro), a fast static site generator written in Crystal.
+This is the documentation companion to [zap.cr](https://github.com/hahwul/zap.cr), a Crystal client library for the ZAP API. The site is a static site built with [Hwaro](https://github.com/hahwul/hwaro) (Crinja/Jinja2 templates).
 
-## Site Structure
+It shares a single canonical design system with the docs sites of the sibling libraries (acp.cr, caido.cr, cvss.cr, cwe.cr, epss.cr, fm.cr, kev.cr, purl.cr, sarif.cr, spdx.cr, vex.cr, zap.cr): `templates/` (except the two slot partials), `static/css/style.css`, `static/js/search.js`, and `static/fonts/` are byte-identical across all of them. If you change one of those files here, port the change to every sibling site.
+
+## Hwaro Usage
+
+Run from inside `docs/`:
+
+| Command | Description |
+|---------|-------------|
+| `hwaro build` | Build the site to `public/` |
+| `hwaro serve` | Local dev server with live reload (port 3000) |
+| `hwaro doctor` | Sanity-check config and content |
+
+## Directory Structure
 
 ```
 docs/
-├── config.toml              # Site configuration
-├── content/
-│   ├── index.md             # Homepage
-│   ├── getting-started/     # Installation & setup
-│   │   ├── _index.md
-│   │   ├── installation.md
-│   │   ├── quick-start.md
-│   │   └── configuration.md
-│   ├── guide/               # Usage guides
-│   │   ├── _index.md
-│   │   ├── scanning.md
-│   │   ├── spidering.md
-│   │   ├── authentication.md
-│   │   ├── context.md
-│   │   ├── alerts.md
-│   │   └── reporting.md
-│   └── api/                 # API reference
-│       ├── _index.md
-│       ├── client.md
-│       ├── core.md
-│       ├── spider.md
-│       ├── ajax-spider.md
-│       ├── ascan.md
-│       ├── pscan.md
-│       ├── alert.md
-│       ├── context.md
-│       ├── search.md
-│       ├── network.md
-│       ├── scripts.md
-│       └── others.md
-├── templates/               # Jinja2 templates
-│   ├── header.html
-│   ├── footer.html
-│   ├── page.html
-│   ├── section.html
-│   └── 404.html
+├── config.toml            # Site configuration (incl. [og.auto_image] brand colors)
+├── content/               # Markdown content (getting-started/, guide/, api/ + index.md)
+├── templates/
+│   ├── header.html        # <head>, no-FOUC theme script, css link
+│   ├── footer.html        # footer, search.js, theme-toggle + mobile-drawer scripts
+│   ├── page.html          # page body + prev/next nav
+│   ├── section.html       # section body + "In This Section" cards
+│   ├── 404.html
+│   ├── taxonomy.html / taxonomy_term.html
+│   ├── partials/
+│   │   ├── nav.html       # top bar: brand, section links, search, theme, GitHub
+│   │   ├── sidebar.html   # DYNAMIC sidebar (loops site.sections, weight-sorted)
+│   │   ├── search.html    # command-K search overlay
+│   │   ├── brand.html     # per-site slot: sidebar logo (empty by default)
+│   │   └── icons.html     # per-site slot: favicons (empty by default)
+│   └── shortcodes/alert.html
 └── static/
-    └── css/style.css
+    ├── css/style.css      # design tokens + all component styles
+    ├── js/search.js       # search modal logic
+    └── fonts/             # Geist + Geist Mono (variable woff2, self-hosted)
 ```
+
+## Design System (do not regress these)
+
+- **Theming:** every color is a `light-dark()` token in `:root`. The theme toggle pins a scheme via `data-theme` on `<html>`; auto follows the OS. Never hardcode a color in a component rule - add or reuse a token.
+- **Syntax highlighting** is server-side (Tartrazine, hljs-compatible classes) colored by the `--code-*` tokens in `style.css`. Do **not** re-add `{{ highlight_css }}` to `header.html` - the CDN theme would fight the tokens.
+- **Typography:** Geist (sans) and Geist Mono, self-hosted in `static/fonts/`. Do not add webfont CDN links.
+- **Mobile:** the sidebar becomes a drawer behind the hamburger button under 768px. Keep the drawer script in `footer.html` intact.
+- **No new JS dependencies.** The site uses only `static/js/search.js` and the inline scripts in `header.html`/`footer.html`.
 
 ## Content Guidelines
 
-- Front matter uses TOML format delimited by `+++`
-- Code examples use Crystal syntax
-- All ZAP API references link to https://zaproxy.org/docs/api/
-- ZAP is NOT an OWASP project - do not use "OWASP ZAP"
+### Front matter
 
-## Building
+TOML front matter delimited by `+++`:
 
-```bash
-hwaro serve        # Dev server at localhost:3000
-hwaro build        # Build to public/
+```toml
++++
+title = "Page Title"
+description = "Short SEO description (also rendered as the page lede)"
+weight = 1
++++
 ```
+
+- **Always preserve front matter** when editing.
+- `description` renders under the h1 as the page lede and on section cards - keep it one sentence, informative, no trailing period needed.
+- Cross-link generously between pages. **Keep URLs relative** - `{{ base_url }}/...` in templates, `/section/page/` in markdown links.
+
+### Adding a new page
+
+1. Create the `.md` under the right section directory with `title`, `description`, and `weight`.
+2. That's it. The sidebar, header nav, section cards, and prev/next links are all generated dynamically from `site.sections` (weight-sorted). **No template edits needed.**
+
+### Editing rules
+
+- All ZAP API references link to https://zaproxy.org/docs/api/.
+- ZAP is NOT an OWASP project - do not write "OWASP ZAP".
+- Code samples must be valid Crystal that runs against the latest zap.cr.
+
+## Notes for AI Agents
+
+1. **Don't invent APIs.** Only document symbols that exist in `src/**`. Verify by grepping the source before adding examples.
+2. **Use `crystal spec`** (from the repo root) to confirm any code sample you add still type-checks semantically.

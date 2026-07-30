@@ -1,5 +1,7 @@
 +++
 title = "API Reference"
+sort_by = "weight"
+weight = 3
 +++
 
 Complete reference for all zap.cr API modules. Each module wraps a corresponding ZAP API component.
