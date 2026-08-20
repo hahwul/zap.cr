@@ -179,7 +179,8 @@ module Zap
     end
 
     private def perform_request(path : String, params : Hash(String, String)) : HTTP::Client::Response
-      query = URI::Params.encode(with_api_key(params))
+      query = URI::Params.encode(params)
+      headers = api_key_headers(params)
 
       # Serialize use of the shared HTTP::Client. Crystal's HTTP::Client cannot
       # be used from multiple fibers concurrently, and the same memoized
@@ -191,12 +192,14 @@ module Zap
         # `http_client` also resolves `@base_path`, so it has to run first.
         client = http_client
         request_path = "#{@base_path}#{path}"
-        client.get(query.empty? ? request_path : "#{request_path}?#{query}")
-      rescue ex : IO::Error
-        # IO::Error is the common ancestor of the socket / TCP, timeout
-        # (IO::TimeoutError) and OpenSSL transport failures raised by
-        # HTTP::Client. Surface them as the library's error type instead of
-        # leaking a raw IO/Socket/OpenSSL exception to callers.
+        client.get(query.empty? ? request_path : "#{request_path}?#{query}", headers)
+      rescue ex : IO::Error | OpenSSL::Error
+        # IO::Error is the common ancestor of the socket / TCP and timeout
+        # (IO::TimeoutError) failures raised by HTTP::Client. TLS handshake
+        # failures are *not* one of them — `OpenSSL::Error` descends straight
+        # from `Exception` — so an HTTPS daemon with an untrusted or mismatched
+        # certificate used to leak a raw `OpenSSL::SSL::Error` to callers.
+        # Both are surfaced as the library's error type.
         raise Zap::Error.new("Network error: #{ex.message}")
       end
 
@@ -215,15 +218,27 @@ module Zap
       response
     end
 
-    # Returns the params to send, with `apikey` appended when one is
-    # configured. `params` is never modified: `#request` / `#request_other` are
-    # public, so the hash can belong to the caller, and writing the API key
-    # into it would both leak the secret into a structure the caller may log or
-    # reuse and make a second call with a different `api_key` send the stale
-    # one. An `apikey` the caller supplied explicitly wins over `@api_key`.
-    private def with_api_key(params : Hash(String, String)) : Hash(String, String)
-      return params if @api_key.empty? || params.has_key?("apikey")
-      params.merge({"apikey" => @api_key})
+    # The headers to send the configured API key in, or `nil` when there is
+    # nothing to send.
+    #
+    # ZAP accepts the key either as an `apikey` query parameter or as an
+    # `X-ZAP-API-Key` request header, and checks the header first (see ZAP's
+    # `API#hasValidKey`). The header is used because a query string is the one
+    # place the key gets *persisted*: ZAP records the request URL in its own
+    # log and site tree, and any reverse proxy in front of the daemon writes it
+    # to an access log — so `?apikey=...` leaves the secret in plain text in
+    # several files. A header is not logged by any of them.
+    #
+    # `params` is never modified: `#request` / `#request_other` are public, so
+    # the hash can belong to the caller, and writing the API key into it would
+    # both leak the secret into a structure the caller may log or reuse and
+    # make a second call with a different `api_key` send the stale one. An
+    # `apikey` the caller put in `params` explicitly is left alone and no
+    # header is added, so a daemon behind something that strips unknown headers
+    # can still be reached with the query form.
+    private def api_key_headers(params : Hash(String, String)) : HTTP::Headers?
+      return if @api_key.empty? || params.has_key?("apikey")
+      HTTP::Headers{"X-ZAP-API-Key" => @api_key}
     end
 
     private def http_client : HTTP::Client

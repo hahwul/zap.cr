@@ -14,6 +14,11 @@ zap.cr talks to a running ZAP daemon over HTTP. Before using the library:
   only for arguments you leave out. A `ZAP_URL` may include a path prefix
   (`https://ci.example/zap`) when the daemon sits behind a reverse proxy.
 
+The API key is sent in the `X-ZAP-API-Key` header, so it never appears in a
+URL that ZAP or a reverse proxy would write to a log. If you need the
+`?apikey=...` query form instead, pass `apikey` yourself in the params hash of
+`Client#request` / `#request_other`.
+
 See [`examples/README.md`](./examples) for runnable scripts that cover spider,
 active scan, alerts, contexts, and report generation.
 

@@ -21,12 +21,18 @@ module Zap
         @client.request("/JSON/pscan/action/disableScanners/", {"ids" => ids})
       end
 
+      # ZAP has no `setOption*` / `option*` variants for the passive scanner —
+      # the actions and views are `setMaxAlertsPerRule` / `maxAlertsPerRule`
+      # and `setScanOnlyInScope` / `scanOnlyInScope`. These four keep the older
+      # method names (with the more convenient argument types) and delegate, so
+      # they hit an endpoint that exists instead of failing with `bad_action` /
+      # `bad_view`.
       def set_option_max_alerts_per_rule(max : Int32) : JSON::Any
-        @client.request("/JSON/pscan/action/setOptionMaxAlertsPerRule/", {"Integer" => max.to_s})
+        set_max_alerts_per_rule(max.to_s)
       end
 
       def set_option_scan_only_in_scope(enabled : Bool) : JSON::Any
-        @client.request("/JSON/pscan/action/setOptionScanOnlyInScope/", {"Boolean" => enabled.to_s})
+        set_scan_only_in_scope(enabled.to_s)
       end
 
       # Views
@@ -35,11 +41,11 @@ module Zap
       end
 
       def option_max_alerts_per_rule : JSON::Any
-        @client.request("/JSON/pscan/view/optionMaxAlertsPerRule/")
+        max_alerts_per_rule
       end
 
       def option_scan_only_in_scope : JSON::Any
-        @client.request("/JSON/pscan/view/optionScanOnlyInScope/")
+        scan_only_in_scope
       end
 
       def records_to_scan : JSON::Any

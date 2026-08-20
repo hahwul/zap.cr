@@ -18,7 +18,7 @@ end
 # Regression specs for bugs found by auditing the client against the ZAP API.
 describe "regressions" do
   describe "Client does not mutate caller-supplied params" do
-    it "leaves the caller's hash untouched when injecting the API key" do
+    it "leaves the caller's hash untouched when sending the API key" do
       with_mock_zap do |_mock, client|
         params = {"url" => "http://example.com"}
         client.request("/JSON/core/view/version/", params)
@@ -30,7 +30,7 @@ describe "regressions" do
     it "still sends the API key on the wire" do
       with_mock_zap do |mock, client|
         client.request("/JSON/core/view/version/", {"url" => "http://example.com"})
-        mock.last_params["apikey"].should eq("test-api-key")
+        mock.last_headers["X-ZAP-API-Key"].should eq("test-api-key")
       end
     end
 
@@ -40,7 +40,7 @@ describe "regressions" do
         client.request("/JSON/core/view/version/", params)
         client.api_key = "rotated"
         client.request("/JSON/core/view/version/", params)
-        mock.last_params["apikey"].should eq("rotated")
+        mock.last_headers["X-ZAP-API-Key"].should eq("rotated")
       end
     end
 
@@ -56,6 +56,77 @@ describe "regressions" do
         params = {"fileName" => "report.html"}
         client.request_other("/OTHER/core/other/fileDownload/", params)
         params.has_key?("apikey").should be_false
+      end
+    end
+  end
+
+  # ZAP accepts the key as an `X-ZAP-API-Key` header or an `apikey` query
+  # parameter and checks the header first. Only the query form is written to
+  # ZAP's own request log and to the access log of any reverse proxy, so the
+  # key must never appear in a URL unless the caller asked for it.
+  describe "the API key never lands in a URL" do
+    it "sends it as a header, not a query parameter" do
+      with_mock_zap do |mock, client|
+        client.core.version
+        mock.last_headers["X-ZAP-API-Key"].should eq("test-api-key")
+        mock.last_params.has_key?("apikey").should be_false
+        mock.last_resource.should_not contain("test-api-key")
+      end
+    end
+
+    it "keeps it out of the URL on OTHER endpoints too" do
+      with_mock_zap do |mock, client|
+        client.core.message_har("7")
+        mock.last_headers["X-ZAP-API-Key"].should eq("test-api-key")
+        mock.last_resource.should_not contain("test-api-key")
+        mock.last_params["id"].should eq("7")
+      end
+    end
+
+    it "sends no header at all when no key is configured" do
+      mock = MockZapServer.new
+      port = mock.start
+      client = Zap::Client.new("http://127.0.0.1:#{port}", "")
+      begin
+        client.core.version
+        mock.last_headers.has_key?("X-ZAP-API-Key").should be_false
+        mock.last_params.has_key?("apikey").should be_false
+      ensure
+        client.close
+        mock.stop
+      end
+    end
+
+    it "leaves the query form alone (and adds no header) when the caller supplies apikey" do
+      with_mock_zap do |mock, client|
+        client.request("/JSON/core/view/version/", {"apikey" => "explicit"})
+        mock.last_params["apikey"].should eq("explicit")
+        mock.last_headers.has_key?("X-ZAP-API-Key").should be_false
+      end
+    end
+  end
+
+  describe "TLS failures are typed errors" do
+    it "raises Zap::Error rather than a raw OpenSSL::SSL::Error" do
+      # A plain-HTTP server reached over https:// fails during the TLS
+      # handshake. OpenSSL::Error descends from Exception, not IO::Error, so
+      # it used to escape perform_request untouched.
+      srv = HTTP::Server.new do |ctx|
+        ctx.response.print %({"version": "2.16.0"})
+      end
+      address = srv.bind_tcp("127.0.0.1", 0)
+      spawn { srv.listen }
+      Fiber.yield
+
+      client = Zap::Client.new("https://127.0.0.1:#{address.port}", "k", connect_timeout: 5.seconds)
+      begin
+        ex = expect_raises(Zap::Error, /Network error/) do
+          client.core.version
+        end
+        ex.should be_a(Zap::Error)
+      ensure
+        client.close
+        srv.close
       end
     end
   end
@@ -423,7 +494,7 @@ describe "regressions" do
         client.core.message_har("7")
         mock.last_path.should eq("/zap/OTHER/core/other/messageHar/")
         mock.last_params["id"].should eq("7")
-        mock.last_params["apikey"].should eq("test-api-key")
+        mock.last_headers["X-ZAP-API-Key"].should eq("test-api-key")
       ensure
         client.close
         mock.stop
@@ -646,6 +717,131 @@ describe "regressions" do
 
         client.alert.number_of_alerts(base_url: "http://example.com", risk_id: Zap::Risk::High)
         mock.last_params["riskId"].should eq(core_risk)
+      end
+    end
+  end
+
+  describe "parameter names ZAP actually reads" do
+    it "acsrf genForm sends hrefId, the parameter ZAP requires" do
+      with_mock_zap do |mock, client|
+        client.acsrf.gen_form(7)
+        mock.last_path.should eq("/OTHER/acsrf/other/genForm/")
+        mock.last_params["hrefId"].should eq("7")
+        mock.last_params.has_key?("hid").should be_false
+      end
+    end
+
+    it "acsrf genForm passes an optional actionUrl" do
+      with_mock_zap do |mock, client|
+        client.acsrf.gen_form(7)
+        mock.last_params.has_key?("actionUrl").should be_false
+
+        client.acsrf.gen_form(7, action_url: "http://example.com/login")
+        mock.last_params["actionUrl"].should eq("http://example.com/login")
+      end
+    end
+
+    it "exim exportHar filters on baseurl, not url" do
+      with_mock_zap do |mock, client|
+        client.exim.export_site_messages_har("http://example.com")
+        mock.last_path.should eq("/OTHER/exim/other/exportHar/")
+        mock.last_params["baseurl"].should eq("http://example.com")
+        mock.last_params.has_key?("url").should be_false
+      end
+    end
+
+    it "exim exportHar paginates like its sibling views" do
+      with_mock_zap do |mock, client|
+        client.exim.export_site_messages_har("http://example.com", start: 0, count: 10)
+        mock.last_params["start"].should eq("0")
+        mock.last_params["count"].should eq("10")
+
+        client.exim.export_site_messages_har("http://example.com")
+        mock.last_params.has_key?("start").should be_false
+        mock.last_params.has_key?("count").should be_false
+      end
+    end
+
+    it "postman imports can override the endpoint URL" do
+      with_mock_zap do |mock, client|
+        client.postman.import_file("/tmp/collection.json", endpoint_url: "http://example.com")
+        mock.last_params["endpointUrl"].should eq("http://example.com")
+
+        client.postman.import_url("http://example.com/collection.json")
+        mock.last_params.has_key?("endpointUrl").should be_false
+      end
+    end
+  end
+
+  describe "endpoints that no longer exist under their old names" do
+    it "pscan option accessors hit the current actions and views" do
+      with_mock_zap do |mock, client|
+        client.pscan.set_option_max_alerts_per_rule(10)
+        mock.last_path.should eq("/JSON/pscan/action/setMaxAlertsPerRule/")
+        mock.last_params["maxAlerts"].should eq("10")
+
+        client.pscan.set_option_scan_only_in_scope(true)
+        mock.last_path.should eq("/JSON/pscan/action/setScanOnlyInScope/")
+        mock.last_params["onlyInScope"].should eq("true")
+
+        client.pscan.option_max_alerts_per_rule
+        mock.last_path.should eq("/JSON/pscan/view/maxAlertsPerRule/")
+
+        client.pscan.option_scan_only_in_scope
+        mock.last_path.should eq("/JSON/pscan/view/scanOnlyInScope/")
+      end
+    end
+
+    it "reveal accessors hit reveal / setReveal" do
+      with_mock_zap do |mock, client|
+        client.reveal.reveal_hidden_fields?
+        mock.last_path.should eq("/JSON/reveal/view/reveal/")
+
+        client.reveal.set_reveal_hidden_fields(false)
+        mock.last_path.should eq("/JSON/reveal/action/setReveal/")
+        mock.last_params["reveal"].should eq("false")
+      end
+    end
+  end
+
+  describe "hud endpoints send the parameters ZAP marks mandatory" do
+    it "sends the option value instead of an empty request" do
+      with_mock_zap do |mock, client|
+        client.hud.set_option_enabled_for_daemon(true)
+        mock.last_path.should eq("/JSON/hud/action/setOptionEnabledForDaemon/")
+        mock.last_params["Boolean"].should eq("true")
+
+        client.hud.set_option_base_directory("/tmp/hud")
+        mock.last_params["String"].should eq("/tmp/hud")
+
+        client.hud.set_option_tutorial_task_done("task-1")
+        mock.last_params["String"].should eq("task-1")
+      end
+    end
+
+    it "sends the identifiers the log / request / UI endpoints need" do
+      with_mock_zap do |mock, client|
+        client.hud.log("something happened")
+        mock.last_params["record"].should eq("something happened")
+
+        client.hud.record_request("GET / HTTP/1.1", "")
+        mock.last_params["header"].should eq("GET / HTTP/1.1")
+        mock.last_params["body"].should eq("")
+
+        client.hud.set_ui_option("theme", "dark")
+        mock.last_params["key"].should eq("theme")
+        mock.last_params["value"].should eq("dark")
+
+        client.hud.set_ui_option("theme")
+        mock.last_params["key"].should eq("theme")
+        mock.last_params.has_key?("value").should be_false
+
+        client.hud.get_ui_option("theme")
+        mock.last_path.should eq("/JSON/hud/view/getUiOption/")
+        mock.last_params["key"].should eq("theme")
+
+        client.hud.hud_alert_data("http://example.com")
+        mock.last_params["url"].should eq("http://example.com")
       end
     end
   end

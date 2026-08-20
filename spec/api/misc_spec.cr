@@ -213,7 +213,8 @@ describe Zap::Api::Reveal do
   it "#set_reveal_hidden_fields" do
     with_mock_zap do |mock, client|
       client.reveal.set_reveal_hidden_fields(true)
-      mock.last_params["Boolean"].should eq("true")
+      mock.last_path.should eq("/JSON/reveal/action/setReveal/")
+      mock.last_params["reveal"].should eq("true")
     end
   end
 end
