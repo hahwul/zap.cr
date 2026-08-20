@@ -25,7 +25,8 @@ describe Zap::Api::Pscan do
   it "#set_option_scan_only_in_scope" do
     with_mock_zap do |mock, client|
       client.pscan.set_option_scan_only_in_scope(true)
-      mock.last_params["Boolean"].should eq("true")
+      mock.last_path.should eq("/JSON/pscan/action/setScanOnlyInScope/")
+      mock.last_params["onlyInScope"].should eq("true")
     end
   end
 

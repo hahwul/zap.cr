@@ -24,8 +24,13 @@ module Zap
         @client.request("/JSON/acsrf/action/setOptionPartialMatchingEnabled/", {"Boolean" => enabled.to_s})
       end
 
-      def gen_form(message_id : Int32) : String
-        @client.request_other("/OTHER/acsrf/other/genForm/", {"hid" => message_id.to_s})
+      # Generates a form for the request with the given history reference id.
+      # ZAP names that parameter `hrefId` and rejects the call without it.
+      # `action_url` overrides the action URL of the generated form.
+      def gen_form(message_id : Int32, action_url : String = "") : String
+        params = {"hrefId" => message_id.to_s}
+        params["actionUrl"] = action_url unless action_url.empty?
+        @client.request_other("/OTHER/acsrf/other/genForm/", params)
       end
     end
   end

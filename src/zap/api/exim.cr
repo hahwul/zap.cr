@@ -28,8 +28,16 @@ module Zap
         @client.request("/JSON/exim/action/exportHar/", params)
       end
 
-      def export_site_messages_har(url : String) : String
-        @client.request_other("/OTHER/exim/other/exportHar/", {"url" => url})
+      # The messages of one site in HAR format. ZAP filters this endpoint with
+      # `baseurl` (the URL below which messages are included) and paginates it
+      # with `start` / `count`, the same knobs as `#export_har`. Sending the
+      # URL under any other name is silently ignored, which would export every
+      # message ZAP has seen rather than the site's.
+      def export_site_messages_har(url : String, start : Int32 = -1, count : Int32 = -1) : String
+        params = {"baseurl" => url}
+        params["start"] = start.to_s if start >= 0
+        params["count"] = count.to_s if count >= 0
+        @client.request_other("/OTHER/exim/other/exportHar/", params)
       end
 
       def export_sites_tree(file_path : String) : JSON::Any

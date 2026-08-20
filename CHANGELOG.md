@@ -4,8 +4,36 @@
 
 Bug fixes from auditing every endpoint against the ZAP API.
 
+### Security
+
+- The API key is sent in the `X-ZAP-API-Key` header instead of an `apikey`
+  query parameter. ZAP accepts both and checks the header first, but only the
+  query form is persisted — ZAP writes the request URL to its own log, and any
+  reverse proxy in front of the daemon writes it to an access log, leaving the
+  key in plain text in both. Callers that put `apikey` in `params` themselves
+  keep the query form, for daemons behind something that strips headers.
+
 ### Fixed
 
+- TLS handshake failures raise `Zap::Error` instead of escaping as a raw
+  `OpenSSL::SSL::Error`; `OpenSSL::Error` descends from `Exception`, not
+  `IO::Error`, so it was not covered by the transport-error rescue.
+- `Api::Acsrf#gen_form` sends `hrefId`, the parameter ZAP requires; it sent
+  `hid`, so every call failed with `missing_parameter`. It also gained the
+  optional `action_url`.
+- `Api::Exim#export_site_messages_har` filters on `baseurl`. It sent `url`,
+  which ZAP ignores, so it exported every message rather than the site's. It
+  also gained `start`/`count`.
+- `Api::Hud` actions and views send the parameters ZAP marks mandatory
+  (`record`, `header`/`body`, the `String`/`Boolean` option values, `key`,
+  `url`); previously all fifteen sent none and always failed. **Breaking**:
+  they take arguments.
+- `Api::Pscan#set_option_max_alerts_per_rule` / `#set_option_scan_only_in_scope`
+  / `#option_max_alerts_per_rule` / `#option_scan_only_in_scope` and
+  `Api::Reveal#reveal_hidden_fields?` / `#set_reveal_hidden_fields` target the
+  endpoints ZAP actually exposes (`setMaxAlertsPerRule`, `setScanOnlyInScope`,
+  `reveal`, `setReveal`, …); the `setOption*` / `option*` names they used do
+  not exist and failed with `bad_action` / `bad_view`.
 - `Client` no longer writes `apikey` into the caller's params hash, which
   leaked the key into a structure the caller may log and re-sent a stale key
   after `api_key` was rotated. An explicitly supplied `apikey` now wins.
@@ -55,6 +83,7 @@ Bug fixes from auditing every endpoint against the ZAP API.
   `charset`; `Api::Replacer#add_rule` gained `url`/`method`;
   `Api::AjaxSpider#add_excluded_element` gained the xpath/text/attribute
   criteria; `Api::Client` gained the passive-scan options.
+- `Api::Postman#import_file` / `#import_url` gained `endpoint_url`.
 - `Zap::TimeoutError` and `Zap::Client::DEFAULT_BASE_URL`.
 
 ## v0.2.0
