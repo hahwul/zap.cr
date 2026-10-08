@@ -192,15 +192,21 @@ module Zap
         # `http_client` also resolves `@base_path`, so it has to run first.
         client = http_client
         request_path = "#{@base_path}#{path}"
-        client.get(query.empty? ? request_path : "#{request_path}?#{query}", headers)
-      rescue ex : IO::Error | OpenSSL::Error
-        # IO::Error is the common ancestor of the socket / TCP and timeout
-        # (IO::TimeoutError) failures raised by HTTP::Client. TLS handshake
-        # failures are *not* one of them — `OpenSSL::Error` descends straight
-        # from `Exception` — so an HTTPS daemon with an untrusted or mismatched
-        # certificate used to leak a raw `OpenSSL::SSL::Error` to callers.
-        # Both are surfaced as the library's error type.
-        raise Zap::Error.new("Network error: #{ex.message}")
+        begin
+          client.get(query.empty? ? request_path : "#{request_path}?#{query}", headers)
+        rescue ex
+          # Any failure here leaves the keep-alive connection in an unknown
+          # state. After a read timeout the daemon still answers the abandoned
+          # request, and that late response would be read as the reply to the
+          # *next* call. Drop the connection so the next request reconnects.
+          @http = nil
+          client.close rescue nil
+          # Socket / timeout failures (IO::Error), TLS handshake failures
+          # (OpenSSL::Error, which is not an IO::Error) and a malformed HTTP
+          # response (plain Exception / ArgumentError from the response
+          # parser) are all surfaced as the library's error type.
+          raise Zap::Error.new("Network error: #{ex.message}")
+        end
       end
 
       unless response.success?
