@@ -131,6 +131,48 @@ describe "regressions" do
     end
   end
 
+  describe "a failed request does not poison the connection" do
+    it "does not hand a timed-out request's late response to the next call" do
+      srv = HTTP::Server.new do |ctx|
+        sleep 300.milliseconds if ctx.request.path.includes?("slow")
+        ctx.response.print %({"path": #{ctx.request.path.to_json}})
+      end
+      address = srv.bind_tcp("127.0.0.1", 0)
+      spawn { srv.listen }
+      Fiber.yield
+
+      client = Zap::Client.new("http://127.0.0.1:#{address.port}", "k", read_timeout: 100.milliseconds)
+      begin
+        expect_raises(Zap::Error, /Network error/) { client.request("/JSON/slow/view/x/") }
+        sleep 400.milliseconds # the late response is now waiting on the old socket
+        client.request("/JSON/fast/view/y/")["path"].should eq("/JSON/fast/view/y/")
+      ensure
+        client.close
+        srv.close
+      end
+    end
+
+    it "raises Zap::Error for a response that is not HTTP" do
+      server = TCPServer.new("127.0.0.1", 0)
+      spawn do
+        while sock = server.accept?
+          sock.gets
+          sock << "garbage\r\n\r\n"
+          sock.close
+        end
+      end
+      Fiber.yield
+
+      client = Zap::Client.new("http://127.0.0.1:#{server.local_address.port}", "k")
+      begin
+        expect_raises(Zap::Error, /Network error/) { client.core.version }
+      ensure
+        client.close
+        server.close
+      end
+    end
+  end
+
   describe "Client#close" do
     it "waits for an in-flight request instead of closing the socket underneath it" do
       srv = HTTP::Server.new do |ctx|
