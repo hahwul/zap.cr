@@ -95,7 +95,7 @@ Additional API modules for specialized functionality.
 
 | Method | Description |
 |--------|-------------|
-| `import_url(url, endpoint)` | Import schema from URL |
+| `import_url(url, endpoint)` | Import schema from `url` for `endpoint`; with no `endpoint`, introspect `url` |
 | `import_file(file, endpoint)` | Import schema from file |
 | `set_option_max_query_depth(depth)` | Max query depth |
 | `set_option_request_method(method)` | Request method |

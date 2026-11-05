@@ -186,7 +186,7 @@ module Zap
     private def wait_for_ajax_spider(poll_interval : Time::Span, deadline : Time::Instant?, & : Int32 ->)
       loop do
         result = @client.ajax_spider.status
-        status = result.as_h?.try(&.["status"]?).try(&.as_s?) || "stopped"
+        status = object_field(result, "status").try(&.as_s?) || "stopped"
         yield status == "running" ? 50 : 100
         break if status != "running"
         wait_or_timeout(poll_interval, deadline, "ajax spider")
@@ -227,10 +227,17 @@ module Zap
       sleep poll_interval
     end
 
+    # `JSON::Any#[]?` raises a bare Exception on anything but an object. A
+    # non-object reply (`[]`, `"x"`) is not ZAP talking, so it is an error
+    # rather than a missing field: falling back to "stopped" / 0 would end a
+    # wait early with partial results, or poll a status forever.
+    private def object_field(json : JSON::Any, field : String) : JSON::Any?
+      hash = json.as_h? || raise Zap::Error.new("Unexpected response from ZAP: expected a JSON object")
+      hash[field]?
+    end
+
     private def parse_int_field(json : JSON::Any, field : String) : Int32?
-      # `JSON::Any#[]?` raises on anything but an object, so a non-object
-      # reply (`[]`, `"x"`) reads as a missing field instead of crashing.
-      value = json.as_h?.try(&.[field]?)
+      value = object_field(json, field)
       return unless value
       case raw = value.raw
       when Int64

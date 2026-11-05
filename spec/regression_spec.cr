@@ -901,18 +901,24 @@ describe "regressions" do
   end
 
   describe "scan workflows given a non-object JSON reply" do
-    it "fall back to the documented defaults instead of raising a bare Exception" do
+    it "raise Zap::Error instead of a bare Exception" do
       with_mock_zap do |mock, client|
         mock.response_body = %(["unexpected"])
-        expect_raises(Zap::Error, /missing scan ID/) do
+        expect_raises(Zap::Error, /expected a JSON object/) do
           client.scan.active("http://example.com", poll_interval: 0.seconds)
         end
-        # Ajax status reads as "stopped", pscan backlog as 0.
-        client.scan.ajax_spider("http://example.com", poll_interval: 0.seconds)
-        client.scan.wait_for_passive_scan(poll_interval: 0.seconds)
+        expect_raises(Zap::Error, /expected a JSON object/) do
+          client.scan.ajax_spider("http://example.com", poll_interval: 0.seconds)
+        end
+        expect_raises(Zap::Error, /expected a JSON object/) do
+          client.scan.wait_for_passive_scan(poll_interval: 0.seconds)
+        end
 
-        mock.response_body = %("unexpected")
-        expect_raises(Zap::Error, /missing scan ID/) do
+        # A well-formed start followed by a non-object status poll.
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          path.ends_with?("/action/scan/") ? %({"scan": "1"}) : %("unexpected")
+        }
+        expect_raises(Zap::Error, /expected a JSON object/) do
           client.scan.spider("http://example.com", poll_interval: 0.seconds)
         end
       end
