@@ -245,6 +245,11 @@ module Zap
     private def api_key_headers(params : Hash(String, String)) : HTTP::Headers?
       return if @api_key.empty? || params.has_key?("apikey")
       HTTP::Headers{"X-ZAP-API-Key" => @api_key}
+    rescue ex : ArgumentError
+      # A header value cannot hold control characters, so a key read with its
+      # trailing newline (`File.read`, `$(cat key)`) would otherwise escape as a
+      # bare ArgumentError. The message names the character, never the key.
+      raise Zap::Error.new("Invalid api_key: #{ex.message}")
     end
 
     private def http_client : HTTP::Client

@@ -11,9 +11,12 @@ module Zap
         @client.request("/JSON/graphql/action/importFile/", params)
       end
 
+      # ZAP requires `endurl` (the endpoint the generated queries go to); `url`
+      # is where to fetch the schema from. Without an `endpoint`, `url` is the
+      # GraphQL endpoint itself, so it is sent as `endurl` and ZAP introspects
+      # it. Sending it as `url` alone was always rejected as missing `endurl`.
       def import_url(url : String, endpoint : String = "") : JSON::Any
-        params = {"url" => url}
-        params["endurl"] = endpoint unless endpoint.empty?
+        params = endpoint.empty? ? {"endurl" => url} : {"url" => url, "endurl" => endpoint}
         @client.request("/JSON/graphql/action/importUrl/", params)
       end
 

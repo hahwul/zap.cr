@@ -887,4 +887,44 @@ describe "regressions" do
       end
     end
   end
+
+  describe "graphql import_url without an endpoint" do
+    # GraphQlApi declares `endurl` mandatory for importUrl, so the documented
+    # `import_url(url)` call was always rejected as missing_parameter.
+    it "sends the URL as the mandatory endurl so ZAP introspects it" do
+      with_mock_zap do |mock, client|
+        client.graphql.import_url("http://example.com/graphql")
+        mock.last_params["endurl"].should eq("http://example.com/graphql")
+        mock.last_params.has_key?("url").should be_false
+      end
+    end
+  end
+
+  describe "scan workflows given a non-object JSON reply" do
+    it "fall back to the documented defaults instead of raising a bare Exception" do
+      with_mock_zap do |mock, client|
+        mock.response_body = %(["unexpected"])
+        expect_raises(Zap::Error, /missing scan ID/) do
+          client.scan.active("http://example.com", poll_interval: 0.seconds)
+        end
+        # Ajax status reads as "stopped", pscan backlog as 0.
+        client.scan.ajax_spider("http://example.com", poll_interval: 0.seconds)
+        client.scan.wait_for_passive_scan(poll_interval: 0.seconds)
+
+        mock.response_body = %("unexpected")
+        expect_raises(Zap::Error, /missing scan ID/) do
+          client.scan.spider("http://example.com", poll_interval: 0.seconds)
+        end
+      end
+    end
+  end
+
+  describe "an api_key that is not a valid header value" do
+    it "raises Zap::Error without echoing the key" do
+      # Rejected before any connection is attempted, so no server is needed.
+      client = Zap::Client.new("http://127.0.0.1:1", "secret-key\n")
+      ex = expect_raises(Zap::Error, /Invalid api_key/) { client.core.version }
+      ex.message.to_s.should_not contain("secret-key")
+    end
+  end
 end

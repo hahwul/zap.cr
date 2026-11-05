@@ -37,16 +37,16 @@ module Zap
         @client.request("/JSON/clientSpider/action/scan/", params)
       end
 
-      # Stops a running Client Spider scan. Omitting the scan id stops the most
-      # recent scan.
+      # Stops a running Client Spider scan. ZAP requires the scan id: omitting
+      # it (the `-1` default) is rejected as `missing_parameter`.
       def stop(scan_id : Int32 = -1) : JSON::Any
         params = {} of String => String
         params["scanId"] = scan_id.to_s if scan_id >= 0
         @client.request("/JSON/clientSpider/action/stop/", params)
       end
 
-      # Returns the progress (0-100) of a Client Spider scan. Omitting the scan id
-      # reports on the most recent scan.
+      # Returns the progress (0-100) of a Client Spider scan. ZAP requires the
+      # scan id: omitting it (the `-1` default) is rejected as `missing_parameter`.
       def status(scan_id : Int32 = -1) : JSON::Any
         params = {} of String => String
         params["scanId"] = scan_id.to_s if scan_id >= 0

@@ -186,7 +186,7 @@ module Zap
     private def wait_for_ajax_spider(poll_interval : Time::Span, deadline : Time::Instant?, & : Int32 ->)
       loop do
         result = @client.ajax_spider.status
-        status = result["status"]?.try(&.as_s?) || "stopped"
+        status = result.as_h?.try(&.["status"]?).try(&.as_s?) || "stopped"
         yield status == "running" ? 50 : 100
         break if status != "running"
         wait_or_timeout(poll_interval, deadline, "ajax spider")
@@ -228,7 +228,9 @@ module Zap
     end
 
     private def parse_int_field(json : JSON::Any, field : String) : Int32?
-      value = json[field]?
+      # `JSON::Any#[]?` raises on anything but an object, so a non-object
+      # reply (`[]`, `"x"`) reads as a missing field instead of crashing.
+      value = json.as_h?.try(&.[field]?)
       return unless value
       case raw = value.raw
       when Int64
