@@ -244,7 +244,12 @@ module Zap
     # can still be reached with the query form.
     private def api_key_headers(params : Hash(String, String)) : HTTP::Headers?
       return if @api_key.empty? || params.has_key?("apikey")
-      HTTP::Headers{"X-ZAP-API-Key" => @api_key}
+      # A header value cannot hold control characters, so a key read with its
+      # trailing newline (`File.read`) would make `HTTP::Headers#[]=` raise a
+      # bare ArgumentError. `add?` checks instead; the message omits the key.
+      headers = HTTP::Headers.new
+      headers.add?("X-ZAP-API-Key", @api_key) || raise Zap::Error.new("Invalid api_key: contains a character not allowed in an HTTP header")
+      headers
     end
 
     private def http_client : HTTP::Client

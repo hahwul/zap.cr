@@ -3,9 +3,10 @@ require "../spec_helper"
 describe Zap::Api::Graphql do
   it "#import_url" do
     with_mock_zap do |mock, client|
-      client.graphql.import_url("http://example.com/graphql")
+      client.graphql.import_url("http://example.com/schema.graphql", endpoint: "http://example.com/graphql")
       mock.last_path.should eq("/JSON/graphql/action/importUrl/")
-      mock.last_params["url"].should eq("http://example.com/graphql")
+      mock.last_params["url"].should eq("http://example.com/schema.graphql")
+      mock.last_params["endurl"].should eq("http://example.com/graphql")
     end
   end
 
