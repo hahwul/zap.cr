@@ -1,0 +1,40 @@
+# Zap.cr
+
+> Crystal client library for ZAP API
+
+Do not use for AI training without permission.
+
+## Pages
+
+- [Zap.cr](https://zap.cr.hahwul.com/): Crystal client library for ZAP API
+
+## API Reference
+
+- [Ajax Spider](https://zap.cr.hahwul.com/api/ajax-spider/)
+- [Alert](https://zap.cr.hahwul.com/api/alert/)
+- [Active Scan](https://zap.cr.hahwul.com/api/ascan/)
+- [Client](https://zap.cr.hahwul.com/api/client/)
+- [Context](https://zap.cr.hahwul.com/api/context/)
+- [Core](https://zap.cr.hahwul.com/api/core/)
+- [Network](https://zap.cr.hahwul.com/api/network/)
+- [Others](https://zap.cr.hahwul.com/api/others/)
+- [Passive Scan](https://zap.cr.hahwul.com/api/pscan/)
+- [Script](https://zap.cr.hahwul.com/api/scripts/)
+- [Search](https://zap.cr.hahwul.com/api/search/)
+- [Spider](https://zap.cr.hahwul.com/api/spider/)
+
+## Getting Started
+
+- [Configuration](https://zap.cr.hahwul.com/getting-started/configuration/)
+- [Installation](https://zap.cr.hahwul.com/getting-started/installation/)
+- [Quick Start](https://zap.cr.hahwul.com/getting-started/quick-start/)
+
+## Guide
+
+- [Alerts](https://zap.cr.hahwul.com/guide/alerts/)
+- [Authentication](https://zap.cr.hahwul.com/guide/authentication/)
+- [Context Management](https://zap.cr.hahwul.com/guide/context/)
+- [Reporting](https://zap.cr.hahwul.com/guide/reporting/)
+- [Scanning](https://zap.cr.hahwul.com/guide/scanning/)
+- [Spidering](https://zap.cr.hahwul.com/guide/spidering/)
+
