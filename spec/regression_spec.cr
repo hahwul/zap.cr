@@ -982,6 +982,7 @@ describe "regressions" do
         mock.response_body = %({"code":"does_not_exist","message":"Does Not Exist"})
         ex = expect_raises(Zap::ApiError, /does_not_exist/) { client.core.message_har("999") }
         ex.code.should eq("does_not_exist")
+        ex.api_message.should eq("Does Not Exist")
         ex.path.should eq("/OTHER/core/other/messageHar/")
         ex.body.should eq(mock.response_body)
 
@@ -1006,53 +1007,47 @@ describe "regressions" do
     end
   end
 
-  # A failed JSON view/action answers 400 with ZAP's error JSON
-  # (`API#handleException` + `ApiException#toJSON`); seen live from
-  # zap-stable as `{"code":"does_not_exist","message":"Does Not Exist"}`.
+  # A failed JSON view/action answers 400 (500 for `internal_error`) with
+  # ZAP's error JSON (`API#handleException` + `ApiException#toJSON`); seen
+  # live from zap-stable as `{"code":"does_not_exist","message":"Does Not Exist"}`.
   describe "an error JSON on a non-2xx reply" do
     it "exposes ZAP's code and message on Zap::HttpError" do
-      body = %({"code":"does_not_exist","message":"Does Not Exist"})
-      srv = HTTP::Server.new do |ctx|
-        ctx.response.status_code = 400
-        ctx.response.content_type = "application/json; charset=UTF-8"
-        ctx.response.print ctx.request.path.includes?("long") ? %({"code":"illegal_parameter","message":"Bad","detail":"#{"x" * 600}"}) : body
-      end
-      address = srv.bind_tcp("127.0.0.1", 0)
-      spawn { srv.listen }
-      Fiber.yield
-      client = Zap::Client.new("http://127.0.0.1:#{address.port}")
-      begin
+      with_mock_zap do |mock, client|
+        mock.response_status = 400
+        mock.response_content_type = "application/json; charset=UTF-8"
+        mock.response_body = %({"code":"does_not_exist","message":"Does Not Exist"})
         ex = expect_raises(Zap::HttpError) { client.ascan.status(999) }
         ex.status_code.should eq(400)
         ex.code.should eq("does_not_exist")
         ex.api_message.should eq("Does Not Exist")
-        ex.body.should eq(body)
+        ex.body.should eq(mock.response_body)
+
+        mock.response_status = 500
+        mock.response_body = %({"code":"internal_error","message":"Internal Error"})
+        ex = expect_raises(Zap::HttpError) { client.core.version }
+        ex.code.should eq("internal_error")
+
         # parsed from the full body, not the truncated `#body`
-        ex = expect_raises(Zap::HttpError) { client.request("/JSON/x/view/long/") }
+        mock.response_status = 400
+        mock.response_body = %({"code":"illegal_parameter","message":"Bad","detail":"#{"x" * 600}"})
+        ex = expect_raises(Zap::HttpError) { client.core.version }
         ex.code.should eq("illegal_parameter")
         ex.body.not_nil!.should contain("(truncated)")
-      ensure
-        client.close
-        srv.close
       end
     end
 
     it "leaves code and api_message nil for any other body" do
-      srv = HTTP::Server.new do |ctx|
-        ctx.response.status_code = 500
-        ctx.response.print "Internal Server Error"
-      end
-      address = srv.bind_tcp("127.0.0.1", 0)
-      spawn { srv.listen }
-      Fiber.yield
-      client = Zap::Client.new("http://127.0.0.1:#{address.port}")
-      begin
+      with_mock_zap do |mock, client|
+        mock.response_status = 500
+        mock.response_content_type = "text/plain"
+        mock.response_body = "Internal Server Error"
         ex = expect_raises(Zap::HttpError) { client.core.version }
         ex.code.should be_nil
         ex.api_message.should be_nil
-      ensure
-        client.close
-        srv.close
+        # the error shape, but not served as JSON
+        mock.response_body = %({"code":"does_not_exist","message":"Does Not Exist"})
+        ex = expect_raises(Zap::HttpError) { client.core.version }
+        ex.code.should be_nil
       end
     end
   end

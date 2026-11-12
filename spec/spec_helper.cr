@@ -15,6 +15,7 @@ class MockZapServer
   property response_body : String = %({"Result": "OK"})
   # `nil` sends no Content-Type, as ZAP does for `core/other/fileDownload`.
   property response_content_type : String? = "application/json"
+  property response_status : Int32 = 200
   property response_handler : Proc(String, URI::Params, String)?
   property server : HTTP::Server?
 
@@ -29,6 +30,7 @@ class MockZapServer
       @last_resource = ctx.request.resource
       @last_method = ctx.request.method
       @last_body = ctx.request.body.try(&.gets_to_end) || ""
+      ctx.response.status_code = @response_status
       if type = @response_content_type
         ctx.response.content_type = type
       end

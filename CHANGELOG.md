@@ -79,6 +79,7 @@ Bug fixes from auditing every endpoint against the ZAP API.
   from the error JSON a failed JSON view or action replies with (400, or
   500 for `internal_error`), so callers can branch on `does_not_exist`,
   `missing_parameter`, ... without parsing `#body`. Nil for other bodies.
+  `Zap::ApiError` gained `#api_message` too.
 - `Api::AlertFilter` add/remove gained `parameter_is_regex`, `attack`,
   `attack_is_regex`, `evidence`, `evidence_is_regex` and `methods`, and
   `new_level` accepts a `Zap::Risk`.

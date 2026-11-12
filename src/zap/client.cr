@@ -22,9 +22,11 @@ module Zap
   # A failed JSON view or action replies 400 (500 for `internal_error`) with
   # ZAP's error JSON, `{"code": ..., "message": ...}` (`ApiException#toJSON`).
   # `#code` and `#api_message` hold those two fields, parsed from the full
-  # body; both are nil when the body is not that JSON. Unlike `#body` they
-  # never echo request parameters: `code` is one of ZAP's fixed error codes
-  # (`does_not_exist`, `missing_parameter`, ...), `message` its fixed text.
+  # body; both are nil when the body is not that JSON. From ZAP itself
+  # neither echoes request parameters: `code` is one of its fixed error
+  # codes (`does_not_exist`, `missing_parameter`, ...) and `message` that
+  # code's fixed text. Anything else in front of the daemon (a proxy) that
+  # answers in the same shape gets its fields copied as they are.
   class HttpError < Error
     getter status_code : Int32
     getter path : String?
@@ -48,14 +50,16 @@ module Zap
   # this: `CoreAPI#handleApiOther` catches its own `ApiException` and replies
   # 200, so without this check `#request_other` would hand the error back as
   # if it were the requested HAR / report / file. `#code` is ZAP's error code
-  # (`does_not_exist`, `illegal_parameter`, ...). Like `HttpError`, the
-  # message leaves out the body; read `#body` for ZAP's full reply.
+  # (`does_not_exist`, `illegal_parameter`, ...) and `#api_message` its
+  # `message`. Like `HttpError`, the message leaves out the body; read
+  # `#body` for ZAP's full reply.
   class ApiError < Error
     getter code : String
     getter path : String?
     getter body : String?
+    getter api_message : String?
 
-    def initialize(@code : String, @path : String? = nil, @body : String? = nil)
+    def initialize(@code : String, @path : String? = nil, @body : String? = nil, @api_message : String? = nil)
       super(@path ? "ZAP API error #{@code} for #{@path}" : "ZAP API error #{@code}")
     end
   end
@@ -206,7 +210,7 @@ module Zap
       response = perform_request(path, params, post)
       body = response.body
       if error = api_error(response, body)
-        raise Zap::ApiError.new(error[0], path, body)
+        raise Zap::ApiError.new(error[:code], path, body, error[:message])
       end
       body
     end
@@ -216,13 +220,13 @@ module Zap
     # Real content (HAR, JSON report) never has that shape, and
     # `fileDownload` serves files without a content type, so a file cannot be
     # mistaken for an error.
-    private def api_error(response : HTTP::Client::Response, body : String) : {String, String}?
+    private def api_error(response : HTTP::Client::Response, body : String) : {code: String, message: String}?
       return unless response.mime_type.try(&.media_type) == "application/json" && body.starts_with?(%({"code"))
       hash = (JSON.parse(body).as_h? rescue nil) || return
       return unless hash.keys.all? { |key| {"code", "message", "detail"}.includes?(key) }
       code = hash["code"]?.try(&.as_s?)
       message = hash["message"]?.try(&.as_s?)
-      {code, message} if code && message
+      {code: code, message: message} if code && message
     end
 
     private def perform_request(path : String, params : Hash(String, String), post : Bool = false) : HTTP::Client::Response
@@ -274,7 +278,7 @@ module Zap
         body = response.body
         truncated_body = body.size > 500 ? "#{body[0, 500]}... (truncated)" : body
         error = api_error(response, body)
-        raise Zap::HttpError.new(response.status_code, path, truncated_body, error.try(&.[0]), error.try(&.[1]))
+        raise Zap::HttpError.new(response.status_code, path, truncated_body, error.try(&.[:code]), error.try(&.[:message]))
       end
 
       response
