@@ -1005,4 +1005,55 @@ describe "regressions" do
       end
     end
   end
+
+  # A failed JSON view/action answers 400 with ZAP's error JSON
+  # (`API#handleException` + `ApiException#toJSON`); seen live from
+  # zap-stable as `{"code":"does_not_exist","message":"Does Not Exist"}`.
+  describe "an error JSON on a non-2xx reply" do
+    it "exposes ZAP's code and message on Zap::HttpError" do
+      body = %({"code":"does_not_exist","message":"Does Not Exist"})
+      srv = HTTP::Server.new do |ctx|
+        ctx.response.status_code = 400
+        ctx.response.content_type = "application/json; charset=UTF-8"
+        ctx.response.print ctx.request.path.includes?("long") ? %({"code":"illegal_parameter","message":"Bad","detail":"#{"x" * 600}"}) : body
+      end
+      address = srv.bind_tcp("127.0.0.1", 0)
+      spawn { srv.listen }
+      Fiber.yield
+      client = Zap::Client.new("http://127.0.0.1:#{address.port}")
+      begin
+        ex = expect_raises(Zap::HttpError) { client.ascan.status(999) }
+        ex.status_code.should eq(400)
+        ex.code.should eq("does_not_exist")
+        ex.api_message.should eq("Does Not Exist")
+        ex.body.should eq(body)
+        # parsed from the full body, not the truncated `#body`
+        ex = expect_raises(Zap::HttpError) { client.request("/JSON/x/view/long/") }
+        ex.code.should eq("illegal_parameter")
+        ex.body.not_nil!.should contain("(truncated)")
+      ensure
+        client.close
+        srv.close
+      end
+    end
+
+    it "leaves code and api_message nil for any other body" do
+      srv = HTTP::Server.new do |ctx|
+        ctx.response.status_code = 500
+        ctx.response.print "Internal Server Error"
+      end
+      address = srv.bind_tcp("127.0.0.1", 0)
+      spawn { srv.listen }
+      Fiber.yield
+      client = Zap::Client.new("http://127.0.0.1:#{address.port}")
+      begin
+        ex = expect_raises(Zap::HttpError) { client.core.version }
+        ex.code.should be_nil
+        ex.api_message.should be_nil
+      ensure
+        client.close
+        srv.close
+      end
+    end
+  end
 end
