@@ -12,6 +12,7 @@ result = client.reports.generate(
   title: "zap.cr example report",
   template: "traditional-html",
   report_file_name: "zap-report",
+  # A directory on the machine ZAP runs on (inside the container for Docker).
   report_dir: Dir.current,
 )
 

@@ -6,6 +6,10 @@ Bug fixes from auditing every endpoint against the ZAP API.
 
 ### Security
 
+- `Client#inspect` / `#pretty_print` show the API key as `[FILTERED]`. The
+  default `Reference#inspect` printed `@api_key` in plain text, and every API
+  component (`client.core`, ...) and `Zap::Scan` embeds the client, so
+  `p client.spider` or a failed spec expectation printed the key.
 - The API key is sent in the `X-ZAP-API-Key` header instead of an `apikey`
   query parameter. ZAP accepts both and checks the header first, but only the
   query form is persisted — ZAP writes the request URL to its own log, and any
@@ -15,6 +19,13 @@ Bug fixes from auditing every endpoint against the ZAP API.
 
 ### Fixed
 
+- A `Zap::Scan` workflow `timeout` shorter than the remaining `poll_interval`
+  no longer raises early: the last wait sleeps only until the deadline and
+  polls once more. With `timeout: 1.minute, poll_interval: 5.minutes` it used
+  to raise `Zap::TimeoutError` right after the first poll.
+- `examples/spider_scan.cr` read a `results` key that `spider/view/fullResults`
+  does not have, so it always printed "Discovered 0 URLs". It now lists
+  `fullResults` → `urlsInScope`.
 - TLS handshake failures raise `Zap::Error` instead of escaping as a raw
   `OpenSSL::SSL::Error`; `OpenSSL::Error` descends from `Exception`, not
   `IO::Error`, so it was not covered by the transport-error rescue.
