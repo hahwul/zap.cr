@@ -10,7 +10,11 @@ class MockZapServer
   # The raw request line target, so specs can assert on what actually went on
   # the wire (query string included) rather than the parsed pieces.
   property last_resource : String = ""
+  property last_method : String = ""
+  property last_body : String = ""
   property response_body : String = %({"Result": "OK"})
+  # `nil` sends no Content-Type, as ZAP does for `core/other/fileDownload`.
+  property response_content_type : String? = "application/json"
   property response_handler : Proc(String, URI::Params, String)?
   property server : HTTP::Server?
 
@@ -23,7 +27,11 @@ class MockZapServer
       @last_params = ctx.request.query_params
       @last_headers = ctx.request.headers.dup
       @last_resource = ctx.request.resource
-      ctx.response.content_type = "application/json"
+      @last_method = ctx.request.method
+      @last_body = ctx.request.body.try(&.gets_to_end) || ""
+      if type = @response_content_type
+        ctx.response.content_type = type
+      end
       if handler = @response_handler
         ctx.response.print handler.call(ctx.request.path, ctx.request.query_params)
       else

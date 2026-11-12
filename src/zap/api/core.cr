@@ -332,11 +332,13 @@ module Zap
         @client.request_other("/OTHER/core/other/fileDownload/", params)
       end
 
+      # ZAP only accepts this over POST (`CoreAPI` rejects any other method
+      # with `bad_other`), so the parameters go in a form body.
       def file_upload(file_name : String, file_contents : String) : String
         params = {} of String => String
         params["fileName"] = file_name
         params["fileContents"] = file_contents
-        @client.request_other("/OTHER/core/other/fileUpload/", params)
+        @client.request_other("/OTHER/core/other/fileUpload/", params, post: true)
       end
 
       def htmlreport : String
