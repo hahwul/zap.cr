@@ -249,7 +249,7 @@ module Zap
           # ZAP answers a wrong or missing API key by closing the connection
           # without a reply (`BAD_API_KEY` "fails silently" in ZAP's API.java),
           # which Crystal reports as an unexpected end of response.
-          hint = ex.is_a?(IO::EOFError) ? " (ZAP closes the connection without replying when the API key is wrong or missing)" : ""
+          hint = ex.is_a?(IO::EOFError) ? " (ZAP closes the connection without replying when, for example, the API key is wrong or missing)" : ""
           raise Zap::Error.new("Network error: #{ex.message}#{hint}")
         end
       end

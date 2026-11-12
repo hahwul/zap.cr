@@ -996,6 +996,12 @@ describe "regressions" do
         client.core.message_har("1").should eq(mock.response_body)
         mock.response_body = %({"log":{"version":"1.2"}})
         client.core.message_har("1").should eq(mock.response_body)
+        # fileDownload serves the file with no Content-Type, while ZAP's own
+        # error replies are JSON, so a file that happens to look like one is
+        # still returned.
+        mock.response_body = %({"code":"x","message":"y"})
+        mock.response_content_type = nil
+        client.core.file_download("f.json").should eq(mock.response_body)
       end
     end
   end
