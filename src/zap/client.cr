@@ -18,12 +18,23 @@ module Zap
   # Callers that need the body (e.g. for diagnostics in a controlled
   # environment) can read it from `#body`. Treat that string as
   # potentially containing secrets that the caller passed in.
+  #
+  # A failed JSON view or action replies 400 (500 for `internal_error`) with
+  # ZAP's error JSON, `{"code": ..., "message": ...}` (`ApiException#toJSON`).
+  # `#code` and `#api_message` hold those two fields, parsed from the full
+  # body; both are nil when the body is not that JSON. From ZAP itself
+  # neither echoes request parameters: `code` is one of its fixed error
+  # codes (`does_not_exist`, `missing_parameter`, ...) and `message` that
+  # code's fixed text. Anything else in front of the daemon (a proxy) that
+  # answers in the same shape gets its fields copied as they are.
   class HttpError < Error
     getter status_code : Int32
     getter path : String?
     getter body : String?
+    getter code : String?
+    getter api_message : String?
 
-    def initialize(@status_code : Int32, @path : String? = nil, @body : String? = nil)
+    def initialize(@status_code : Int32, @path : String? = nil, @body : String? = nil, @code : String? = nil, @api_message : String? = nil)
       msg = String.build do |io|
         io << "HTTP " << @status_code
         if p = @path
@@ -39,14 +50,16 @@ module Zap
   # this: `CoreAPI#handleApiOther` catches its own `ApiException` and replies
   # 200, so without this check `#request_other` would hand the error back as
   # if it were the requested HAR / report / file. `#code` is ZAP's error code
-  # (`does_not_exist`, `illegal_parameter`, ...). Like `HttpError`, the
-  # message leaves out the body; read `#body` for ZAP's full reply.
+  # (`does_not_exist`, `illegal_parameter`, ...) and `#api_message` its
+  # `message`. Like `HttpError`, the message leaves out the body; read
+  # `#body` for ZAP's full reply.
   class ApiError < Error
     getter code : String
     getter path : String?
     getter body : String?
+    getter api_message : String?
 
-    def initialize(@code : String, @path : String? = nil, @body : String? = nil)
+    def initialize(@code : String, @path : String? = nil, @body : String? = nil, @api_message : String? = nil)
       super(@path ? "ZAP API error #{@code} for #{@path}" : "ZAP API error #{@code}")
     end
   end
@@ -196,23 +209,24 @@ module Zap
     def request_other(path : String, params : Hash(String, String) = {} of String => String, *, post : Bool = false) : String
       response = perform_request(path, params, post)
       body = response.body
-      if code = api_error_code(response, body)
-        raise Zap::ApiError.new(code, path, body)
+      if error = api_error(response, body)
+        raise Zap::ApiError.new(error[:code], path, body, error[:message])
       end
       body
     end
 
-    # ZAP's error code when `body` is exactly ZAP's error JSON (`code`,
-    # `message` and an optional `detail`, served as JSON), else nil. Real
-    # content (HAR, JSON report) never has that shape, and `fileDownload`
-    # serves files without a content type, so a file cannot be mistaken for
-    # an error.
-    private def api_error_code(response : HTTP::Client::Response, body : String) : String?
+    # ZAP's error `{code, message}` when `body` is exactly ZAP's error JSON
+    # (`code`, `message` and an optional `detail`, served as JSON), else nil.
+    # Real content (HAR, JSON report) never has that shape, and
+    # `fileDownload` serves files without a content type, so a file cannot be
+    # mistaken for an error.
+    private def api_error(response : HTTP::Client::Response, body : String) : {code: String, message: String}?
       return unless response.mime_type.try(&.media_type) == "application/json" && body.starts_with?(%({"code"))
       hash = (JSON.parse(body).as_h? rescue nil) || return
       return unless hash.keys.all? { |key| {"code", "message", "detail"}.includes?(key) }
       code = hash["code"]?.try(&.as_s?)
-      code if code && hash["message"]?.try(&.as_s?)
+      message = hash["message"]?.try(&.as_s?)
+      {code: code, message: message} if code && message
     end
 
     private def perform_request(path : String, params : Hash(String, String), post : Bool = false) : HTTP::Client::Response
@@ -263,7 +277,8 @@ module Zap
         # typically print.
         body = response.body
         truncated_body = body.size > 500 ? "#{body[0, 500]}... (truncated)" : body
-        raise Zap::HttpError.new(response.status_code, path, truncated_body)
+        error = api_error(response, body)
+        raise Zap::HttpError.new(response.status_code, path, truncated_body, error.try(&.[:code]), error.try(&.[:message]))
       end
 
       response

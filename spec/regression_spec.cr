@@ -982,6 +982,7 @@ describe "regressions" do
         mock.response_body = %({"code":"does_not_exist","message":"Does Not Exist"})
         ex = expect_raises(Zap::ApiError, /does_not_exist/) { client.core.message_har("999") }
         ex.code.should eq("does_not_exist")
+        ex.api_message.should eq("Does Not Exist")
         ex.path.should eq("/OTHER/core/other/messageHar/")
         ex.body.should eq(mock.response_body)
 
@@ -1002,6 +1003,51 @@ describe "regressions" do
         mock.response_body = %({"code":"x","message":"y"})
         mock.response_content_type = nil
         client.core.file_download("f.json").should eq(mock.response_body)
+      end
+    end
+  end
+
+  # A failed JSON view/action answers 400 (500 for `internal_error`) with
+  # ZAP's error JSON (`API#handleException` + `ApiException#toJSON`); seen
+  # live from zap-stable as `{"code":"does_not_exist","message":"Does Not Exist"}`.
+  describe "an error JSON on a non-2xx reply" do
+    it "exposes ZAP's code and message on Zap::HttpError" do
+      with_mock_zap do |mock, client|
+        mock.response_status = 400
+        mock.response_content_type = "application/json; charset=UTF-8"
+        mock.response_body = %({"code":"does_not_exist","message":"Does Not Exist"})
+        ex = expect_raises(Zap::HttpError) { client.ascan.status(999) }
+        ex.status_code.should eq(400)
+        ex.code.should eq("does_not_exist")
+        ex.api_message.should eq("Does Not Exist")
+        ex.body.should eq(mock.response_body)
+
+        mock.response_status = 500
+        mock.response_body = %({"code":"internal_error","message":"Internal Error"})
+        ex = expect_raises(Zap::HttpError) { client.core.version }
+        ex.code.should eq("internal_error")
+
+        # parsed from the full body, not the truncated `#body`
+        mock.response_status = 400
+        mock.response_body = %({"code":"illegal_parameter","message":"Bad","detail":"#{"x" * 600}"})
+        ex = expect_raises(Zap::HttpError) { client.core.version }
+        ex.code.should eq("illegal_parameter")
+        ex.body.not_nil!.should contain("(truncated)")
+      end
+    end
+
+    it "leaves code and api_message nil for any other body" do
+      with_mock_zap do |mock, client|
+        mock.response_status = 500
+        mock.response_content_type = "text/plain"
+        mock.response_body = "Internal Server Error"
+        ex = expect_raises(Zap::HttpError) { client.core.version }
+        ex.code.should be_nil
+        ex.api_message.should be_nil
+        # the error shape, but not served as JSON
+        mock.response_body = %({"code":"does_not_exist","message":"Does Not Exist"})
+        ex = expect_raises(Zap::HttpError) { client.core.version }
+        ex.code.should be_nil
       end
     end
   end

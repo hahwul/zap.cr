@@ -77,10 +77,14 @@ client.request(path : String, params : Hash(String, String) = {}) : JSON::Any
 client.request_other(path : String, params : Hash(String, String) = {}, *, post : Bool = false) : String
 ```
 
-A non-2xx reply raises `Zap::HttpError`. ZAP's core and exim `other`
+A non-2xx reply raises `Zap::HttpError`. A failed JSON view or action
+answers 400 (500 for `internal_error`) with ZAP's error JSON, so `HttpError#code` and
+`#api_message` hold its `code` and `message` (`"does_not_exist"`,
+`"Does Not Exist"`); both are nil for any other body. ZAP's core and exim `other`
 endpoints report failures as HTTP 200 with an error JSON
 (`{"code": ..., "message": ...}`), so `request_other` raises `Zap::ApiError`
-for that body; `#code` holds ZAP's error code (`does_not_exist`, ...).
+for that body; `#code` holds ZAP's error code (`does_not_exist`, ...) and
+`#api_message` its message.
 
 These are used internally by all API modules. You can use them for endpoints not yet wrapped:
 
