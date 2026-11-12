@@ -73,12 +73,17 @@ client.api_key : String    # get/set
 # JSON response
 client.request(path : String, params : Hash(String, String) = {}) : JSON::Any
 
-# Raw string response
-client.request_other(path : String, params : Hash(String, String) = {}) : String
+# Raw string response (post: true sends params as a form body)
+client.request_other(path : String, params : Hash(String, String) = {}, *, post : Bool = false) : String
 ```
+
+A non-2xx reply raises `Zap::HttpError`. ZAP's core and exim `other`
+endpoints report failures as HTTP 200 with an error JSON
+(`{"code": ..., "message": ...}`), so `request_other` raises `Zap::ApiError`
+for that body; `#code` holds ZAP's error code (`does_not_exist`, ...).
 
 These are used internally by all API modules. You can use them for endpoints not yet wrapped:
 
 ```crystal
-result = client.request("/JSON/core/view/getVersion/")
+result = client.request("/JSON/core/view/version/")
 ```

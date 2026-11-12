@@ -34,6 +34,23 @@ module Zap
     end
   end
 
+  # Raised when ZAP answers with its error JSON (`{"code": ..., "message":
+  # ...}`) on a successful HTTP status. Core and exim `other` endpoints do
+  # this: `CoreAPI#handleApiOther` catches its own `ApiException` and replies
+  # 200, so without this check `#request_other` would hand the error back as
+  # if it were the requested HAR / report / file. `#code` is ZAP's error code
+  # (`does_not_exist`, `illegal_parameter`, ...). Like `HttpError`, the
+  # message leaves out the body; read `#body` for ZAP's full reply.
+  class ApiError < Error
+    getter code : String
+    getter path : String?
+    getter body : String?
+
+    def initialize(@code : String, @path : String? = nil, @body : String? = nil)
+      super(@path ? "ZAP API error #{@code} for #{@path}" : "ZAP API error #{@code}")
+    end
+  end
+
   class Client
     # `base_url` and the timeouts are read-only: the shared `HTTP::Client`
     # (`@http`) is memoized from them on first use, so mutating them after
@@ -173,12 +190,32 @@ module Zap
       end
     end
 
-    def request_other(path : String, params : Hash(String, String) = {} of String => String) : String
-      response = perform_request(path, params)
-      response.body
+    # `post: true` sends `params` as an `application/x-www-form-urlencoded`
+    # body instead of a query string, for endpoints ZAP only accepts over POST
+    # (`core/other/fileUpload`).
+    def request_other(path : String, params : Hash(String, String) = {} of String => String, *, post : Bool = false) : String
+      response = perform_request(path, params, post)
+      body = response.body
+      if code = api_error_code(response, body)
+        raise Zap::ApiError.new(code, path, body)
+      end
+      body
     end
 
-    private def perform_request(path : String, params : Hash(String, String)) : HTTP::Client::Response
+    # ZAP's error code when `body` is exactly ZAP's error JSON (`code`,
+    # `message` and an optional `detail`, served as JSON), else nil. Real
+    # content (HAR, JSON report) never has that shape, and `fileDownload`
+    # serves files without a content type, so a file cannot be mistaken for
+    # an error.
+    private def api_error_code(response : HTTP::Client::Response, body : String) : String?
+      return unless response.mime_type.try(&.media_type) == "application/json" && body.starts_with?(%({"code"))
+      hash = (JSON.parse(body).as_h? rescue nil) || return
+      return unless hash.keys.all? { |key| {"code", "message", "detail"}.includes?(key) }
+      code = hash["code"]?.try(&.as_s?)
+      code if code && hash["message"]?.try(&.as_s?)
+    end
+
+    private def perform_request(path : String, params : Hash(String, String), post : Bool = false) : HTTP::Client::Response
       query = URI::Params.encode(params)
       headers = api_key_headers(params)
 
@@ -193,7 +230,11 @@ module Zap
         client = http_client
         request_path = "#{@base_path}#{path}"
         begin
-          client.get(query.empty? ? request_path : "#{request_path}?#{query}", headers)
+          if post
+            client.post(request_path, headers, form: query)
+          else
+            client.get(query.empty? ? request_path : "#{request_path}?#{query}", headers)
+          end
         rescue ex
           # Any failure here leaves the keep-alive connection in an unknown
           # state. After a read timeout the daemon still answers the abandoned
@@ -205,7 +246,11 @@ module Zap
           # (OpenSSL::Error, which is not an IO::Error) and a malformed HTTP
           # response (plain Exception / ArgumentError from the response
           # parser) are all surfaced as the library's error type.
-          raise Zap::Error.new("Network error: #{ex.message}")
+          # ZAP answers a wrong or missing API key by closing the connection
+          # without a reply (`BAD_API_KEY` "fails silently" in ZAP's API.java),
+          # which Crystal reports as an unexpected end of response.
+          hint = ex.is_a?(IO::EOFError) ? " (ZAP closes the connection without replying when the API key is wrong or missing)" : ""
+          raise Zap::Error.new("Network error: #{ex.message}#{hint}")
         end
       end
 

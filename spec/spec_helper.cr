@@ -10,6 +10,8 @@ class MockZapServer
   # The raw request line target, so specs can assert on what actually went on
   # the wire (query string included) rather than the parsed pieces.
   property last_resource : String = ""
+  property last_method : String = ""
+  property last_body : String = ""
   property response_body : String = %({"Result": "OK"})
   property response_handler : Proc(String, URI::Params, String)?
   property server : HTTP::Server?
@@ -23,6 +25,8 @@ class MockZapServer
       @last_params = ctx.request.query_params
       @last_headers = ctx.request.headers.dup
       @last_resource = ctx.request.resource
+      @last_method = ctx.request.method
+      @last_body = ctx.request.body.try(&.gets_to_end) || ""
       ctx.response.content_type = "application/json"
       if handler = @response_handler
         ctx.response.print handler.call(ctx.request.path, ctx.request.query_params)

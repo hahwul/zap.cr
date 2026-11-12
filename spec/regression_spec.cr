@@ -152,6 +152,28 @@ describe "regressions" do
       end
     end
 
+    # With an invalid or missing API key ZAP "fails silently" (API.java:
+    # `BAD_API_KEY` returns an empty message unless `reportPermErrors` is on),
+    # so the only symptom is a connection closed with no reply.
+    it "points at the API key when the daemon closes without replying" do
+      server = TCPServer.new("127.0.0.1", 0)
+      spawn do
+        while sock = server.accept?
+          sock.gets
+          sock.close
+        end
+      end
+      Fiber.yield
+
+      client = Zap::Client.new("http://127.0.0.1:#{server.local_address.port}", "wrong")
+      begin
+        expect_raises(Zap::Error, /Network error: .*API key/) { client.core.version }
+      ensure
+        client.close
+        server.close
+      end
+    end
+
     it "raises Zap::Error for a response that is not HTTP" do
       server = TCPServer.new("127.0.0.1", 0)
       spawn do
@@ -931,6 +953,50 @@ describe "regressions" do
       client = Zap::Client.new("http://127.0.0.1:1", "secret-key\n")
       ex = expect_raises(Zap::Error, /Invalid api_key/) { client.core.version }
       ex.message.to_s.should_not contain("secret-key")
+    end
+  end
+
+  # `fileUpload` reads its parameters from a POST body only: on any other
+  # method `CoreAPI` raises BAD_OTHER ("File upload must use POST").
+  describe "Core#file_upload" do
+    it "POSTs the parameters as a form body, not in the query string" do
+      with_mock_zap do |mock, client|
+        client.core.file_upload("a b.txt", "line1\nline2&x=y")
+        mock.last_method.should eq("POST")
+        mock.last_headers["Content-Type"].should eq("application/x-www-form-urlencoded")
+        mock.last_resource.should eq("/OTHER/core/other/fileUpload/")
+        form = URI::Params.parse(mock.last_body)
+        form["fileName"].should eq("a b.txt")
+        form["fileContents"].should eq("line1\nline2&x=y")
+        mock.last_headers["X-ZAP-API-Key"].should eq("test-api-key")
+      end
+    end
+  end
+
+  # Core and exim `other` endpoints catch their own ApiException and answer
+  # HTTP 200 with ZAP's error JSON (`CoreAPI#handleApiOther`), so the status
+  # code alone does not reveal the failure.
+  describe "an error JSON from an OTHER endpoint" do
+    it "raises Zap::ApiError instead of returning it as content" do
+      with_mock_zap do |mock, client|
+        mock.response_body = %({"code":"does_not_exist","message":"Does Not Exist"})
+        ex = expect_raises(Zap::ApiError, /does_not_exist/) { client.core.message_har("999") }
+        ex.code.should eq("does_not_exist")
+        ex.path.should eq("/OTHER/core/other/messageHar/")
+        ex.body.should eq(mock.response_body)
+
+        mock.response_body = %({"code":"illegal_parameter","message":"Provided parameter has illegal or unrecognized value","detail":"fileName"})
+        expect_raises(Zap::ApiError, /illegal_parameter/) { client.core.file_download("missing.txt") }
+      end
+    end
+
+    it "still returns real JSON content that has other keys" do
+      with_mock_zap do |mock, client|
+        mock.response_body = %({"code":"x","message":"y","log":{}})
+        client.core.message_har("1").should eq(mock.response_body)
+        mock.response_body = %({"log":{"version":"1.2"}})
+        client.core.message_har("1").should eq(mock.response_body)
+      end
     end
   end
 end
