@@ -11,8 +11,11 @@ results = client.scan.spider(target) do |phase, progress|
   puts "[#{phase}] #{progress}%"
 end
 
-urls = results["results"]?.try(&.as_a) || [] of JSON::Any
+# `spider/view/fullResults` replies {"fullResults": [{"urlsInScope": [...]},
+# {"urlsOutOfScope": [...]}, {"urlsIoError": [...]}]}.
+groups = results["fullResults"]?.try(&.as_a) || [] of JSON::Any
+urls = groups.flat_map { |group| group["urlsInScope"]?.try(&.as_a) || [] of JSON::Any }
 puts "Discovered #{urls.size} URLs:"
-urls.first(20).each { |u| puts "  - #{u}" }
+urls.first(20).each { |u| puts "  - #{u["method"]?} #{u["url"]?} (#{u["statusCode"]?})" }
 
 client.close

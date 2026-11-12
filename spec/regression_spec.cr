@@ -1051,4 +1051,55 @@ describe "regressions" do
       end
     end
   end
+
+  describe "inspect does not leak the API key" do
+    it "filters the key in the client, its components and Zap::Scan" do
+      client = Zap::Client.new("http://127.0.0.1:1", "s3cr3t-key")
+      [client.inspect, client.pretty_inspect, client.core.inspect, client.spider.pretty_inspect, client.scan.inspect].each do |dump|
+        dump.should_not contain("s3cr3t-key")
+        dump.should contain("[FILTERED]")
+        dump.should contain("http://127.0.0.1:1")
+      end
+      Zap::Client.new("http://127.0.0.1:1", "").inspect.should contain(%(@api_key=""))
+      Zap::Client.new("https://ci:hunter2@proxy.example/zap", "k").inspect.should contain(%("https://FILTERED@proxy.example/zap"))
+    end
+  end
+
+  describe "scan timeout shorter than the poll interval" do
+    it "polls once more at the deadline instead of giving up after the first poll" do
+      with_mock_zap do |mock, client|
+        polls = 0
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          case path
+          when "/JSON/ascan/action/scan/" then %({"scan": "0"})
+          when "/JSON/ascan/view/status/"
+            polls += 1
+            polls == 1 ? %({"status": "50"}) : %({"status": "100"})
+          when "/JSON/alert/view/alertsSummary/" then %({"alertsSummary": {}})
+          else                                        %({"Result": "OK"})
+          end
+        }
+
+        started = Time.instant
+        result = client.scan.active("http://example.com", poll_interval: 10.seconds, timeout: 1.second, wait_for_passive: false)
+        result["alertsSummary"].should_not be_nil
+        polls.should eq(2)
+        (Time.instant - started).should be < 5.seconds
+      end
+    end
+
+    it "raises at the deadline, not after a full poll interval" do
+      with_mock_zap do |mock, client|
+        mock.response_handler = ->(path : String, _params : URI::Params) {
+          path == "/JSON/ascan/action/scan/" ? %({"scan": "0"}) : %({"status": "0"})
+        }
+
+        started = Time.instant
+        expect_raises(Zap::TimeoutError, /active scan/) do
+          client.scan.active("http://example.com", poll_interval: 10.seconds, timeout: 1.second)
+        end
+        (Time.instant - started).should be < 5.seconds
+      end
+    end
+  end
 end

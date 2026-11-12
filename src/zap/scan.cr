@@ -215,16 +215,25 @@ module Zap
       timeout ? Time.instant + timeout : nil
     end
 
-    # Sleeps until the next poll, unless that would run past `deadline`.
+    # Sleeps until the next poll, or only until `deadline` when that comes
+    # first, so the caller gets one last poll at the deadline. Raises once the
+    # deadline has passed.
     #
     # Without this every wait loop ran forever: a scan ZAP has forgotten (or
     # one whose status it reports as a value we cannot parse) pins `progress`
-    # at 0, and the loop's only exit is `progress >= 100`.
+    # at 0, and the loop's only exit is `progress >= 100`. Raising as soon as
+    # the next full poll interval would overshoot instead gave up early: with
+    # `timeout: 1.minute, poll_interval: 5.minutes` it raised right after the
+    # first poll, and a scan finishing in the last interval was reported as
+    # timed out.
     private def wait_or_timeout(poll_interval : Time::Span, deadline : Time::Instant?, phase : String)
-      if deadline && Time.instant + poll_interval > deadline
-        raise Zap::TimeoutError.new("Timed out waiting for #{phase} to complete")
+      unless deadline
+        sleep poll_interval
+        return
       end
-      sleep poll_interval
+      remaining = deadline - Time.instant
+      raise Zap::TimeoutError.new("Timed out waiting for #{phase} to complete") unless remaining.positive?
+      sleep({poll_interval, remaining}.min)
     end
 
     # `JSON::Any#[]?` raises a bare Exception on anything but an object. A
