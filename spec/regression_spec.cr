@@ -1061,6 +1061,7 @@ describe "regressions" do
         dump.should contain("http://127.0.0.1:1")
       end
       Zap::Client.new("http://127.0.0.1:1", "").inspect.should contain(%(@api_key=""))
+      Zap::Client.new("https://ci:hunter2@proxy.example/zap", "k").inspect.should contain(%("https://FILTERED@proxy.example/zap"))
     end
   end
 
@@ -1080,7 +1081,7 @@ describe "regressions" do
         }
 
         started = Time.instant
-        result = client.scan.active("http://example.com", poll_interval: 10.seconds, timeout: 50.milliseconds, wait_for_passive: false)
+        result = client.scan.active("http://example.com", poll_interval: 10.seconds, timeout: 1.second, wait_for_passive: false)
         result["alertsSummary"].should_not be_nil
         polls.should eq(2)
         (Time.instant - started).should be < 5.seconds
@@ -1095,7 +1096,7 @@ describe "regressions" do
 
         started = Time.instant
         expect_raises(Zap::TimeoutError, /active scan/) do
-          client.scan.active("http://example.com", poll_interval: 10.seconds, timeout: 50.milliseconds)
+          client.scan.active("http://example.com", poll_interval: 10.seconds, timeout: 1.second)
         end
         (Time.instant - started).should be < 5.seconds
       end

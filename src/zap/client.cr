@@ -179,11 +179,24 @@ module Zap
     # `Reference#inspect` and `#pretty_print` dump every instance variable,
     # `@api_key` included, and every API component (`client.core`, ...) and
     # `Zap::Scan` embed the client, so `p client.spider` or a failed spec
-    # expectation would print the key. Show the key only as filtered.
+    # expectation would print the key. Show the key, and any credentials in
+    # the `base_url` userinfo, only as filtered.
     def inspect(io : IO) : Nil
-      io << "#<Zap::Client:0x"
+      io << "#<" << self.class.name << ":0x"
       object_id.to_s(io, 16)
-      io << " @base_url=" << @base_url.inspect << " @api_key=" << (@api_key.empty? ? %("") : "[FILTERED]") << '>'
+      io << " @base_url=" << filtered_base_url.inspect
+      io << " @api_key=" << (@api_key.empty? ? %("") : "[FILTERED]")
+      io << " @connect_timeout=" << @connect_timeout << " @read_timeout=" << @read_timeout << '>'
+    end
+
+    private def filtered_base_url : String
+      uri = URI.parse(@base_url)
+      return @base_url unless uri.user || uri.password
+      uri.user = "FILTERED"
+      uri.password = nil
+      uri.to_s
+    rescue URI::Error
+      @base_url
     end
 
     def pretty_print(pp) : Nil

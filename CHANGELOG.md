@@ -6,10 +6,11 @@ Bug fixes from auditing every endpoint against the ZAP API.
 
 ### Security
 
-- `Client#inspect` / `#pretty_print` show the API key as `[FILTERED]`. The
-  default `Reference#inspect` printed `@api_key` in plain text, and every API
-  component (`client.core`, ...) and `Zap::Scan` embeds the client, so
-  `p client.spider` or a failed spec expectation printed the key.
+- `Client#inspect` / `#pretty_print` show the API key as `[FILTERED]` and
+  mask credentials in a `base_url` userinfo. The default `Reference#inspect`
+  printed `@api_key` in plain text, and every API component (`client.core`,
+  ...) and `Zap::Scan` embeds the client, so `p client.spider` or a failed
+  spec expectation printed the key.
 - The API key is sent in the `X-ZAP-API-Key` header instead of an `apikey`
   query parameter. ZAP accepts both and checks the header first, but only the
   query form is persisted — ZAP writes the request URL to its own log, and any
