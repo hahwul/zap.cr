@@ -139,11 +139,11 @@ module Zap
       end
 
       def add_session_token(site : String, name : String) : JSON::Any
-        @client.request("/JSON/core/action/addSessionToken/", {"site" => site, "name" => name})
+        @client.http_sessions.add_session_token(site, name)
       end
 
       def remove_session_token(site : String, name : String) : JSON::Any
-        @client.request("/JSON/core/action/removeSessionToken/", {"site" => site, "name" => name})
+        @client.http_sessions.remove_session_token(site, name)
       end
 
       def set_option_default_user_agent(user_agent : String) : JSON::Any
@@ -210,7 +210,7 @@ module Zap
         params["filePath"] = file_path
         params["password"] = password
         params["index"] = index unless index.empty?
-        @client.request("/JSON/core/action/enablePKCS12ClientCertificate/", params)
+        @client.request("/JSON/core/action/enablePKCS12ClientCertificate/", params, post: true)
       end
 
       def load_session(name : String) : JSON::Any
@@ -287,7 +287,7 @@ module Zap
       end
 
       def set_option_proxy_chain_password(password : String) : JSON::Any
-        @client.request("/JSON/core/action/setOptionProxyChainPassword/", {"String" => password})
+        @client.request("/JSON/core/action/setOptionProxyChainPassword/", {"String" => password}, post: true)
       end
 
       def set_option_proxy_chain_port(port : Int32) : JSON::Any
@@ -332,9 +332,15 @@ module Zap
         @client.request_other("/OTHER/core/other/fileDownload/", params)
       end
 
-      # ZAP only accepts this over POST (`CoreAPI` rejects any other method
-      # with `bad_other`), so the parameters go in a form body.
+      # Upload nonempty UTF-8 text using ZAP's form API. ZAP expands the
+      # transfer-directory token when it appears at the start of the content.
       def file_upload(file_name : String, file_contents : String) : String
+        if file_contents.empty? || !file_contents.valid_encoding?
+          raise Zap::Error.new("File upload requires nonempty UTF-8 text")
+        end
+        if file_contents.starts_with?("${XFER}")
+          raise Zap::Error.new("File upload content starts with ZAP's transfer-directory token")
+        end
         params = {} of String => String
         params["fileName"] = file_name
         params["fileContents"] = file_contents

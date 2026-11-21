@@ -49,7 +49,7 @@ module Zap
       def set_session_token_value(site : String, session_name : String, token_name : String, token_value : String) : JSON::Any
         @client.request("/JSON/httpSessions/action/setSessionTokenValue/", {
           "site" => site, "session" => session_name, "sessionToken" => token_name, "tokenValue" => token_value,
-        })
+        }, post: true)
       end
 
       def rename_session(site : String, old_name : String, new_name : String) : JSON::Any

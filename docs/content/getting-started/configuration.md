@@ -37,7 +37,8 @@ Convenience scan methods accept a `poll_interval` parameter:
 client.scan.full("http://target.com", poll_interval: 10.seconds)
 ```
 
-They also accept an optional `timeout` that bounds the whole workflow. Without
+They also accept an optional `timeout` that bounds polling and phase starts.
+Individual HTTP requests use the client timeouts. Without
 it the client polls until ZAP reports 100%, which never happens if the scan is
 removed or wedged:
 

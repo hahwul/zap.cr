@@ -32,6 +32,16 @@ Bug fixes from auditing every endpoint against the ZAP API.
 
 ### Fixed
 
+- Alert deletion rejects invalid risk IDs and delimits host-only URL filters.
+- Scan workflows apply the selected context to Active Scan and check the
+  deadline before starting each phase. Combined spider results include the
+  AJAX response, and malformed passive or AJAX status responses raise errors.
+- State-changing GET requests use a fresh connection to avoid automatic
+  replay. Credential setters send form data in the request body.
+- Error responses are detected regardless of JSON key order and whitespace.
+  Inspect output redacts malformed URLs.
+- HAR export uses ZAP's raw export endpoint. File upload rejects content
+  that ZAP would reject or rewrite.
 - A `Zap::Scan` workflow `timeout` shorter than the remaining `poll_interval`
   no longer raises early: the last wait sleeps only until the deadline and
   polls once more. With `timeout: 1.minute, poll_interval: 5.minutes` it used

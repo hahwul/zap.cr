@@ -17,26 +17,26 @@ module Zap
     # Run a full scan: Spider -> Ajax Spider -> Active Scan
     # Returns alerts summary when complete.
     #
-    # `timeout` bounds the whole workflow: if the phases have not finished by
-    # then, a `Zap::Error` is raised instead of polling forever. It is `nil`
-    # (wait indefinitely) by default.
+    # `timeout` sets a shared deadline for polling and starting each phase.
+    # HTTP requests use the client's timeouts. The deadline defaults to `nil`.
     def full(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, wait_for_passive : Bool = true, & : String, Int32 ->) : JSON::Any
       deadline = deadline_for(timeout)
 
       yield "spider", 0
-      spider_id = start_spider(target, context_name)
+      spider_id = start_spider(target, context_name, deadline)
       wait_for_spider(spider_id, poll_interval, deadline) { |progress| yield "spider", progress }
 
       yield "ajaxSpider", 0
-      start_ajax_spider(target, context_name)
+      start_ajax_spider(target, context_name, deadline)
       wait_for_ajax_spider(poll_interval, deadline) { |progress| yield "ajaxSpider", progress }
 
       yield "ascan", 0
-      scan_id = start_active_scan(target)
+      scan_id = start_active_scan(target, context_name: context_name, deadline: deadline)
       wait_for_active_scan(scan_id, poll_interval, deadline) { |progress| yield "ascan", progress }
 
       if wait_for_passive
         yield "pscan", 0
+        check_deadline(deadline, "passive scan")
         drain_passive_scan(poll_interval, deadline) { }
         yield "pscan", 100
       end
@@ -53,15 +53,16 @@ module Zap
       deadline = deadline_for(timeout)
 
       yield "spider", 0
-      spider_id = start_spider(target, context_name)
+      spider_id = start_spider(target, context_name, deadline)
       wait_for_spider(spider_id, poll_interval, deadline) { |progress| yield "spider", progress }
 
       yield "ascan", 0
-      scan_id = start_active_scan(target)
+      scan_id = start_active_scan(target, context_name: context_name, deadline: deadline)
       wait_for_active_scan(scan_id, poll_interval, deadline) { |progress| yield "ascan", progress }
 
       if wait_for_passive
         yield "pscan", 0
+        check_deadline(deadline, "passive scan")
         drain_passive_scan(poll_interval, deadline) { }
         yield "pscan", 100
       end
@@ -73,19 +74,23 @@ module Zap
       spider_and_scan(target, context_name, poll_interval, timeout, wait_for_passive) { |_phase, _progress| }
     end
 
-    # Spider only (traditional + ajax)
+    # Returns the traditional spider response with the AJAX response under
+    # the `ajaxSpider` key.
     def spider_full(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil, & : String, Int32 ->) : JSON::Any
       deadline = deadline_for(timeout)
 
       yield "spider", 0
-      spider_id = start_spider(target, context_name)
+      spider_id = start_spider(target, context_name, deadline)
       wait_for_spider(spider_id, poll_interval, deadline) { |progress| yield "spider", progress }
 
       yield "ajaxSpider", 0
-      start_ajax_spider(target, context_name)
+      start_ajax_spider(target, context_name, deadline)
       wait_for_ajax_spider(poll_interval, deadline) { |progress| yield "ajaxSpider", progress }
 
-      @client.spider.full_results(spider_id)
+      traditional = @client.spider.full_results(spider_id).as_h?
+      raise Zap::Error.new("Unexpected spider result from ZAP: expected a JSON object") unless traditional
+
+      JSON::Any.new(traditional.merge({"ajaxSpider" => @client.ajax_spider.full_results}))
     end
 
     def spider_full(target : String, context_name : String = "", poll_interval : Time::Span = POLL_INTERVAL, timeout : Time::Span? = nil) : JSON::Any
@@ -97,11 +102,12 @@ module Zap
       deadline = deadline_for(timeout)
 
       yield "ascan", 0
-      scan_id = start_active_scan(target, recurse)
+      scan_id = start_active_scan(target, recurse, deadline: deadline)
       wait_for_active_scan(scan_id, poll_interval, deadline) { |progress| yield "ascan", progress }
 
       if wait_for_passive
         yield "pscan", 0
+        check_deadline(deadline, "passive scan")
         drain_passive_scan(poll_interval, deadline) { }
         yield "pscan", 100
       end
@@ -118,7 +124,7 @@ module Zap
       deadline = deadline_for(timeout)
 
       yield "spider", 0
-      spider_id = start_spider(target, context_name)
+      spider_id = start_spider(target, context_name, deadline)
       wait_for_spider(spider_id, poll_interval, deadline) { |progress| yield "spider", progress }
 
       @client.spider.full_results(spider_id)
@@ -133,7 +139,7 @@ module Zap
       deadline = deadline_for(timeout)
 
       yield "ajaxSpider", 0
-      start_ajax_spider(target, context_name)
+      start_ajax_spider(target, context_name, deadline)
       wait_for_ajax_spider(poll_interval, deadline) { |progress| yield "ajaxSpider", progress }
 
       @client.ajax_spider.full_results
@@ -151,7 +157,8 @@ module Zap
     private def drain_passive_scan(poll_interval : Time::Span, deadline : Time::Instant?, & : Int32 ->)
       loop do
         result = @client.pscan.records_to_scan
-        remaining = parse_int_field(result, "recordsToScan") || 0
+        remaining = nonnegative_integer_field(result, "recordsToScan") ||
+                    raise Zap::Error.new("Invalid passive scan queue size in ZAP response")
         yield remaining
         break if remaining == 0
         wait_or_timeout(poll_interval, deadline, "passive scan")
@@ -162,7 +169,8 @@ module Zap
       wait_for_passive_scan(poll_interval, timeout) { |_remaining| }
     end
 
-    private def start_spider(target : String, context_name : String = "") : Int32
+    private def start_spider(target : String, context_name : String, deadline : Time::Instant?) : Int32
+      check_deadline(deadline, "spider")
       # `recurse: true` so a full scan crawls into discovered links rather
       # than only hitting the seed URL.
       result = @client.spider.scan(url: target, context_name: context_name, recurse: true)
@@ -179,22 +187,37 @@ module Zap
       end
     end
 
-    private def start_ajax_spider(target : String, context_name : String = "")
+    private def start_ajax_spider(target : String, context_name : String, deadline : Time::Instant?)
+      check_deadline(deadline, "ajax spider")
       @client.ajax_spider.scan(url: target, context_name: context_name)
     end
 
     private def wait_for_ajax_spider(poll_interval : Time::Span, deadline : Time::Instant?, & : Int32 ->)
       loop do
         result = @client.ajax_spider.status
-        status = object_field(result, "status").try(&.as_s?) || "stopped"
+        status = object_field(result, "status").try(&.as_s?)
+        unless status.in?("running", "stopped")
+          raise Zap::Error.new("Invalid AJAX Spider status in ZAP response")
+        end
         yield status == "running" ? 50 : 100
         break if status != "running"
         wait_or_timeout(poll_interval, deadline, "ajax spider")
       end
     end
 
-    private def start_active_scan(target : String, recurse : Bool = true) : Int32
-      result = @client.ascan.scan(url: target, recurse: recurse)
+    private def start_active_scan(target : String, recurse : Bool = true, *, context_name : String = "", deadline : Time::Instant?) : Int32
+      check_deadline(deadline, "active scan")
+      context_id = -1
+      unless context_name.empty?
+        context = object_field(@client.context.context(context_name), "context")
+        id = context && nonnegative_integer_field(context, "id")
+        unless id
+          raise Zap::Error.new("Missing context ID in ZAP response")
+        end
+        context_id = id
+        check_deadline(deadline, "active scan")
+      end
+      result = @client.ascan.scan(url: target, recurse: recurse, context_id: context_id)
       parse_int_field(result, "scan") || raise Zap::Error.new("Failed to start active scan: missing scan ID in response")
     end
 
@@ -205,6 +228,12 @@ module Zap
         yield progress
         break if progress >= 100
         wait_or_timeout(poll_interval, deadline, "active scan")
+      end
+    end
+
+    private def check_deadline(deadline : Time::Instant?, phase : String)
+      if deadline && Time.instant >= deadline
+        raise Zap::TimeoutError.new("Timed out before starting #{phase}")
       end
     end
 
@@ -243,6 +272,11 @@ module Zap
     private def object_field(json : JSON::Any, field : String) : JSON::Any?
       hash = json.as_h? || raise Zap::Error.new("Unexpected response from ZAP: expected a JSON object")
       hash[field]?
+    end
+
+    private def nonnegative_integer_field(json : JSON::Any, field : String) : Int32?
+      value = object_field(json, field).try { |entry| entry.raw.to_s.to_i32? }
+      value if value && value >= 0
     end
 
     private def parse_int_field(json : JSON::Any, field : String) : Int32?

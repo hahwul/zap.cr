@@ -7,8 +7,8 @@ module Zap
       # Actions
       # ZAP requires the endpoint when importing a schema from a file.
       def import_file(file : String, endpoint : String = "", *, max_messages : Int32? = nil) : JSON::Any
-        params = {"file" => file}
-        params["endurl"] = endpoint unless endpoint.empty?
+        raise Zap::Error.new("GraphQL file import requires an endpoint URL") if endpoint.empty?
+        params = {"file" => file, "endurl" => endpoint}
         params["maxMessages"] = max_messages.to_s if max_messages
         @client.request("/JSON/graphql/action/importFile/", params)
       end

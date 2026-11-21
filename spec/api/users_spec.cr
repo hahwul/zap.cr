@@ -29,7 +29,10 @@ describe Zap::Api::Users do
   it "#set_auth_credentials" do
     with_mock_zap do |mock, client|
       client.users.set_auth_credentials(1, 0, "username=admin&password=pass")
-      mock.last_params["authCredentialsConfigParams"].should eq("username=admin&password=pass")
+      mock.last_method.should eq("POST")
+      mock.last_params.to_s.should be_empty
+      form = URI::Params.parse(mock.last_body)
+      form["authCredentialsConfigParams"].should eq("username=admin&password=pass")
     end
   end
 

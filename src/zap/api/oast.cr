@@ -31,7 +31,7 @@ module Zap
       def set_interactsh_options(server : String, poll_in_secs : Int32, auth_token : String = "") : JSON::Any
         @client.request("/JSON/oast/action/setInteractshOptions/", {
           "server" => server, "pollInSecs" => poll_in_secs.to_s, "authToken" => auth_token,
-        })
+        }, post: true)
       end
 
       # Views

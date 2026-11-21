@@ -41,6 +41,7 @@ describe Zap::Scan do
             %({"scan": "0"})
           when "/JSON/ascan/view/status/"
             call_count <= 2 ? %({"status": "50"}) : %({"status": "100"})
+          when "/JSON/pscan/view/recordsToScan/" then %({"recordsToScan":"0"})
           when "/JSON/alert/view/alertsSummary/"
             %({"alertsSummary": {"High": 0, "Medium": 1, "Low": 2}})
           else
@@ -114,6 +115,7 @@ describe Zap::Scan do
             %({"scan": "0"})
           when "/JSON/ascan/view/status/"
             %({"status": "100"})
+          when "/JSON/pscan/view/recordsToScan/" then %({"recordsToScan":"0"})
           when "/JSON/alert/view/alertsSummary/"
             %({"alertsSummary": {}})
           else
@@ -146,6 +148,7 @@ describe Zap::Scan do
             %({"scan": "0"})
           when "/JSON/ascan/view/status/"
             %({"status": "100"})
+          when "/JSON/pscan/view/recordsToScan/" then %({"recordsToScan":"0"})
           when "/JSON/alert/view/alertsSummary/"
             %({"alertsSummary": {"High": 1, "Medium": 2, "Low": 3}})
           else
@@ -180,6 +183,7 @@ describe Zap::Scan do
             %({"scan": "0"})
           when "/JSON/ascan/view/status/"
             %({"status": "100"})
+          when "/JSON/pscan/view/recordsToScan/" then %({"recordsToScan":"0"})
           when "/JSON/alert/view/alertsSummary/"
             %({"alertsSummary": {}})
           else
@@ -246,13 +250,16 @@ describe Zap::Scan do
             %({"status": "stopped"})
           when "/JSON/spider/view/fullResults/"
             %({"fullResults": ["http://example.com/page1"]})
+          when "/JSON/ajaxSpider/view/fullResults/"
+            %({"fullResults": ["http://example.com/ajax-only"]})
           else
             %({"Result": "OK"})
           end
         }
 
         result = client.scan.spider_full("http://example.com", poll_interval: 0.seconds)
-        result["fullResults"].should_not be_nil
+        result["fullResults"].as_a.first.as_s.should eq("http://example.com/page1")
+        result["ajaxSpider"]["fullResults"].as_a.first.as_s.should eq("http://example.com/ajax-only")
       end
     end
   end
@@ -297,6 +304,7 @@ describe Zap::Scan do
           when "/JSON/ascan/view/status/"
             status_calls += 1
             status_calls <= 1 ? %({"other": "field"}) : %({"status": "100"})
+          when "/JSON/pscan/view/recordsToScan/" then %({"recordsToScan":"0"})
           when "/JSON/alert/view/alertsSummary/"
             %({"alertsSummary": {}})
           else

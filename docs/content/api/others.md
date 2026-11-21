@@ -137,6 +137,9 @@ Additional API modules for specialized functionality.
 | `site_stats(site, key_prefix)` | Per-site stats |
 | `clear_stats(key_prefix)` | Clear stats |
 
+ZAP 2.17.0 derives the StatsD enabled state from the configured host and
+rejects the legacy `set_option_statsd_enabled` action.
+
 ## Automation (`client.automation`)
 
 | Method | Description |

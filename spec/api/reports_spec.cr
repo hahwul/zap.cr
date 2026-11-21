@@ -36,9 +36,9 @@ describe Zap::Api::Reports do
       client.reports.generate(
         title: "High Risk Report",
         template: "traditional-html",
-        included_risks: "High,Medium"
+        included_risks: "High|Medium"
       )
-      mock.last_params["includedRisks"].should eq("High,Medium")
+      mock.last_params["includedRisks"].should eq("High|Medium")
     end
   end
 end

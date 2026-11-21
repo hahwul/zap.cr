@@ -13,8 +13,8 @@ module Zap
       # `-1` meaning "no filter") or a `Zap::Risk` enum value, which is mapped to
       # its integer id. Passing the enum reads more clearly at call sites without
       # breaking the existing `Int32` API.
-      # `false_positive` filters on whether alerts have been marked as false
-      # positives; leaving it `nil` returns both.
+      # Pass `false_positive: true` to include alerts marked as false positives.
+      # ZAP excludes those alerts by default.
       def alerts(base_url : String = "", start : Int32 = -1, count : Int32 = -1, risk_id : Int32 | Zap::Risk = -1, context_name : String = "", false_positive : Bool? = nil) : JSON::Any
         rid = Zap.risk_id(risk_id)
         params = {} of String => String
@@ -68,15 +68,18 @@ module Zap
       # `risk_id` accepts a raw `Int32` (`-1` = no filter) or a `Zap::Risk` enum.
       def delete_alerts(context_name : String = "", base_url : String = "", risk_id : Int32 | Zap::Risk = -1) : JSON::Any
         rid = Zap.risk_id(risk_id)
+        unless rid == -1 || Zap::Risk.from_value?(rid)
+          raise Zap::Error.new("Invalid risk_id for alert deletion")
+        end
         params = {} of String => String
         params["contextName"] = context_name unless context_name.empty?
-        params["baseurl"] = base_url unless base_url.empty?
-        params["riskId"] = rid.to_s if rid >= 0
+        params["baseurl"] = deletion_base_url(base_url) unless base_url.empty?
+        params["riskId"] = rid.to_s unless rid == -1
         @client.request("/JSON/alert/action/deleteAlerts/", params)
       end
 
-      # `risk_id` / `confidence_id` accept raw `Int32` IDs or the matching
-      # `Zap::Risk` / `Zap::Confidence` enums.
+      # Replaces the supplied alert details. ZAP clears omitted text fields
+      # and resets omitted CWE/WASC IDs to zero.
       def update_alert(id : Int32, name : String, risk_id : Int32 | Zap::Risk, confidence_id : Int32 | Zap::Confidence, description : String, param : String = "", attack : String = "", other_info : String = "", solution : String = "", references : String = "", evidence : String = "", cwe_id : Int32 = -1, wasc_id : Int32 = -1) : JSON::Any
         params = {"id" => id.to_s, "name" => name, "riskId" => Zap.risk_id(risk_id).to_s, "confidenceId" => Zap.confidence_id(confidence_id).to_s, "description" => description}
         params["param"] = param unless param.empty?
@@ -88,6 +91,19 @@ module Zap
         params["cweId"] = cwe_id.to_s if cwe_id >= 0
         params["wascId"] = wasc_id.to_s if wasc_id >= 0
         @client.request("/JSON/alert/action/updateAlert/", params)
+      end
+
+      private def deletion_base_url(base_url : String) : String
+        uri = URI.parse(base_url)
+        unless uri.scheme.in?("http", "https") && (host = uri.host) && !host.empty? && !uri.user && !uri.fragment
+          raise Zap::Error.new("Alert deletion requires an absolute HTTP(S) base_url")
+        end
+
+        # ZAP matches raw URL prefixes. A slash delimits the authority.
+        uri.path = "/" if uri.path.empty?
+        uri.to_s
+      rescue URI::Error
+        raise Zap::Error.new("Invalid base_url for alert deletion")
       end
 
       # `confidence_id` accepts a raw `Int32` or a `Zap::Confidence` enum.

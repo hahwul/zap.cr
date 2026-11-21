@@ -463,6 +463,7 @@ describe "regressions" do
           case path
           when "/JSON/ascan/action/scan/"        then %({"scan": "0"})
           when "/JSON/ascan/view/status/"        then %({"status": "100"})
+          when "/JSON/pscan/view/recordsToScan/" then %({"recordsToScan":"0"})
           when "/JSON/alert/view/alertsSummary/" then %({"alertsSummary": {}})
           else                                        %({"Result": "OK"})
           end
@@ -484,6 +485,7 @@ describe "regressions" do
             polls += 1
             # A JSON number with a fractional part, then a float-ish string.
             polls <= 1 ? %({"status": 42.0}) : %({"status": "100.0"})
+          when "/JSON/pscan/view/recordsToScan/" then %({"recordsToScan":"0"})
           when "/JSON/alert/view/alertsSummary/"
             %({"alertsSummary": {}})
           else
@@ -500,7 +502,7 @@ describe "regressions" do
       end
     end
 
-    it "does not crash when the ajax spider reports a non-string status" do
+    it "rejects a non-string AJAX Spider status" do
       with_mock_zap do |mock, client|
         mock.response_handler = ->(path : String, _params : URI::Params) {
           case path
@@ -510,8 +512,9 @@ describe "regressions" do
           end
         }
 
-        result = client.scan.ajax_spider("http://example.com", poll_interval: 0.seconds)
-        result["fullResults"].should_not be_nil
+        expect_raises(Zap::Error, /Invalid AJAX Spider status/) do
+          client.scan.ajax_spider("http://example.com", poll_interval: 0.seconds)
+        end
       end
     end
   end
@@ -826,10 +829,12 @@ describe "regressions" do
       end
     end
 
-    it "postman imports can override the endpoint URL" do
+    it "rejects a Postman endpoint override before importing" do
       with_mock_zap do |mock, client|
-        client.postman.import_file("/tmp/collection.json", endpoint_url: "http://example.com")
-        mock.last_params["endpointUrl"].should eq("http://example.com")
+        expect_raises(Zap::Error, /Postman collection/) do
+          client.postman.import_file("/tmp/collection.json", endpoint_url: "http://example.com")
+        end
+        mock.last_path.should be_empty
 
         client.postman.import_url("http://example.com/collection.json")
         mock.last_params.has_key?("endpointUrl").should be_false

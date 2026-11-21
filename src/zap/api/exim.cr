@@ -31,11 +31,9 @@ module Zap
       end
 
       def export_har(base_url : String = "", start : Int32 = -1, count : Int32 = -1) : JSON::Any
-        params = {} of String => String
-        params["baseurl"] = base_url unless base_url.empty?
-        params["start"] = start.to_s if start >= 0
-        params["count"] = count.to_s if count >= 0
-        @client.request("/JSON/exim/action/exportHar/", params)
+        JSON.parse(export_site_messages_har(base_url, start, count))
+      rescue ex : JSON::ParseException
+        raise Zap::Error.new("Invalid JSON response from /OTHER/exim/other/exportHar/: #{ex.message}")
       end
 
       # The messages of one site in HAR format. ZAP filters this endpoint with
@@ -44,7 +42,8 @@ module Zap
       # URL under any other name is silently ignored, which would export every
       # message ZAP has seen rather than the site's.
       def export_site_messages_har(url : String, start : Int32 = -1, count : Int32 = -1) : String
-        params = {"baseurl" => url}
+        params = {} of String => String
+        params["baseurl"] = url unless url.empty?
         params["start"] = start.to_s if start >= 0
         params["count"] = count.to_s if count >= 0
         @client.request_other("/OTHER/exim/other/exportHar/", params)
