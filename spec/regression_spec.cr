@@ -812,7 +812,7 @@ describe "regressions" do
       with_mock_zap do |mock, client|
         client.exim.export_site_messages_har("http://example.com")
         mock.last_path.should eq("/OTHER/exim/other/exportHar/")
-        mock.last_params["baseurl"].should eq("http://example.com")
+        mock.last_params["baseurl"].should eq("http://example.com/")
         mock.last_params.has_key?("url").should be_false
       end
     end

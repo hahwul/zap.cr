@@ -66,6 +66,10 @@ by_risk = client.alert.alerts_by_risk(url: "http://target.com")
 
 ### Delete
 
+For URL-scoped bulk deletion, supply an origin or a directory URL ending
+in `/`, such as `http://target.com/api/`. A URL scope excludes queries
+and fragments. Use the alert ID to delete a specific alert.
+
 ```crystal
 # Delete single alert
 client.alert.delete_alert(42)
