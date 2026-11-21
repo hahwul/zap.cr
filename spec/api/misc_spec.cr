@@ -55,9 +55,29 @@ describe Zap::Api::Exim do
       mock.response_body = %({"log":{"entries":[]}})
       client.exim.export_har(base_url: "http://example.com", start: 1, count: 2)["log"]["entries"].as_a.should be_empty
       mock.last_path.should eq("/OTHER/exim/other/exportHar/")
-      mock.last_params["baseurl"].should eq("http://example.com")
+      mock.last_params["baseurl"].should eq("http://example.com/")
       mock.last_params["start"].should eq("1")
       mock.last_params["count"].should eq("2")
+    end
+  end
+
+  it "exports all messages when no base URL is supplied to #export_har" do
+    with_mock_zap do |mock, client|
+      mock.response_body = %({"log":{"entries":[]}})
+      client.exim.export_har["log"]["entries"].as_a.should be_empty
+      mock.last_path.should eq("/OTHER/exim/other/exportHar/")
+      mock.last_params.has_key?("baseurl").should be_false
+    end
+  end
+
+  it "requires a site or directory URL for scoped HAR exports" do
+    with_mock_zap do |mock, client|
+      expect_raises(Zap::Error, /absolute HTTP/) { client.exim.export_site_messages_har("") }
+      expect_raises(Zap::Error, /directory path/) { client.exim.export_har(base_url: "https://example.invalid/api") }
+      mock.last_path.should be_empty
+
+      client.exim.export_site_messages_har("https://example.invalid/api/")
+      mock.last_params["baseurl"].should eq("https://example.invalid/api/")
     end
   end
 end

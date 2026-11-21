@@ -32,7 +32,9 @@ Bug fixes from auditing every endpoint against the ZAP API.
 
 ### Fixed
 
-- Alert deletion rejects invalid risk IDs and delimits host-only URL filters.
+- Alert deletion rejects invalid risk IDs. Scoped bulk alert deletion and
+  Exim HAR exports require an origin or a directory URL. Site-only HAR
+  export rejects an empty scope.
 - Scan workflows apply the selected context to Active Scan and check the
   deadline before starting each phase. Combined spider results include the
   AJAX response, and malformed passive or AJAX status responses raise errors.

@@ -11,6 +11,21 @@ describe "audited ZAP compatibility" do
     end
   end
 
+  it "requires a directory boundary for URL-scoped alert deletion" do
+    with_mock_zap do |mock, client|
+      expect_raises(Zap::Error, /directory path/) do
+        client.alert.delete_alerts(base_url: "https://example.invalid/api")
+      end
+      expect_raises(Zap::Error, /query/) do
+        client.alert.delete_alerts(base_url: "https://example.invalid/api/?id=1")
+      end
+      mock.last_path.should be_empty
+
+      client.alert.delete_alerts(base_url: "https://example.invalid/api/")
+      mock.last_params["baseurl"].should eq("https://example.invalid/api/")
+    end
+  end
+
   it "rejects upload content ZAP cannot store faithfully" do
     with_mock_zap do |mock, client|
       ["", String.new(Bytes[255]), "${XFER}/example"].each do |contents|

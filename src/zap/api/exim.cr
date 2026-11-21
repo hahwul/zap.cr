@@ -1,6 +1,10 @@
+require "./url_scope"
+
 module Zap
   module Api
     class Exim
+      include UrlScope
+
       def initialize(@client : Zap::Client)
       end
 
@@ -30,18 +34,21 @@ module Zap
         @client.request("/JSON/exim/action/importZapLogs/", {"filePath" => file_path})
       end
 
+      # Exports all captured messages when `base_url` is empty. Otherwise
+      # the URL selects a site or directory.
       def export_har(base_url : String = "", start : Int32 = -1, count : Int32 = -1) : JSON::Any
-        JSON.parse(export_site_messages_har(base_url, start, count))
+        url = base_url.empty? ? "" : directory_url(base_url)
+        JSON.parse(request_har(url, start, count))
       rescue ex : JSON::ParseException
         raise Zap::Error.new("Invalid JSON response from /OTHER/exim/other/exportHar/: #{ex.message}")
       end
 
-      # The messages of one site in HAR format. ZAP filters this endpoint with
-      # `baseurl` (the URL below which messages are included) and paginates it
-      # with `start` / `count`, the same knobs as `#export_har`. Sending the
-      # URL under any other name is silently ignored, which would export every
-      # message ZAP has seen rather than the site's.
+      # Exports captured messages from a required site or directory URL.
       def export_site_messages_har(url : String, start : Int32 = -1, count : Int32 = -1) : String
+        request_har(directory_url(url), start, count)
+      end
+
+      private def request_har(url : String, start : Int32, count : Int32) : String
         params = {} of String => String
         params["baseurl"] = url unless url.empty?
         params["start"] = start.to_s if start >= 0

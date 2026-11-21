@@ -1,6 +1,10 @@
+require "./url_scope"
+
 module Zap
   module Api
     class Alert
+      include UrlScope
+
       def initialize(@client : Zap::Client)
       end
 
@@ -65,6 +69,8 @@ module Zap
         @client.request("/JSON/alert/action/deleteAllAlerts/")
       end
 
+      # Deletes alerts by context, risk, or directory URL. A host alone
+      # selects its root directory. Use `delete_alert` to delete by ID.
       # `risk_id` accepts a raw `Int32` (`-1` = no filter) or a `Zap::Risk` enum.
       def delete_alerts(context_name : String = "", base_url : String = "", risk_id : Int32 | Zap::Risk = -1) : JSON::Any
         rid = Zap.risk_id(risk_id)
@@ -73,7 +79,7 @@ module Zap
         end
         params = {} of String => String
         params["contextName"] = context_name unless context_name.empty?
-        params["baseurl"] = deletion_base_url(base_url) unless base_url.empty?
+        params["baseurl"] = directory_url(base_url) unless base_url.empty?
         params["riskId"] = rid.to_s unless rid == -1
         @client.request("/JSON/alert/action/deleteAlerts/", params)
       end
@@ -91,19 +97,6 @@ module Zap
         params["cweId"] = cwe_id.to_s if cwe_id >= 0
         params["wascId"] = wasc_id.to_s if wasc_id >= 0
         @client.request("/JSON/alert/action/updateAlert/", params)
-      end
-
-      private def deletion_base_url(base_url : String) : String
-        uri = URI.parse(base_url)
-        unless uri.scheme.in?("http", "https") && (host = uri.host) && !host.empty? && !uri.user && !uri.fragment
-          raise Zap::Error.new("Alert deletion requires an absolute HTTP(S) base_url")
-        end
-
-        # ZAP matches raw URL prefixes. A slash delimits the authority.
-        uri.path = "/" if uri.path.empty?
-        uri.to_s
-      rescue URI::Error
-        raise Zap::Error.new("Invalid base_url for alert deletion")
       end
 
       # `confidence_id` accepts a raw `Int32` or a `Zap::Confidence` enum.

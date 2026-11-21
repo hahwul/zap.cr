@@ -54,9 +54,18 @@ after the host to select that origin's paths, for example `http://target.com/`.
 ### HAR Export
 
 ```crystal
-# Export all traffic as HAR
+# Export the entire capture
+client.exim.export_har
+
+# Export one site's traffic as HAR
 client.exim.export_har(base_url: "http://target.com")
+
+# Export a directory as a raw HAR string
+client.exim.export_site_messages_har("http://target.com/api/")
 ```
+
+Scoped HAR exports accept an origin or a directory URL ending in `/`.
+Use `export_har_by_id` to export specific messages.
 
 ### Search and Export
 
