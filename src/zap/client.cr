@@ -220,9 +220,9 @@ module Zap
       end
     end
 
-    # Low-level request methods
-    def request(path : String, params : Hash(String, String) = {} of String => String) : JSON::Any
-      response = perform_request(path, params)
+    # Use `post: true` to send parameters as form data in the request body.
+    def request(path : String, params : Hash(String, String) = {} of String => String, *, post : Bool = false) : JSON::Any
+      response = perform_request(path, params, post)
       begin
         JSON.parse(response.body)
       rescue ex : JSON::ParseException

@@ -92,6 +92,28 @@ describe Zap::Api::Ascan do
     end
   end
 
+  it "reads and updates the anti-CSRF exclusion setting" do
+    with_mock_zap do |mock, client|
+      client.ascan.option_exclude_anti_csrf_tokens
+      mock.last_path.should eq("/JSON/ascan/view/optionExcludeAntiCsrfTokens/")
+
+      client.ascan.set_option_exclude_anti_csrf_tokens(true)
+      mock.last_path.should eq("/JSON/ascan/action/setOptionExcludeAntiCsrfTokens/")
+      mock.last_params["Boolean"].should eq("true")
+    end
+  end
+
+  it "reads and updates the temporary message persistence setting" do
+    with_mock_zap do |mock, client|
+      client.ascan.option_persist_temporary_messages
+      mock.last_path.should eq("/JSON/ascan/view/optionPersistTemporaryMessages/")
+
+      client.ascan.set_option_persist_temporary_messages(false)
+      mock.last_path.should eq("/JSON/ascan/action/setOptionPersistTemporaryMessages/")
+      mock.last_params["Boolean"].should eq("false")
+    end
+  end
+
   it "#enable_all_scanners" do
     with_mock_zap do |mock, client|
       client.ascan.enable_all_scanners

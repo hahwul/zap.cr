@@ -257,6 +257,10 @@ module Zap
         @client.request("/JSON/ascan/action/setOptionEncodeCookieValues/", {"Boolean" => enabled.to_s})
       end
 
+      def set_option_exclude_anti_csrf_tokens(enabled : Bool) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionExcludeAntiCsrfTokens/", {"Boolean" => enabled.to_s})
+      end
+
       def set_option_handle_anti_csrf_tokens(enabled : Bool) : JSON::Any
         @client.request("/JSON/ascan/action/setOptionHandleAntiCSRFTokens/", {"Boolean" => enabled.to_s})
       end
@@ -279,6 +283,10 @@ module Zap
 
       def set_option_max_scan_duration_in_mins(max : Int32) : JSON::Any
         @client.request("/JSON/ascan/action/setOptionMaxScanDurationInMins/", {"Integer" => max.to_s})
+      end
+
+      def set_option_persist_temporary_messages(enabled : Bool) : JSON::Any
+        @client.request("/JSON/ascan/action/setOptionPersistTemporaryMessages/", {"Boolean" => enabled.to_s})
       end
 
       def set_option_prompt_in_attack_mode(enabled : Bool) : JSON::Any
@@ -360,6 +368,10 @@ module Zap
         @client.request("/JSON/ascan/view/optionExcludedParamList/")
       end
 
+      def option_exclude_anti_csrf_tokens : JSON::Any
+        @client.request("/JSON/ascan/view/optionExcludeAntiCsrfTokens/")
+      end
+
       def option_handle_anti_csrf_tokens : JSON::Any
         @client.request("/JSON/ascan/view/optionHandleAntiCSRFTokens/")
       end
@@ -386,6 +398,10 @@ module Zap
 
       def option_max_scan_duration_in_mins : JSON::Any
         @client.request("/JSON/ascan/view/optionMaxScanDurationInMins/")
+      end
+
+      def option_persist_temporary_messages : JSON::Any
+        @client.request("/JSON/ascan/view/optionPersistTemporaryMessages/")
       end
 
       def option_prompt_in_attack_mode : JSON::Any

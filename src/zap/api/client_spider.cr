@@ -52,6 +52,103 @@ module Zap
         params["scanId"] = scan_id.to_s if scan_id >= 0
         @client.request("/JSON/clientSpider/view/status/", params)
       end
+
+      # Default options for the Client Spider add-on.
+      def option_action_wait_time_in_secs : JSON::Any
+        @client.request("/JSON/clientSpider/view/optionActionWaitTimeInSecs/")
+      end
+
+      def option_browser_id : JSON::Any
+        @client.request("/JSON/clientSpider/view/optionBrowserId/")
+      end
+
+      def option_initial_load_time_in_secs : JSON::Any
+        @client.request("/JSON/clientSpider/view/optionInitialLoadTimeInSecs/")
+      end
+
+      def option_logout_avoidance : JSON::Any
+        @client.request("/JSON/clientSpider/view/optionLogoutAvoidance/")
+      end
+
+      def option_max_children : JSON::Any
+        @client.request("/JSON/clientSpider/view/optionMaxChildren/")
+      end
+
+      def option_max_depth : JSON::Any
+        @client.request("/JSON/clientSpider/view/optionMaxDepth/")
+      end
+
+      def option_max_duration : JSON::Any
+        @client.request("/JSON/clientSpider/view/optionMaxDuration/")
+      end
+
+      def option_max_scans_in_ui : JSON::Any
+        @client.request("/JSON/clientSpider/view/optionMaxScansInUi/")
+      end
+
+      def option_page_load_time_in_secs : JSON::Any
+        @client.request("/JSON/clientSpider/view/optionPageLoadTimeInSecs/")
+      end
+
+      def option_scope_check : JSON::Any
+        @client.request("/JSON/clientSpider/view/optionScopeCheck/")
+      end
+
+      def option_shutdown_time_in_secs : JSON::Any
+        @client.request("/JSON/clientSpider/view/optionShutdownTimeInSecs/")
+      end
+
+      def option_thread_count : JSON::Any
+        @client.request("/JSON/clientSpider/view/optionThreadCount/")
+      end
+
+      def set_option_action_wait_time_in_secs(seconds : Int32) : JSON::Any
+        @client.request("/JSON/clientSpider/action/setOptionActionWaitTimeInSecs/", {"Integer" => seconds.to_s})
+      end
+
+      def set_option_browser_id(browser : String) : JSON::Any
+        @client.request("/JSON/clientSpider/action/setOptionBrowserId/", {"String" => browser})
+      end
+
+      def set_option_initial_load_time_in_secs(seconds : Int32) : JSON::Any
+        @client.request("/JSON/clientSpider/action/setOptionInitialLoadTimeInSecs/", {"Integer" => seconds.to_s})
+      end
+
+      def set_option_logout_avoidance(enabled : Bool) : JSON::Any
+        @client.request("/JSON/clientSpider/action/setOptionLogoutAvoidance/", {"Boolean" => enabled.to_s})
+      end
+
+      def set_option_max_children(max : Int32) : JSON::Any
+        @client.request("/JSON/clientSpider/action/setOptionMaxChildren/", {"Integer" => max.to_s})
+      end
+
+      def set_option_max_depth(depth : Int32) : JSON::Any
+        @client.request("/JSON/clientSpider/action/setOptionMaxDepth/", {"Integer" => depth.to_s})
+      end
+
+      def set_option_max_duration(minutes : Int32) : JSON::Any
+        @client.request("/JSON/clientSpider/action/setOptionMaxDuration/", {"Integer" => minutes.to_s})
+      end
+
+      def set_option_max_scans_in_ui(max : Int32) : JSON::Any
+        @client.request("/JSON/clientSpider/action/setOptionMaxScansInUi/", {"Integer" => max.to_s})
+      end
+
+      def set_option_page_load_time_in_secs(seconds : Int32) : JSON::Any
+        @client.request("/JSON/clientSpider/action/setOptionPageLoadTimeInSecs/", {"Integer" => seconds.to_s})
+      end
+
+      def set_option_scope_check(value : String) : JSON::Any
+        @client.request("/JSON/clientSpider/action/setOptionScopeCheck/", {"String" => value})
+      end
+
+      def set_option_shutdown_time_in_secs(seconds : Int32) : JSON::Any
+        @client.request("/JSON/clientSpider/action/setOptionShutdownTimeInSecs/", {"Integer" => seconds.to_s})
+      end
+
+      def set_option_thread_count(count : Int32) : JSON::Any
+        @client.request("/JSON/clientSpider/action/setOptionThreadCount/", {"Integer" => count.to_s})
+      end
     end
   end
 end

@@ -12,6 +12,10 @@ module Zap
         @client.request("/JSON/automation/action/runPlan/", {"filePath" => file_path})
       end
 
+      def stop_plan(plan_id : Int32) : JSON::Any
+        @client.request("/JSON/automation/action/stopPlan/", {"planId" => plan_id.to_s})
+      end
+
       def end_delay_job : JSON::Any
         @client.request("/JSON/automation/action/endDelayJob/")
       end
