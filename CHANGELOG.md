@@ -4,6 +4,18 @@
 
 Bug fixes from auditing every endpoint against the ZAP API.
 
+### Added
+
+- Client Spider option views and setters for browser selection, scope,
+  logout avoidance, crawl limits, timing, and thread count.
+- Controls for excluding anti-CSRF tokens and persisting temporary messages
+  during active scans, plus a body-size limit for passive scans.
+- Automation Framework plan cancellation and Selenium options for Microsoft
+  Edge binary and driver paths.
+- GraphQL cycle detection options and message limits for GraphQL, OpenAPI,
+  Postman, WSDL, and HAR imports.
+- Inline HAR import for adding recorded messages to the ZAP session.
+
 ### Security
 
 - `Client#inspect` / `#pretty_print` show the API key as `[FILTERED]` and

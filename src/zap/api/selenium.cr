@@ -16,6 +16,14 @@ module Zap
         @client.request("/JSON/selenium/view/optionChromeDriverPath/")
       end
 
+      def option_edge_binary_path : JSON::Any
+        @client.request("/JSON/selenium/view/optionEdgeBinaryPath/")
+      end
+
+      def option_edge_driver_path : JSON::Any
+        @client.request("/JSON/selenium/view/optionEdgeDriverPath/")
+      end
+
       def option_firefox_binary_path : JSON::Any
         @client.request("/JSON/selenium/view/optionFirefoxBinaryPath/")
       end
@@ -30,6 +38,14 @@ module Zap
 
       def set_option_chrome_driver_path(path : String) : JSON::Any
         @client.request("/JSON/selenium/action/setOptionChromeDriverPath/", {"String" => path})
+      end
+
+      def set_option_edge_binary_path(path : String) : JSON::Any
+        @client.request("/JSON/selenium/action/setOptionEdgeBinaryPath/", {"String" => path})
+      end
+
+      def set_option_edge_driver_path(path : String) : JSON::Any
+        @client.request("/JSON/selenium/action/setOptionEdgeDriverPath/", {"String" => path})
       end
 
       def set_option_firefox_binary_path(path : String) : JSON::Any

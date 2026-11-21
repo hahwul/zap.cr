@@ -4,8 +4,18 @@ module Zap
       def initialize(@client : Zap::Client)
       end
 
-      def import_har(file_path : String) : JSON::Any
-        @client.request("/JSON/exim/action/importHar/", {"filePath" => file_path})
+      def import_har(file_path : String, *, max_messages : Int32? = nil) : JSON::Any
+        params = {"filePath" => file_path}
+        params["maxMessages"] = max_messages.to_s if max_messages
+        @client.request("/JSON/exim/action/importHar/", params)
+      end
+
+      # Imports the recorded messages into the ZAP session. Send the archive
+      # in the POST body because it can be large and contain sensitive data.
+      def import_har_data(data : String, *, max_messages : Int32? = nil) : JSON::Any
+        params = {"data" => data, "sendRequests" => "false"}
+        params["maxMessages"] = max_messages.to_s if max_messages
+        @client.request("/JSON/exim/action/importHar/", params, post: true)
       end
 
       def import_mod_security_log(file_path : String) : JSON::Any

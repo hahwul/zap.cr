@@ -59,4 +59,35 @@ describe Zap::Api::ClientSpider do
       result["status"].as_s.should eq("42")
     end
   end
+
+  it "reads and updates the maximum number of scans in the UI" do
+    with_mock_zap do |mock, client|
+      client.client_spider.option_max_scans_in_ui
+      mock.last_path.should eq("/JSON/clientSpider/view/optionMaxScansInUi/")
+
+      client.client_spider.set_option_max_scans_in_ui(5)
+      mock.last_path.should eq("/JSON/clientSpider/action/setOptionMaxScansInUi/")
+      mock.last_params["Integer"].should eq("5")
+    end
+  end
+
+  it "sends a zero action wait time" do
+    with_mock_zap do |mock, client|
+      client.client_spider.set_option_action_wait_time_in_secs(0)
+      mock.last_path.should eq("/JSON/clientSpider/action/setOptionActionWaitTimeInSecs/")
+      mock.last_params["Integer"].should eq("0")
+    end
+  end
+
+  it "sends the scope and logout avoidance options with their respective parameter names" do
+    with_mock_zap do |mock, client|
+      client.client_spider.set_option_scope_check("STRICT")
+      mock.last_path.should eq("/JSON/clientSpider/action/setOptionScopeCheck/")
+      mock.last_params["String"].should eq("STRICT")
+
+      client.client_spider.set_option_logout_avoidance(false)
+      mock.last_path.should eq("/JSON/clientSpider/action/setOptionLogoutAvoidance/")
+      mock.last_params["Boolean"].should eq("false")
+    end
+  end
 end

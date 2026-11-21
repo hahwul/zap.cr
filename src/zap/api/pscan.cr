@@ -76,6 +76,11 @@ module Zap
         @client.request("/JSON/pscan/action/setMaxAlertsPerRule/", params)
       end
 
+      # Pass 0 to remove the size limit.
+      def set_max_body_size_in_bytes(bytes : Int32) : JSON::Any
+        @client.request("/JSON/pscan/action/setMaxBodySizeInBytes/", {"maxSize" => bytes.to_s})
+      end
+
       def set_scan_only_in_scope(only_in_scope : String) : JSON::Any
         params = {} of String => String
         params["onlyInScope"] = only_in_scope
@@ -99,6 +104,10 @@ module Zap
 
       def max_alerts_per_rule : JSON::Any
         @client.request("/JSON/pscan/view/maxAlertsPerRule/")
+      end
+
+      def max_body_size_in_bytes : JSON::Any
+        @client.request("/JSON/pscan/view/maxBodySizeInBytes/")
       end
 
       def scan_only_in_scope : JSON::Any

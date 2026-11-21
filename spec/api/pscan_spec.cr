@@ -37,4 +37,16 @@ describe Zap::Api::Pscan do
       result["recordsToScan"].as_s.should eq("0")
     end
   end
+
+  it "reads the body-size limit and sends zero to remove it" do
+    with_mock_zap do |mock, client|
+      mock.response_body = %({"maxBodySizeInBytes": "1024"})
+      client.pscan.max_body_size_in_bytes["maxBodySizeInBytes"].as_s.should eq("1024")
+      mock.last_path.should eq("/JSON/pscan/view/maxBodySizeInBytes/")
+
+      client.pscan.set_max_body_size_in_bytes(0)
+      mock.last_path.should eq("/JSON/pscan/action/setMaxBodySizeInBytes/")
+      mock.last_params["maxSize"].should eq("0")
+    end
+  end
 end

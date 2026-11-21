@@ -3,9 +3,10 @@ require "../spec_helper"
 describe Zap::Api::Soap do
   it "#import_url" do
     with_mock_zap do |mock, client|
-      client.soap.import_url("http://example.com/service?wsdl")
+      client.soap.import_url("http://example.com/service?wsdl", max_messages: 0)
       mock.last_path.should eq("/JSON/soap/action/importUrl/")
       mock.last_params["url"].should eq("http://example.com/service?wsdl")
+      mock.last_params["maxMessages"].should eq("0")
     end
   end
 
@@ -28,8 +29,24 @@ describe Zap::Api::Exim do
 
   it "#import_har" do
     with_mock_zap do |mock, client|
-      client.exim.import_har("/tmp/traffic.har")
+      client.exim.import_har("/tmp/traffic.har", max_messages: 5)
       mock.last_path.should eq("/JSON/exim/action/importHar/")
+      mock.last_params["filePath"].should eq("/tmp/traffic.har")
+      mock.last_params["maxMessages"].should eq("5")
+    end
+  end
+
+  it "imports inline HAR data in a POST body" do
+    with_mock_zap do |mock, client|
+      data = %({"log":{"comment":"A+B & C","entries":[]}})
+      client.exim.import_har_data(data, max_messages: 2)["Result"].as_s.should eq("OK")
+      mock.last_resource.should eq("/JSON/exim/action/importHar/")
+      mock.last_method.should eq("POST")
+      mock.last_headers["Content-Type"].should eq("application/x-www-form-urlencoded")
+      params = URI::Params.parse(mock.last_body)
+      params["data"].should eq(data)
+      params["sendRequests"].should eq("false")
+      params["maxMessages"].should eq("2")
     end
   end
 
@@ -52,10 +69,11 @@ describe Zap::Api::OpenApi do
 
   it "#import_file with context" do
     with_mock_zap do |mock, client|
-      client.openapi.import_file("/tmp/api.yaml", target: "http://example.com", context_id: 1)
+      client.openapi.import_file("/tmp/api.yaml", target: "http://example.com", context_id: 1, max_messages: 3)
       mock.last_params["file"].should eq("/tmp/api.yaml")
       mock.last_params["target"].should eq("http://example.com")
       mock.last_params["contextId"].should eq("1")
+      mock.last_params["maxMessages"].should eq("3")
     end
   end
 end
@@ -153,6 +171,38 @@ describe Zap::Api::Automation do
       client.automation.run_plan("/tmp/plan.yaml")
       mock.last_path.should eq("/JSON/automation/action/runPlan/")
       mock.last_params["filePath"].should eq("/tmp/plan.yaml")
+    end
+  end
+
+  it "#stop_plan sends the id of the plan to stop" do
+    with_mock_zap do |mock, client|
+      client.automation.stop_plan(7)
+      mock.last_path.should eq("/JSON/automation/action/stopPlan/")
+      mock.last_params["planId"].should eq("7")
+    end
+  end
+end
+
+describe Zap::Api::Selenium do
+  it "reads and updates the Edge binary path" do
+    with_mock_zap do |mock, client|
+      client.selenium.option_edge_binary_path
+      mock.last_path.should eq("/JSON/selenium/view/optionEdgeBinaryPath/")
+
+      client.selenium.set_option_edge_binary_path("/opt/Microsoft Edge/msedge")
+      mock.last_path.should eq("/JSON/selenium/action/setOptionEdgeBinaryPath/")
+      mock.last_params["String"].should eq("/opt/Microsoft Edge/msedge")
+    end
+  end
+
+  it "reads and updates the Edge driver path" do
+    with_mock_zap do |mock, client|
+      client.selenium.option_edge_driver_path
+      mock.last_path.should eq("/JSON/selenium/view/optionEdgeDriverPath/")
+
+      client.selenium.set_option_edge_driver_path("/opt/Microsoft Edge/msedgedriver")
+      mock.last_path.should eq("/JSON/selenium/action/setOptionEdgeDriverPath/")
+      mock.last_params["String"].should eq("/opt/Microsoft Edge/msedgedriver")
     end
   end
 end
