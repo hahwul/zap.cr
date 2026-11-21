@@ -19,12 +19,9 @@ Core ZAP operations: sessions, messages, site tree, and global options.
 | `messages(base_url, start, count)` | HTTP messages list |
 | `number_of_messages(base_url)` | Message count |
 | `home_directory` | ZAP home directory |
-| `site_tree(url)` | Discovered site tree |
-| `sessions` | Session list |
-| `session_properties` | Current session properties |
+| `child_nodes(url)` | Direct children of a site tree node |
 | `excluded_from_proxy` | Proxy exclusion regexes |
-| `certificate_content` | Root CA certificate |
-| `option(name)` | Get option by name |
+| `client.network.root_ca_cert` | Root CA certificate |
 | `option_default_user_agent` | Default User-Agent |
 | `option_timeout_in_secs` | Request timeout |
 | `option_http_state` | HTTP state enabled |
@@ -39,7 +36,6 @@ Core ZAP operations: sessions, messages, site tree, and global options.
 | `new_session(name, overwrite)` | Create new session |
 | `save_session(name, overwrite)` | Save current session |
 | `snapshot_session(name, overwrite)` | Snapshot session |
-| `delete_session(name)` | Delete session |
 | `access_url(url, follow_redirects)` | Access a URL through ZAP |
 | `shutdown` | Shutdown ZAP |
 | `exclude_from_proxy(regex)` | Exclude from proxy |
@@ -52,6 +48,11 @@ Core ZAP operations: sessions, messages, site tree, and global options.
 | `set_option_maximum_alert_instances(n)` | Set max alert instances |
 | `delete_all_alerts` | Delete all alerts |
 
+ZAP 2.17.0 rejects the legacy `site_tree`, `sessions`,
+`session_properties`, `certificate_content`, `option`, and
+`delete_session` calls. Use `child_nodes` to browse the tree and the
+Network API to read the root CA certificate.
+
 ## Examples
 
 ```crystal
@@ -62,5 +63,5 @@ puts client.core.version
 client.core.new_session("test", overwrite: true)
 
 # Browse site tree
-tree = client.core.site_tree
+tree = client.core.child_nodes
 ```

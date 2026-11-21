@@ -41,7 +41,7 @@ module Zap
       def set_auth_credentials(context_id : Int32, user_id : Int32, config_params : String = "") : JSON::Any
         params = {"contextId" => context_id.to_s, "userId" => user_id.to_s}
         params["authCredentialsConfigParams"] = config_params unless config_params.empty?
-        @client.request("/JSON/users/action/setAuthenticationCredentials/", params)
+        @client.request("/JSON/users/action/setAuthenticationCredentials/", params, post: true)
       end
 
       def authenticate_as_user(context_id : Int32, user_id : Int32) : JSON::Any

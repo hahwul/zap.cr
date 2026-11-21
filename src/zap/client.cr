@@ -196,7 +196,7 @@ module Zap
       uri.password = nil
       uri.to_s
     rescue URI::Error
-      @base_url
+      "[INVALID URL]"
     end
 
     def pretty_print(pp) : Nil
@@ -248,7 +248,9 @@ module Zap
     # `fileDownload` serves files without a content type, so a file cannot be
     # mistaken for an error.
     private def api_error(response : HTTP::Client::Response, body : String) : {code: String, message: String}?
-      return unless response.mime_type.try(&.media_type) == "application/json" && body.starts_with?(%({"code"))
+      return unless response.mime_type.try(&.media_type) == "application/json"
+      # Avoid parsing large JSON exports when the first key rules out an error.
+      return unless body.matches?(/\A\s*\{\s*"(?:code|message|detail)"/)
       hash = (JSON.parse(body).as_h? rescue nil) || return
       return unless hash.keys.all? { |key| {"code", "message", "detail"}.includes?(key) }
       code = hash["code"]?.try(&.as_s?)
@@ -274,6 +276,9 @@ module Zap
           if post
             client.post(request_path, headers, form: query)
           else
+            # Crystal can replay GET on a reused connection after an EOF.
+            # ZAP accepts state-changing requests over GET, including OTHER endpoints.
+            client.close if path.includes?("/action/") || path.includes?("/other/")
             client.get(query.empty? ? request_path : "#{request_path}?#{query}", headers)
           end
         rescue ex

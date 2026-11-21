@@ -19,10 +19,13 @@ describe Zap::Api::Network do
   it "#set_http_proxy" do
     with_mock_zap do |mock, client|
       client.network.set_http_proxy("proxy.local", 8888, username: "user", password: "pass")
-      mock.last_params["host"].should eq("proxy.local")
-      mock.last_params["port"].should eq("8888")
-      mock.last_params["username"].should eq("user")
-      mock.last_params["password"].should eq("pass")
+      mock.last_method.should eq("POST")
+      mock.last_params.to_s.should be_empty
+      form = URI::Params.parse(mock.last_body)
+      form["host"].should eq("proxy.local")
+      form["port"].should eq("8888")
+      form["username"].should eq("user")
+      form["password"].should eq("pass")
     end
   end
 
@@ -51,8 +54,11 @@ describe Zap::Api::Network do
   it "#set_socks_proxy" do
     with_mock_zap do |mock, client|
       client.network.set_socks_proxy("socks.local", 1080, version: 5)
-      mock.last_params["host"].should eq("socks.local")
-      mock.last_params["version"].should eq("5")
+      mock.last_method.should eq("POST")
+      mock.last_params.to_s.should be_empty
+      form = URI::Params.parse(mock.last_body)
+      form["host"].should eq("socks.local")
+      form["version"].should eq("5")
     end
   end
 end

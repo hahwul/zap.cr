@@ -37,20 +37,16 @@ module Zap
         @client.request("/JSON/clientSpider/action/scan/", params)
       end
 
-      # Stops a running Client Spider scan. ZAP requires the scan id: omitting
-      # it (the `-1` default) is rejected as `missing_parameter`.
+      # Stops a running Client Spider scan identified by its scan ID.
       def stop(scan_id : Int32 = -1) : JSON::Any
-        params = {} of String => String
-        params["scanId"] = scan_id.to_s if scan_id >= 0
-        @client.request("/JSON/clientSpider/action/stop/", params)
+        raise Zap::Error.new("Client Spider stop requires a nonnegative scan ID") if scan_id < 0
+        @client.request("/JSON/clientSpider/action/stop/", {"scanId" => scan_id.to_s})
       end
 
-      # Returns the progress (0-100) of a Client Spider scan. ZAP requires the
-      # scan id: omitting it (the `-1` default) is rejected as `missing_parameter`.
+      # Returns the progress (0-100) of the specified Client Spider scan.
       def status(scan_id : Int32 = -1) : JSON::Any
-        params = {} of String => String
-        params["scanId"] = scan_id.to_s if scan_id >= 0
-        @client.request("/JSON/clientSpider/view/status/", params)
+        raise Zap::Error.new("Client Spider status requires a nonnegative scan ID") if scan_id < 0
+        @client.request("/JSON/clientSpider/view/status/", {"scanId" => scan_id.to_s})
       end
 
       # Default options for the Client Spider add-on.

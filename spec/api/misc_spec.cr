@@ -52,8 +52,12 @@ describe Zap::Api::Exim do
 
   it "#export_har" do
     with_mock_zap do |mock, client|
-      client.exim.export_har(base_url: "http://example.com")
+      mock.response_body = %({"log":{"entries":[]}})
+      client.exim.export_har(base_url: "http://example.com", start: 1, count: 2)["log"]["entries"].as_a.should be_empty
+      mock.last_path.should eq("/OTHER/exim/other/exportHar/")
       mock.last_params["baseurl"].should eq("http://example.com")
+      mock.last_params["start"].should eq("1")
+      mock.last_params["count"].should eq("2")
     end
   end
 end
@@ -226,7 +230,10 @@ describe Zap::Api::HttpSessions do
   it "#set_session_token_value" do
     with_mock_zap do |mock, client|
       client.http_sessions.set_session_token_value("http://example.com", "sess1", "JSESSIONID", "abc123")
-      mock.last_params["tokenValue"].should eq("abc123")
+      mock.last_method.should eq("POST")
+      mock.last_params.to_s.should be_empty
+      form = URI::Params.parse(mock.last_body)
+      form["tokenValue"].should eq("abc123")
     end
   end
 end

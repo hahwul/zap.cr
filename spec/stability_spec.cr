@@ -33,6 +33,7 @@ describe "stability hardening" do
             status_calls += 1
             # First poll: an Int64 status above Int32::MAX (would overflow).
             status_calls <= 1 ? %({"status": 3000000000}) : %({"status": "100"})
+          when "/JSON/pscan/view/recordsToScan/" then %({"recordsToScan":"0"})
           when "/JSON/alert/view/alertsSummary/"
             %({"alertsSummary": {}})
           else

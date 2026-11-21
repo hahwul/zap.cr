@@ -103,7 +103,7 @@ module Zap
         params["realm"] = realm unless realm.empty?
         params["username"] = username unless username.empty?
         params["password"] = password unless password.empty?
-        @client.request("/JSON/network/action/setHttpProxy/", params)
+        @client.request("/JSON/network/action/setHttpProxy/", params, post: true)
       end
 
       def set_http_proxy_auth_enabled(enabled : Bool) : JSON::Any
@@ -118,7 +118,7 @@ module Zap
         params = {"host" => host, "port" => port.to_s, "version" => version.to_s, "useDns" => use_dns.to_s}
         params["username"] = username unless username.empty?
         params["password"] = password unless password.empty?
-        @client.request("/JSON/network/action/setSocksProxy/", params)
+        @client.request("/JSON/network/action/setSocksProxy/", params, post: true)
       end
 
       def set_socks_proxy_enabled(enabled : Bool) : JSON::Any
@@ -146,7 +146,7 @@ module Zap
         params["filePath"] = file_path
         params["password"] = password
         params["index"] = index unless index.empty?
-        @client.request("/JSON/network/action/addPkcs12ClientCertificate/", params)
+        @client.request("/JSON/network/action/addPkcs12ClientCertificate/", params, post: true)
       end
 
       def add_rate_limit_rule(description : String, enabled : String, match_regex : String, match_string : String, requests_per_second : String, group_by : String) : JSON::Any

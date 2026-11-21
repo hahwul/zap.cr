@@ -119,7 +119,8 @@ client.ajax_spider.set_option_random_inputs(true)
 
 ## Combined Spidering
 
-Use the convenience method to run both spiders:
+Use the convenience method to run both spiders. The traditional result is
+under `fullResults`, and the AJAX response is under `ajaxSpider`.
 
 ```crystal
 result = client.scan.spider_full("http://target.com") do |phase, progress|

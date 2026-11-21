@@ -11,7 +11,7 @@ Generate reports from scan results using ZAP's built-in reporting engine.
 client.reports.generate(
   title: "Security Scan Report",
   template: "traditional-html",
-  sites: "http://target.com",
+  sites: "http://target.com/",
   report_dir: "/tmp/reports"
 )
 ```
@@ -35,15 +35,19 @@ client.reports.generate(
   title: "High Risk Report",
   template: "traditional-html",
   description: "Scan results for target.com",
-  sites: "http://target.com",
-  included_risks: "High,Medium",           # filter by risk
-  included_confidences: "High,Confirmed",   # filter by confidence
-  sections: "alertcount,alertdetails",       # specific sections
+  sites: "http://target.com/",
+  included_risks: "High|Medium",
+  included_confidences: "High|Confirmed",
+  sections: "alertcount|alertdetails",
   report_file_name: "scan-report.html",
   report_dir: "/tmp/reports",
   display: false
 )
 ```
+
+Separate multiple context names, site URLs, sections, risks, and confidence
+levels with `|`. ZAP uses URL prefixes for site selection. Include the slash
+after the host to select that origin's paths, for example `http://target.com/`.
 
 ## Exporting Data
 

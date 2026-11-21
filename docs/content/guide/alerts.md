@@ -8,7 +8,10 @@ Alerts represent security findings discovered during scanning.
 ## Listing Alerts
 
 ```crystal
-# All alerts
+# Include alerts marked as false positives
+alerts = client.alert.alerts(false_positive: true)
+
+# Alerts that are not marked as false positives
 alerts = client.alert.alerts
 
 # Alerts for a specific URL
@@ -20,6 +23,11 @@ alerts = client.alert.alerts(start: 0, count: 50)
 # By risk level (0=Info, 1=Low, 2=Medium, 3=High)
 alerts = client.alert.alerts(risk_id: 3)  # High only
 ```
+
+ZAP numbers pages by the position of their first record. Both `start: 0`
+and `start: 1` select the first record. ZAP applies `context_name` after
+pagination, so a context page can be empty while subsequent pages contain
+matches. Request the context without pagination to get all its matches.
 
 ## Alert Summary
 
@@ -73,6 +81,10 @@ client.alert.delete_all_alerts
 ```
 
 ### Update
+
+`update_alert` replaces the complete set of editable details. Supply the
+evidence, solution, references, CWE, and WASC fields you want to retain.
+Use the bulk risk or confidence methods for changes limited to those fields.
 
 ```crystal
 client.alert.update_alerts_risk("1,2,3", risk_id: 2)     # set to Medium
